@@ -1,0 +1,53 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Project Builds
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2.0.1
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+    - name: Restore Packages
+      run: nuget restore HedgehogUtils.sln
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+    - name: Build
+      run: msbuild HedgehogUtils.sln /t:HedgehogUtils /p:Configuration=Debug
+    - name: Copy DLL
+      run: mkdir staging && cp .\ExamplePlugin\bin\Debug\netstandard2.1\Hedgehog*.dll staging
+    - name: Upload the DLL Archive
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        # Artifact name
+        name: DLL
+        path: .\staging\
+        if-no-files-found: error
+    - name: Copy Thunderstore Assets
+      run: cp .\Thunderstore\* staging
+    - name: Copy ReadMe
+      run: cp .\README.md staging
+    - name: Upload the Mod Archive
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        # Artifact name
+        name: ds_gaming-HedgehogUtils
+        path: .\staging\
+        if-no-files-found: error
