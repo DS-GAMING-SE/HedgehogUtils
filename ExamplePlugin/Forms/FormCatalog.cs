@@ -61,7 +61,7 @@ namespace HedgehogUtils.Forms
                     form.keybind = HedgehogUtilsPlugin.instance.Config.Bind<KeyboardShortcut>("Controls", form.ToString() + " Transform Key", new KeyboardShortcut(form.defaultKeyBind), "The key you press to transform into the " + form.ToString() + " form. This config is automatically generated.");
                     if (usedKeys.Contains(form.defaultKeyBind))
                     {
-                        Log.Warning("Multiple forms share the same default keybind of " + form.defaultKeyBind.ToString());
+                        Log.Warning("Form " + form.ToString() + " shares the same default keybind of " + form.defaultKeyBind.ToString() + " with some other form(s).");
                     }
                     else
                     {

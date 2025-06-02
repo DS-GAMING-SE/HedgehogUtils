@@ -32,14 +32,14 @@ namespace HedgehogUtils.Boost
 
         public float boostMeterDrain;
         public bool boostDraining = false;
+        public bool boostBeingUsed;
 
         public bool boostExists;
 
         private const float baseMaxBoostMeter = 100f;
         private const float boostMeterPerFlatReduction = 100/3f;
-        private const float baseBoostRegen = 0.38f;
+        protected float baseBoostRegen = 0.35f;
         public const float boostRegenPerBandolier = 25f;
-        public const float boostRunRechargeCap = 5f;
 
         #region Boost Meter Functionality
         private void Start()

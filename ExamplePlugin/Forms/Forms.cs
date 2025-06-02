@@ -27,7 +27,7 @@ namespace HedgehogUtils.Forms
         public static Dictionary<FormDef, FormHandler> formToHandler = new Dictionary<FormDef, FormHandler>();
 
         // Look at the tooltips in the FormDef class for more information on what all of these parameters mean
-        public static FormDef CreateFormDef(string name, BuffDef buff, float duration, bool requiresItems, bool shareItems, bool consumeItems, int maxTransforms, bool invincible, bool flight, bool superAnimations, SerializableEntityStateType formState, SerializableEntityStateType transformState,
+        public static FormDef CreateFormDef(string name, BuffDef buff, float duration, bool requiresItems, bool shareRequirements, bool consumeItems, int maxTransforms, bool invincible, bool flight, bool superAnimations, SerializableEntityStateType formState, SerializableEntityStateType transformState,
             Dictionary<string, RenderReplacements> renderDictionary, Type handlerComponent, AllowedBodyList allowedBodyList, KeyCode defaultKeyBind)
         {
             FormDef form = ScriptableObject.CreateInstance<FormDef>();
@@ -35,7 +35,7 @@ namespace HedgehogUtils.Forms
             form.buff = buff;
             form.duration = duration;
             form.requiresItems = requiresItems;
-            form.shareItems = shareItems;
+            form.shareRequirements = shareRequirements;
             form.consumeItems = consumeItems;
             form.maxTransforms = maxTransforms;
             form.invincible = invincible;
@@ -58,7 +58,7 @@ namespace HedgehogUtils.Forms
             handlerObjectComponent.form = form;
             if (form.requiresItems)
             {
-                handlerPrefab.AddComponent(form.shareItems ? typeof(SyncedItemTracker) : typeof(UnsyncedItemTracker));
+                handlerPrefab.AddComponent(form.shareRequirements ? typeof(SyncedItemTracker) : typeof(UnsyncedItemTracker));
             }
             //PrefabAPI.RegisterNetworkPrefab(handlerPrefab);
             formToHandlerPrefab.Add(form, handlerPrefab);
@@ -146,8 +146,8 @@ namespace HedgehogUtils.Forms
         [Tooltip("The item or items that are needed to transform. NeededItem struct stores a RoR2.ItemDef and a uint for how many of that item is needed. You can also just use ItemDefs here if you won't need multiple of the same item, there is an implicit cast")]
         public NeededItem[] neededItems;
 
-        [Tooltip("If needed items will be shared amongst all players. Any player will be able to transform if any other player or combination of players have the needed items.")]
-        public bool shareItems;
+        [Tooltip("If transformation requirements, such as needed items and max amount of times you can transform, will be shared amongst all players. Any player will be able to transform if any other player or combination of players have the needed items.")]
+        public bool shareRequirements;
 
         [Tooltip("If needed items will be removed when transforming.")]
         public bool consumeItems;

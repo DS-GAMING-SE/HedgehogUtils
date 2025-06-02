@@ -11,7 +11,7 @@ using UnityEngine.AddressableAssets;
 
 namespace HedgehogUtils.Forms.EntityStates
 {
-    public class SonicFormBase : BaseState
+    public class FormStateBase : BaseState
     {
         public FormDef form;
 

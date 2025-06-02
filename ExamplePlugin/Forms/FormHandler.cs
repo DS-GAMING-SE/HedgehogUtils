@@ -91,11 +91,16 @@ namespace HedgehogUtils.Forms
             return true;
         }
 
+        public virtual bool HasNotTransformedMaxAmountOfTimes(FormComponent component)
+        {
+            return (form.maxTransforms <= 0 || (numberOfTimesTransformed < form.maxTransforms || (component.GetNumberOfTimesTransformed(form) < form.maxTransforms && !form.shareRequirements)));
+        }
+
         public virtual bool CanTransform(FormComponent component)
         {
             bool hasItems = HasItems(component);
-            Log.Message("FormHandler with form " + form.ToString() + "\nTeam Super? " + teamSuper + ". Has Items? " + hasItems + ". Number of transforms? " + numberOfTimesTransformed + " out of max " + form.maxTransforms);
-            return (hasItems && (form.maxTransforms <= 0 || numberOfTimesTransformed < form.maxTransforms)) || teamSuper;
+            Log.Message("FormHandler with form " + form.ToString() + "\nTeam Super? " + teamSuper + ". Has Items? " + hasItems + ". Number of transforms? " + numberOfTimesTransformed + "/" + component.GetNumberOfTimesTransformed(form) + " out of max " + form.maxTransforms);
+            return (hasItems && HasNotTransformedMaxAmountOfTimes(component)) || teamSuper;
         }
 
         public virtual void OnTransform(FormComponent component)
@@ -344,8 +349,9 @@ namespace HedgehogUtils.Forms
         }
         public bool CanTakeSharedItems(FormDef form, FormComponent super)
         {
-            if (super.formToItemTracker.TryGetValue(form, out ItemTracker itemTracker))
+            if (super.formToItemTracker[(int)form.formIndex])
             {
+                ItemTracker itemTracker = super.formToItemTracker[(int)form.formIndex];
                 switch (serverItemSharing)
                 {
                     case FormItemSharing.None:
@@ -568,7 +574,7 @@ namespace HedgehogUtils.Forms
         public bool ItemRequirementMet(FormComponent component)
         {
             Log.Message("Checking unsynceditemtracker");
-            return component.formToItemTracker.GetValueSafe(handler.form).allItems;
+            return component.formToItemTracker[(int)handler.form.formIndex].allItems;
         }
 
         public void RemoveItems(FormComponent component)

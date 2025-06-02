@@ -10,7 +10,7 @@ namespace HedgehogUtils
     {
         public static ConfigEntry<bool> EnableLogs()
         {
-            return HedgehogUtilsPlugin.instance.Config.Bind<bool>("Misc.", "Enable Logs", true, "This controls whether this mod will put any information in the logs. This information can help the mod creator fix issues should any come up, but it does impact performance a bit. Default is true.");
+            return HedgehogUtilsPlugin.instance.Config.Bind<bool>("Misc.", "Enable Logs", false, "This controls whether this mod will put any information in the logs. This information can help the mod creator fix issues should any come up, but it does impact performance a bit. Default is false.");
         }
         #region Forms
         public static ConfigEntry<bool> AnnounceSuperTransformation()

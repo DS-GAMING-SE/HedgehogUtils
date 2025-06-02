@@ -123,14 +123,14 @@ namespace HedgehogUtils.Boost
 
         public virtual void UpdateMeterFading()
         {
-            if (boostLogic.boostMeter >= boostLogic.maxBoostMeter && !boostLogic.boostDraining)
+            if (boostLogic.boostMeter >= boostLogic.maxBoostMeter && !boostLogic.boostBeingUsed)
             {
                 meterFill.fillAmount = 1;
                 fadeTimer += Time.fixedDeltaTime;
                 if (boostSkillDef == null) { Log.Warning("No skill"); }
                 Color fill = Color.Lerp(boostSkillDef.boostHUDColor, boostSkillDef.boostHUDColor.AlphaMultiplied(0), fadeTimer);
                 Color background = Color.Lerp(backgroundDefaultColor, new Color(0, 0, 0, 0), fadeTimer);
-                if (boostLogic.boostRegen < boostLogic.boostMeterDrain)
+                if (boostLogic.boostRegen < boostLogic.boostMeterDrain && !boostLogic.alwaysMaxBoost)
                 {
                     meterBackground.gameObject.SetActive(true);
                     meterFill.color = fill;
@@ -153,7 +153,7 @@ namespace HedgehogUtils.Boost
             else
             {
                 fadeTimer = 0;
-                if (boostLogic.boostRegen < boostLogic.boostMeterDrain)
+                if (boostLogic.boostRegen < boostLogic.boostMeterDrain && !boostLogic.alwaysMaxBoost)
                 {
                     meterBackground.gameObject.SetActive(true);
                     meterFill.color = boostLogic.boostAvailable ? boostSkillDef.boostHUDColor : fillUnavailableColor;

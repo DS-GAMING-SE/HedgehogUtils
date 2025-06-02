@@ -9,6 +9,7 @@ using System.Reflection;
 using HedgehogUtils.Internal;
 using HedgehogUtils.Forms.SuperForm;
 using RoR2.Audio;
+using static RoR2.VFXAttributes;
 
 namespace HedgehogUtils
 {
@@ -284,7 +285,9 @@ namespace HedgehogUtils
 
             newEffect.AddComponent<DestroyOnTimer>().duration = 12;
             newEffect.AddComponent<NetworkIdentity>();
-            newEffect.AddComponent<VFXAttributes>().vfxPriority = VFXAttributes.VFXPriority.Always;
+            var vfx = newEffect.AddComponent<VFXAttributes>();
+            vfx.vfxPriority = VFXAttributes.VFXPriority.Always;
+            vfx.DoNotPool = true;
             var effect = newEffect.AddComponent<EffectComponent>();
             effect.applyScale = false;
             effect.effectIndex = EffectIndex.Invalid;

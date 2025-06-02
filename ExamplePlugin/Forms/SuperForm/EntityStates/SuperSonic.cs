@@ -12,7 +12,7 @@ using UnityEngine.Networking;
 
 namespace HedgehogUtils.Forms.SuperForm.EntityStates
 {
-    public class SuperSonic : SonicFormBase
+    public class SuperSonic : FormStateBase
     {
         protected CharacterModel model;
 

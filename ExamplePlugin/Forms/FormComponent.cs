@@ -11,6 +11,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System;
 using HedgehogUtils.Forms.EntityStates;
+using UnityEngine.UIElements;
 
 namespace HedgehogUtils.Forms
 {
@@ -24,6 +25,7 @@ namespace HedgehogUtils.Forms
         [Tooltip("The form you're currently in. If not transformed into anything, this will be null.")]
         public FormDef activeForm;
 
+        [Tooltip("The first FormDef is the form you were PREVIOUSLY in\nThe second FormDef is the one you're in now.")]
         public event Action<FormDef, FormDef> OnFormChanged;
 
         public Material formMaterial;
@@ -36,7 +38,11 @@ namespace HedgehogUtils.Forms
         private CharacterModel model;
         private Animator modelAnimator;
 
-        public Dictionary<FormDef, ItemTracker> formToItemTracker = new Dictionary<FormDef, ItemTracker>();
+        [Tooltip("Use the form's formIndex as the index of the array.")]
+        public int[] numberOfTimesTransformed = Array.Empty<int>();
+
+        [Tooltip("Use the form's formIndex as the index of the array.")]
+        public ItemTracker[] formToItemTracker = Array.Empty<ItemTracker>();
 
         protected bool initialized;
         
@@ -66,12 +72,15 @@ namespace HedgehogUtils.Forms
             superSonicState = EntityStateMachine.FindByCustomName(base.gameObject, "HedgehogUtilsForms");
 
             CreateUnsyncItemTrackers();
+            Array.Resize(ref numberOfTimesTransformed, FormCatalog.formsCatalog.Length);
+
             initialized = true;
             Log.Message("FormComponent init");
         }
 
         public void CreateUnsyncItemTrackers()
         {
+            Array.Resize(ref formToItemTracker, FormCatalog.formsCatalog.Length);
             foreach (FormDef form in FormCatalog.formsCatalog)
             {
                 if (form.requiresItems)
@@ -86,7 +95,7 @@ namespace HedgehogUtils.Forms
             ItemTracker itemTracker = body.gameObject.AddComponent<ItemTracker>();
             itemTracker.form = form;
             itemTracker.body = body;
-            formToItemTracker.Add(form, itemTracker);
+            formToItemTracker[(int)form.formIndex] = itemTracker;
         }
 
         public void FixedUpdate()
@@ -141,6 +150,7 @@ namespace HedgehogUtils.Forms
 
             if (transformSuccess)
             {
+                numberOfTimesTransformed[(int)targetedForm.formIndex] += 1;
                 if (NetworkServer.active)
                 {
                     //FormHandler.instance.OnTransform();
@@ -157,7 +167,7 @@ namespace HedgehogUtils.Forms
         {
             if (form != null)
             {
-                SonicFormBase formState = (SonicFormBase)EntityStateCatalog.InstantiateState(form.formState.stateType);
+                FormStateBase formState = (FormStateBase)EntityStateCatalog.InstantiateState(form.formState.stateType);
                 formState.form = form;
                 this.superSonicState.SetNextState(formState);
             }
@@ -199,6 +209,11 @@ namespace HedgehogUtils.Forms
             this.activeForm = null;
             OnFormChanged?.Invoke(previousForm, activeForm);
             ResetModel();
+        }
+
+        public int GetNumberOfTimesTransformed(FormDef form)
+        {
+            return numberOfTimesTransformed[(int)form.formIndex];
         }
 
         // Thank you DxsSucuk

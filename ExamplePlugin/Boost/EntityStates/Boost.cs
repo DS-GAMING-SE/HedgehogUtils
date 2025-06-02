@@ -15,8 +15,15 @@ namespace HedgehogUtils.Boost.EntityStates
         public const float minAirBoostDuration = 0.2f;
         public const float maxAirBoostDuration = 0.4f;
 
-        public static float boostStartMeterDrain = 20f;
-        public static float boostMeterDrain = 0.67f;
+        protected virtual float boostStartMeterDrain
+        {
+            get { return 20f; }
+        }
+        protected virtual float boostMeterDrain
+        {
+            get { return 0.67f; }
+        }
+
         public static float screenShake = 3.5f;
         public static float airBoostY = 8;
 
@@ -40,11 +47,6 @@ namespace HedgehogUtils.Boost.EntityStates
 
         protected GameObject aura;
 
-        protected virtual bool drainBoostMeter
-        {
-            get { return true; }
-        }
-
         protected virtual BuffDef buff
         {
             get { return null; }
@@ -53,6 +55,10 @@ namespace HedgehogUtils.Boost.EntityStates
         protected float maxRadiansTurnPerSecond = 3f;
 
         public bool airBoosting = false;
+
+        protected bool firstFramePassed = false;
+
+        protected bool initialBoostVelocity = false;
 
         public override void OnEnter()
         {
@@ -70,10 +76,18 @@ namespace HedgehogUtils.Boost.EntityStates
                 base.characterBody.AddTimedBuff(RoR2Content.Buffs.HiddenInvincibility, 0.25f);
             }
 
-            if (drainBoostMeter)
+            if (boostStartMeterDrain > 0)
             {
                 boostLogic.InstantChangeBoostMeter(-(boostStartMeterDrain * characterBody.skillLocator.utility.cooldownScale));
             }
+            boostLogic.boostBeingUsed = true;
+
+            if (base.inputBank.moveVector != Vector3.zero)
+            {
+                base.characterDirection.forward = base.inputBank.moveVector;
+            }
+
+            targetDirection = base.characterDirection.forward;
 
             if (airBoosting)
             {
@@ -84,13 +98,6 @@ namespace HedgehogUtils.Boost.EntityStates
             {
                 PlayBoostAnimation();
             }
-
-            if (base.inputBank.moveVector != Vector3.zero)
-            {
-                base.characterDirection.forward = base.inputBank.moveVector;
-            }
-
-            targetDirection = base.characterDirection.forward;
 
             this.camOverrideHandle = base.cameraTargetParams.AddParamsOverride(new CameraTargetParams.CameraParamsOverrideRequest
             {
@@ -106,7 +113,7 @@ namespace HedgehogUtils.Boost.EntityStates
         {
             base.FixedUpdate();
 
-            if (drainBoostMeter)
+            if (boostMeterDrain > 0)
             {
                 if (NetworkServer.active)
                 {
@@ -117,6 +124,12 @@ namespace HedgehogUtils.Boost.EntityStates
             }
 
             base.characterBody.isSprinting = true;
+
+            if (firstFramePassed && !initialBoostVelocity) // I wait 1 frame before giving the initial velocity of the boost because it takes 1 frame for the boost speed buff to be applied
+            {
+                base.characterMotor.velocity = targetDirection * base.characterBody.moveSpeed;
+                initialBoostVelocity = true;
+            }
 
             if (airBoosting)
             {
@@ -159,10 +172,14 @@ namespace HedgehogUtils.Boost.EntityStates
                 return;
             }
 
-            if (base.isAuthority && (boostLogic.boostMeter <= 0 || !boostLogic.boostAvailable))
+            if (base.isAuthority && (boostLogic.boostMeter <= 0 || !boostLogic.boostAvailable) && base.fixedAge > minDuration)
             {
                 SetNextState();
                 return;
+            }
+            if (!firstFramePassed)
+            {
+                firstFramePassed = true;
             }
         }
 
@@ -296,6 +313,7 @@ namespace HedgehogUtils.Boost.EntityStates
         {
             base.GetModelAnimator().SetBool("isBoosting", false);
             boostLogic.boostDraining = false;
+            boostLogic.boostBeingUsed = false;
             base.cameraTargetParams.RemoveParamsOverride(this.camOverrideHandle, 1f);
             if (NetworkServer.active)
             {

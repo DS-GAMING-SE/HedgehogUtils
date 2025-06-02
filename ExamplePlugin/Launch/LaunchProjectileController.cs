@@ -68,7 +68,7 @@ namespace HedgehogUtils.Launch
             radius = 2.5f;
             if (body)
             {
-                radius = Mathf.Max(radius, body.bestFitRadius * 1.5f);
+                radius = Mathf.Max(radius, body.bestFitRadius);
 
                 VFXAura();
 
