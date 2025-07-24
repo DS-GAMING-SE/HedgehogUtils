@@ -102,9 +102,8 @@ namespace HedgehogUtils.Forms
         }
 
         [SystemInitializer(typeof(BodyCatalog), typeof(FormCatalog))]
-        public static void SuperSonicComponentsForEveryone()
+        public static void FormComponentsForEveryone()
         {
-            Log.Message("SuperSonicComponentsForEveryone");
             foreach (GameObject body in BodyCatalog.allBodyPrefabs)
             {
                 foreach (FormDef form in FormCatalog.formsCatalog)

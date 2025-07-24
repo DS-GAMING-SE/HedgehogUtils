@@ -68,7 +68,6 @@ namespace HedgehogUtils
         {
             Sprite icon = (Assets.mainAssetBundle.LoadAsset<Sprite>("texSuperBuffIcon"));
             ModSettingsManager.SetModIcon(icon);
-            ModSettingsManager.AddOption(new CheckBoxOption(Config.EmeraldsWithoutSonic()));
 
             ModSettingsManager.AddOption(new IntSliderOption(Config.EmeraldsPerStage(), new RiskOfOptions.OptionConfigs.IntSliderConfig() { min = 1, max = 7 }));
             ModSettingsManager.AddOption(new IntSliderOption(Config.EmeraldsPerSimulacrumStage(), new RiskOfOptions.OptionConfigs.IntSliderConfig() { min = 1, max = 7 }));

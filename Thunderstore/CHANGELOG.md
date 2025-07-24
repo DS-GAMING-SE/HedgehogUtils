@@ -1,3 +1,5 @@
-## 1.0.0
+# Changelog
 
-- First release
+v1.0.0
+
+ - Initial Release

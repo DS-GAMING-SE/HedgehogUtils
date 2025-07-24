@@ -14,8 +14,6 @@ namespace HedgehogUtils.Forms.SuperForm
     {
         public static FormDef superFormDef;
 
-        public static string[] chaosEmeraldSpawningBodies;
-
         public static void Initialize()
         {
             Dictionary<string, RenderReplacements> superRenderDictionary = new Dictionary<string, RenderReplacements>();
@@ -27,8 +25,6 @@ namespace HedgehogUtils.Forms.SuperForm
             {
                 superFormDef
             });
-
-            chaosEmeraldSpawningBodies = new string[0];
         }
 
         [SystemInitializer(typeof(ItemCatalog))]
@@ -36,11 +32,6 @@ namespace HedgehogUtils.Forms.SuperForm
         {
             Log.Message("NeededItems initialized");
             superFormDef.neededItems = new NeededItem[] { Items.yellowEmerald.itemIndex, Items.redEmerald.itemIndex, Items.blueEmerald.itemIndex, Items.cyanEmerald.itemIndex, Items.grayEmerald.itemIndex, Items.greenEmerald.itemIndex, Items.purpleEmerald.itemIndex };
-        }
-
-        public static void AddChaosEmeraldSpawningCharacter(List<string> bodyNames)
-        {
-            Helpers.Append(ref chaosEmeraldSpawningBodies, bodyNames);
         }
 
         public static void UpdateConsumeEmeraldsConfig(object sender, EventArgs args)

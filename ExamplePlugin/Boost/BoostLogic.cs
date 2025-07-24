@@ -12,12 +12,13 @@ namespace HedgehogUtils.Boost
     public class BoostLogic : NetworkBehaviour
     {
         // I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING 
+        // I've been putting this SyncVar stuff all around because that's what I've seen other people do but apparently it doesn't do anything without some extra thing I don't have
         public CharacterBody body;
         protected ICharacterFlightParameterProvider flight;
 
         [SyncVar(hook = nameof(OnBoostMeterChanged))]
         public float boostMeter;
-
+        
         [SyncVar]
         public float maxBoostMeter;
 

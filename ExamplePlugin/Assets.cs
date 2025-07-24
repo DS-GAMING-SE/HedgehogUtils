@@ -10,6 +10,7 @@ using HedgehogUtils.Internal;
 using HedgehogUtils.Forms.SuperForm;
 using RoR2.Audio;
 using static RoR2.VFXAttributes;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace HedgehogUtils
 {
@@ -79,28 +80,31 @@ namespace HedgehogUtils
             #region Launch
             launchAuraEffect = CreateNewBoostAura(HedgehogUtilsPlugin.Prefix + "LAUNCH_AURA_VFX",
                 1,
-                0.2f,
+                0.4f,
                 new Color(1f, 1f, 1f),
                 new Color(0.7f, 0.7f, 0.7f),
                 new Color(0.4f, 0.45f, 0.5f),
                 Color.black);
             launchCritAuraEffect = CreateNewBoostAura(HedgehogUtilsPlugin.Prefix + "LAUNCH_CRIT_AURA_VFX",
                 1,
-                0.2f,
+                0.4f,
                 new Color(1f, 1f, 1f),
                 new Color(0.7f, 0.7f, 0.7f),
                 new Color(0.8f, 0.1f, 0.2f),
                 new Color(0.3f, 0f, 0f));
             #endregion
 
-            launchHitEffect = CreateLaunchHitEffect("HedgehogUtilsLaunchHitEffect", new Color(1f, 0.8f, 0.4f), new Color(0.8f, 0.8f, 0.8f));
-
-            launchCritHitEffect = CreateLaunchHitEffect("HedgehogUtilsLaunchCritHitEffect", new Color(1f, 0.1f, 0.2f), new Color(0.9f, 0.7f, 0.7f));
+            AsyncOperationHandle<GameObject> asyncHit = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ArmorReductionOnHit/PulverizedEffect.prefab");
+            asyncHit.Completed += delegate (AsyncOperationHandle<GameObject> x)
+            {
+                launchHitEffect = CreateLaunchHitEffect(x.Result, "HedgehogUtilsLaunchHitEffect", new Color(1f, 0.8f, 0.4f), new Color(0.8f, 0.8f, 0.8f));
+                launchCritHitEffect = CreateLaunchHitEffect(x.Result, "HedgehogUtilsLaunchCritHitEffect", new Color(1f, 0.1f, 0.2f), new Color(0.9f, 0.7f, 0.7f));
+            };
         }
 
-        private static GameObject CreateLaunchHitEffect(string name, Color ringColor, Color beamColor)
+        private static GameObject CreateLaunchHitEffect(GameObject baseHitEffect, string name, Color ringColor, Color beamColor)
         {
-            GameObject hitEffect = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ArmorReductionOnHit/PulverizedEffect.prefab").WaitForCompletion(), name);
+            GameObject hitEffect = PrefabAPI.InstantiateClone(baseHitEffect, name);
             GameObject.Destroy(hitEffect.GetComponent<ParticleSystem>());
             ParticleSystem.MainModule ring = hitEffect.transform.Find("Ring").gameObject.GetComponent<ParticleSystem>().main;
             ring.startColor = ringColor;
@@ -144,11 +148,14 @@ namespace HedgehogUtils
             superFormAura = Assets.LoadAsyncedEffect("SonicSuperAura");
 
             superFormWarning = Assets.LoadAsyncedEffect("SonicSuperWarning");
-
-            superFormOverlay = new Material(Addressables.LoadAssetAsync<Material>("RoR2/Base/LunarGolem/matLunarGolemShield.mat").WaitForCompletion());
-            superFormOverlay.SetColor("_TintColor", new Color(1, 0.8f, 0.4f, 1));
-            superFormOverlay.SetColor("_EmissionColor", new Color(1, 0.8f, 0.4f, 1));
-            superFormOverlay.SetFloat("_OffsetAmount", 0.01f);
+            AsyncOperationHandle<Material> asyncOutlineMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/LunarGolem/matLunarGolemShield.mat");
+            asyncOutlineMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
+            {
+                superFormOverlay = x.Result;
+                superFormOverlay.SetColor("_TintColor", new Color(1, 0.8f, 0.4f, 1));
+                superFormOverlay.SetColor("_EmissionColor", new Color(1, 0.8f, 0.4f, 1));
+                superFormOverlay.SetFloat("_OffsetAmount", 0.01f);
+            };
 
             superLoopSoundDef = ScriptableObject.CreateInstance<LoopSoundDef>();
             superLoopSoundDef.startSoundName = "Play_hedgehogutils_super_loop";
@@ -199,12 +206,15 @@ namespace HedgehogUtils
             ParticleSystemRenderer renderer2 = newFlash.transform.Find("BlueCone/BlueCone2").GetComponent<ParticleSystemRenderer>();
             renderer2.material = CreateNewBoostMaterial(alpha, color1, color2, color3);
 
+            ParticleSystem.MainModule color = newFlash.transform.Find("BlueCone/StartFlash").GetComponent<ParticleSystem>().main;
             if (lightColor == Color.black)
             {
-                newFlash.transform.Find("BlueCone/StartFlash/Point Light").GetComponent<Light>().enabled = false;
+                ParticleSystem.LightsModule light = newFlash.transform.Find("BlueCone/StartFlash").GetComponent<ParticleSystem>().lights;
+                light.enabled = false;
             }
             else
             {
+                color.startColor = lightColor;
                 newFlash.transform.Find("BlueCone/StartFlash/Point Light").GetComponent<Light>().color = lightColor;
             }
 

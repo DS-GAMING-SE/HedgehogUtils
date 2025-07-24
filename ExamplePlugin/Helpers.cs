@@ -68,6 +68,7 @@ namespace HedgehogUtils
             T boostDef = CopySkillDef<T>(originDef);
             boostDef.boostIdleState = boostIdle;
             boostDef.brakeState = brakeState;
+            boostDef.boostHUDColor = originDef.boostHUDColor;
             return boostDef;
         }
         public static T CopyBoostSkillDef<T>(Boost.SkillDefs.RequiresFormBoostSkillDef originDef) where T : SkillDef, Boost.SkillDefs.IBoostSkill
@@ -77,6 +78,7 @@ namespace HedgehogUtils
             T boostDef = CopySkillDef<T>(originDef);
             boostDef.boostIdleState = boostIdle;
             boostDef.brakeState = brakeState;
+            boostDef.boostHUDColor = originDef.boostHUDColor;
             return boostDef;
         }
     }

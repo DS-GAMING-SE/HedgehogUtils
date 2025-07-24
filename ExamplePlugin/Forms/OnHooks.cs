@@ -158,32 +158,19 @@ namespace HedgehogUtils.Forms
                 Vector3 vector = new Vector3(38, 23, 36);
             }*/
 
-            // Metamorphosis causes issues with emeralds spawning because character rerolls happen after emeralds spawn. Emeralds would only spawn the stage after you were Sonic
-            bool metamorphosis = RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.randomSurvivorOnRespawnArtifactDef);
-            Log.Message("Metamorphosis? " + metamorphosis);
-
             foreach (FormDef form in FormCatalog.formsCatalog)
             {
                 bool someoneCanUseForm = false;
-                bool someoneIsSonic = false;
                 foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
                 {
                     if (form.allowedBodyList.BodyIsAllowed(BodyCatalog.FindBodyIndex(player.master.bodyPrefab)))
                     {
                         someoneCanUseForm = true;
-                    }
-                    if (!someoneIsSonic && SuperFormDef.chaosEmeraldSpawningBodies.Contains(BodyCatalog.GetBodyName(BodyCatalog.FindBodyIndex(player.master.bodyPrefab))))
-                    {
-                        someoneIsSonic = true;
-                    }
-                    if (someoneCanUseForm && someoneIsSonic)
-                    {
                         break;
                     }
                 }
-                Log.Message("Anyone playing Sonic? " + someoneIsSonic + "\nAnyone can use the form? " + someoneCanUseForm);
 
-                bool formAvailable = someoneCanUseForm && (form != SuperFormDef.superFormDef || (someoneIsSonic && !metamorphosis || Config.EmeraldsWithoutSonic().Value));
+                bool formAvailable = someoneCanUseForm && RunArtifactManager.instance.IsArtifactEnabled(Artifact.chaosEmeraldArtifactDef);
                 // Complicated bool mess here is mostly just to make sure Chaos Emeralds should spawn and, by extension, Super Sonic should be available.
                 // Checks metamorphosis, but metamorphosis is okay if emeralds can spawn without Sonic, etc
 

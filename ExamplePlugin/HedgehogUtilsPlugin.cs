@@ -77,6 +77,8 @@ namespace HedgehogUtils
             Forms.OnHooks.Initialize();
 
             Forms.SuperForm.Stats.Initialize();
+
+            Forms.SuperForm.Artifact.Initialize();
             #endregion Forms
 
             #region Launch
@@ -85,6 +87,10 @@ namespace HedgehogUtils
             Launch.LaunchManager.Initialize();
 
             Launch.OnHooks.Initialize();
+            #endregion
+
+            #region Misc
+            Miscellaneous.MomentumStats.Initialize();
             #endregion
 
             Language.Initialize();

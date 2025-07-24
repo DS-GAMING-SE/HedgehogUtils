@@ -150,8 +150,9 @@ namespace HedgehogUtils.Forms.SuperForm
             if (NetworkServer.active)
             {
                 purchaseInteraction.onPurchase.AddListener(OnPurchase);
-                this.color = SuperSonicHandler.available[0];
-                SuperSonicHandler.available.Remove(this.color);
+                int emeraldIndex = Run.instance.stageRng.RangeInt(0, SuperSonicHandler.available.Count);
+                this.color = SuperSonicHandler.available[emeraldIndex];
+                SuperSonicHandler.available.RemoveAt(emeraldIndex);
             }
             UpdateColor();
 

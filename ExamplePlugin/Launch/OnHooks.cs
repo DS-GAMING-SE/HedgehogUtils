@@ -41,7 +41,8 @@ namespace HedgehogUtils.Launch
                 if ((damageInfo.damageType.HasModdedDamageType(DamageTypes.launch)
                     || (damageInfo.damageType.HasModdedDamageType(DamageTypes.launchOnKill) && !self.alive))
                     && !damageInfo.rejected
-                    && damageInfo.procCoefficient > 0.3f)
+                    && damageInfo.procCoefficient > 0.3f
+                    && !self.body.bodyFlags.HasFlag(CharacterBody.BodyFlags.IgnoreKnockback))
                 {
                     Rigidbody rigidbody = self.gameObject.GetComponent<Rigidbody>();
                     if (rigidbody && rigidbody.mass <= damageInfo.force.magnitude)

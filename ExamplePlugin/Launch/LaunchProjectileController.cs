@@ -187,7 +187,7 @@ namespace HedgehogUtils.Launch
             attack.attackerFiltering = AttackerFiltering.NeverHitSelf;
             attack.pushAwayForce = 1500f;
             attack.hitEffectPrefab = crit ? Assets.launchCritHitEffect : Assets.launchHitEffect;
-            attack.impactSound = NetworkSoundEventCatalog.FindNetworkSoundEventIndex("Play_loader_m1_impact");
+            attack.impactSound = NetworkSoundEventCatalog.FindNetworkSoundEventIndex("Play_beetle_worker_impact");
             attack.addIgnoredHitList(body.healthComponent);
         }
 

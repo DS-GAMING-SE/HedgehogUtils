@@ -107,9 +107,12 @@ namespace HedgehogUtils.Forms
         {
             if (!teamSuper)
             {
-                NetworkteamSuper = true;
-                NetworknumberOfTimesTransformed += 1; // needs to be unsynced for certain forms, fix that later
-                teamSuperTimer = teamSuperTimerDuration;
+                if (form.shareRequirements)
+                {
+                    NetworkteamSuper = true;
+                    teamSuperTimer = teamSuperTimerDuration;
+                }
+                NetworknumberOfTimesTransformed += 1;
                 if (form.consumeItems)
                 {
                     itemTracker.RemoveItems(component);
