@@ -11,6 +11,8 @@ namespace HedgehogUtils.Launch
     public class Launched : EntityState
     {
         private SetStateOnHurt idleStateMachineProvider;
+
+        public bool endLaunchASAP;
         
         public override void OnEnter()
         {
@@ -42,13 +44,16 @@ namespace HedgehogUtils.Launch
                         }
                     }
                 }
+                if (NetworkClient.active)
+                {
+                    base.gameObject.AddComponent<DieOnLaunchEnd>();
+                }
             }
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            //Log.Warning("Has Buff?: " + base.characterBody.HasBuff(Buffs.launchedBuff));
         }
 
         public override void OnExit()

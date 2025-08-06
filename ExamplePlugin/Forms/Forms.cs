@@ -90,7 +90,7 @@ namespace HedgehogUtils.Forms
         {
             if (body)
             {
-                return GetIsInForm(body.gameObject, form);
+                return body.HasBuff(form.buff);
             }
             return false;
         }
@@ -180,6 +180,21 @@ namespace HedgehogUtils.Forms
 
         [Tooltip("The default keybind players press to transform into the form. Don't get too attached to this, it's likely these keybinds will need to be changed if forms happen to overlap. If two forms overlap the same key and both can be transformed into, the first form alphabetically by name token will be selected. \nIf set to Keybind.None, there will be no keybind for activating the form. You can make your own way of transforming into the form.")]
         public KeyCode defaultKeyBind;
+
+        [Tooltip("A function that decides whether the FormHandler of this form will be created at the beginning of the stage, thus making the form usable. Use this for any enabling or disabling of forms via config, artifacts, or any other arbitrary reason that would keep it disabled for an entire stage or run.\nBy default this just checks if any survivor is playing a character than can use the form.")]
+        public Func<FormDef, bool> enabled = (self) => { return AnySelectedSurvivorCanUseForm(self); }; 
+
+        public static bool AnySelectedSurvivorCanUseForm(FormDef form)
+        {
+            foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
+            {
+                if (form.allowedBodyList.BodyIsAllowed(BodyCatalog.FindBodyIndex(player.master.bodyPrefab)))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public FormIndex formIndex 
         { 

@@ -21,7 +21,7 @@ namespace HedgehogUtils.Boost.EntityStates
         }
         protected virtual float boostMeterDrain
         {
-            get { return 0.67f; }
+            get { return 0.63f; }
         }
 
         public static float screenShake = 3.5f;

@@ -160,19 +160,7 @@ namespace HedgehogUtils.Forms
 
             foreach (FormDef form in FormCatalog.formsCatalog)
             {
-                bool someoneCanUseForm = false;
-                foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
-                {
-                    if (form.allowedBodyList.BodyIsAllowed(BodyCatalog.FindBodyIndex(player.master.bodyPrefab)))
-                    {
-                        someoneCanUseForm = true;
-                        break;
-                    }
-                }
-
-                bool formAvailable = someoneCanUseForm && RunArtifactManager.instance.IsArtifactEnabled(Artifact.chaosEmeraldArtifactDef);
-                // Complicated bool mess here is mostly just to make sure Chaos Emeralds should spawn and, by extension, Super Sonic should be available.
-                // Checks metamorphosis, but metamorphosis is okay if emeralds can spawn without Sonic, etc
+                bool formAvailable = form.enabled(form);
 
                 if (!Forms.formToHandlerObject.ContainsKey(form) && formAvailable)
                 {

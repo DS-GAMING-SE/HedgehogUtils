@@ -26,5 +26,7 @@ namespace HedgehogUtils.Forms.SuperForm
 
         internal const float superSonicJumpHeight = 0.5f;
 
+        internal const int superSonicArmor = 200;
+
     }
 }

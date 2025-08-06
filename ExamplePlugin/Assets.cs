@@ -68,6 +68,9 @@ namespace HedgehogUtils
 
         internal static GameObject launchHitEffect;
         internal static GameObject launchCritHitEffect;
+
+        internal static GameObject launchWallCollisionEffect;
+        internal static GameObject launchWallCollisionLargeEffect;
         #endregion
 
         public static void BoostAndLaunch()
@@ -100,11 +103,77 @@ namespace HedgehogUtils
                 launchHitEffect = CreateLaunchHitEffect(x.Result, "HedgehogUtilsLaunchHitEffect", new Color(1f, 0.8f, 0.4f), new Color(0.8f, 0.8f, 0.8f));
                 launchCritHitEffect = CreateLaunchHitEffect(x.Result, "HedgehogUtilsLaunchCritHitEffect", new Color(1f, 0.1f, 0.2f), new Color(0.9f, 0.7f, 0.7f));
             };
+
+            AsyncOperationHandle<GameObject> asyncWallCollision = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/SurvivorPod/PodGroundImpact.prefab");
+            asyncWallCollision.Completed += delegate (AsyncOperationHandle<GameObject> x)
+            {
+                // Launch Wall Large
+                launchWallCollisionLargeEffect = PrefabAPI.InstantiateClone(x.Result, "HedgehogUtilsLaunchWallCollisionLarge");
+                launchWallCollisionLargeEffect.AddComponent<NetworkIdentity>();
+                launchWallCollisionLargeEffect.GetComponent<ShakeEmitter>().wave.amplitude = 0.4f;
+                GameObject.Destroy(launchWallCollisionLargeEffect.GetComponent<AlignToNormal>());
+                GameObject.Destroy(launchWallCollisionLargeEffect.transform.Find("Particles/Flash").gameObject);
+                GameObject.Destroy(launchWallCollisionLargeEffect.transform.Find("Particles/Sparks").gameObject);
+                GameObject.Destroy(launchWallCollisionLargeEffect.transform.Find("Particles/Point Light").gameObject);
+                ParticleSystem.ShapeModule dustLargeShapeModule = launchWallCollisionLargeEffect.transform.Find("Particles/Dust, Directional").GetComponent<ParticleSystem>().shape;
+                dustLargeShapeModule.radius = 6f;
+                launchWallCollisionLargeEffect.GetComponent<EffectComponent>().soundName = "Play_titanboss_impact";
+
+
+                // Launch Wall
+                launchWallCollisionEffect = PrefabAPI.InstantiateClone(x.Result, "HedgehogUtilsLaunchWallCollision");
+                launchWallCollisionEffect.AddComponent<NetworkIdentity>();
+                GameObject.Destroy(launchWallCollisionEffect.GetComponent<AlignToNormal>());
+                GameObject.Destroy(launchWallCollisionEffect.transform.Find("Particles/Flash").gameObject);
+                GameObject.Destroy(launchWallCollisionEffect.transform.Find("Particles/Sparks").gameObject);
+                GameObject.Destroy(launchWallCollisionEffect.transform.Find("Particles/Point Light").gameObject);
+                GameObject.Destroy(launchWallCollisionEffect.transform.Find("Particles/Debris, 3D").gameObject);
+                GameObject.Destroy(launchWallCollisionEffect.GetComponent<ShakeEmitter>());
+                GameObject dustDirectional = launchWallCollisionEffect.transform.Find("Particles/Dust, Directional").gameObject;
+                ParticleSystem.MainModule dustDirectionalMain = dustDirectional.GetComponent<ParticleSystem>().main;
+                ParticleSystem.MinMaxCurve dustDirectionalLifetimeCurve = dustDirectionalMain.startLifetime;
+                dustDirectionalLifetimeCurve.constantMax = 0.3f;
+                dustDirectionalLifetimeCurve.constantMax = 0.6f;
+                dustDirectionalMain.startLifetime = dustDirectionalLifetimeCurve;
+                ParticleSystem.MinMaxCurve dustDirectionalSizeCurve = dustDirectionalMain.startSize;
+                dustDirectionalSizeCurve.constantMin = 0.4f;
+                dustDirectionalSizeCurve.constantMax = 1.3f;
+                dustDirectionalMain.startSize = dustDirectionalSizeCurve;
+
+                GameObject dust = launchWallCollisionEffect.transform.Find("Particles/Dust").gameObject;
+                ParticleSystem.MainModule dustMain = dust.GetComponent<ParticleSystem>().main;
+                ParticleSystem.MinMaxCurve dustLifetimeCurve = dustMain.startLifetime;
+                dustLifetimeCurve.constantMin = 0.6f;
+                dustLifetimeCurve.constantMax = 1.4f;
+                dustMain.startLifetime = dustLifetimeCurve;
+                ParticleSystem.MinMaxCurve dustSizeCurve = dustMain.startSize;
+                dustSizeCurve.constantMin = 1.5f;
+                dustSizeCurve.constantMax = 3f;
+                dustMain.startSize = dustSizeCurve;
+
+                ParticleSystem debris = launchWallCollisionEffect.transform.Find("Particles/Debris").gameObject.GetComponent<ParticleSystem>();
+                ParticleSystem.EmissionModule debrisEmission = debris.emission;
+                ParticleSystem.Burst debrisBurst = debrisEmission.GetBurst(0);
+                debrisBurst.count = 10;
+                debris.emission.SetBurst(0, debrisBurst);
+
+                /*ParticleSystem debris3D = launchWallCollisionEffect.transform.Find("Particles/Debris, 3D").gameObject.GetComponent<ParticleSystem>();
+                ParticleSystem.EmissionModule debris3DEmission = debris3D.emission;
+                ParticleSystem.Burst debris3DBurst = debris3DEmission.GetBurst(0);
+                debris3DBurst.count = 3;
+                debris3D.emission.SetBurst(0, debris3DBurst);*/
+
+                launchWallCollisionEffect.GetComponent<EffectComponent>().soundName = "Play_golem_impact";
+
+                AddNewEffectDef(launchWallCollisionEffect, "Play_golem_impact");
+                AddNewEffectDef(launchWallCollisionLargeEffect, "Play_titanboss_impact");
+            };
         }
 
         private static GameObject CreateLaunchHitEffect(GameObject baseHitEffect, string name, Color ringColor, Color beamColor)
         {
             GameObject hitEffect = PrefabAPI.InstantiateClone(baseHitEffect, name);
+            hitEffect.AddComponent<NetworkIdentity>();
             GameObject.Destroy(hitEffect.GetComponent<ParticleSystem>());
             ParticleSystem.MainModule ring = hitEffect.transform.Find("Ring").gameObject.GetComponent<ParticleSystem>().main;
             ring.startColor = ringColor;
@@ -112,6 +181,7 @@ namespace HedgehogUtils
             beam.startColor = beamColor;
             GameObject.Destroy(hitEffect.transform.Find("Mesh").gameObject);
             GameObject.Destroy(hitEffect.transform.Find("Point Light").gameObject);
+            hitEffect.GetComponent<EffectComponent>().soundName = "Play_beetle_guard_impact";
             AddNewEffectDef(hitEffect, "");
             return hitEffect;
         }
@@ -147,7 +217,12 @@ namespace HedgehogUtils
 
             superFormAura = Assets.LoadAsyncedEffect("SonicSuperAura");
 
-            superFormWarning = Assets.LoadAsyncedEffect("SonicSuperWarning");
+            superFormWarning = Assets.LoadEffect("SonicSuperWarning");
+            superFormWarning.AddComponent<Miscellaneous.DestroyOnExitForm>();
+            //FormDefs haven't been initialized yet so I gotta wait before I can set the Form for the DestroyOnExitForm. That is done in SuperFormDef initialize
+            EffectComponent warningEffect = superFormWarning.GetComponent<EffectComponent>();
+            warningEffect.parentToReferencedTransform = true;
+
             AsyncOperationHandle<Material> asyncOutlineMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/LunarGolem/matLunarGolemShield.mat");
             asyncOutlineMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
             {

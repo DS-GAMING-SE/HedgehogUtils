@@ -16,7 +16,7 @@ namespace HedgehogUtils.Launch
     {
         public static GameObject launchProjectilePrefab;
         
-        public static string[] bodyBlacklist = { "BrotherBody", "BrotherGlassBody", "BrotherHurtBody", "FalseSonBossBody", "FalseSonBossBodyBrokenLunarShard", "FalseSonBossBodyLunarShard", "MagmaWormBody", "ElectricWormBody", "ShopkeeperBody", "MiniVoidRaidCrabBodyBase", "MiniVoidRaidCrabBodyPhase1", "MiniVoidRaidCrabBodyPhase2", "MiniVoidRaidCrabBodyPhase3", "ScorchlingBody" };
+        public static string[] bodyBlacklist = { "BrotherBody", "BrotherGlassBody", "BrotherHurtBody", "FalseSonBossBody", "FalseSonBossBodyBrokenLunarShard", "FalseSonBossBodyLunarShard", "MagmaWormBody", "ElectricWormBody", "ShopkeeperBody", "MiniVoidRaidCrabBodyBase", "MiniVoidRaidCrabBodyPhase1", "MiniVoidRaidCrabBodyPhase2", "MiniVoidRaidCrabBodyPhase3", "ScorchlingBody", "GravekeeperTrackingFireball" };
 
         public const float launchSpeed = 55f;
 
@@ -102,6 +102,8 @@ namespace HedgehogUtils.Launch
             hitBoxGroup.hitBoxes = new HitBox[] { hitBox };
 
             launchProjectilePrefab.gameObject.layer = LayerIndex.projectileWorldOnly.intVal;
+
+            launchProjectilePrefab.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.Extrapolate;
 
             PrefabAPI.RegisterNetworkPrefab(launchProjectilePrefab);
         }

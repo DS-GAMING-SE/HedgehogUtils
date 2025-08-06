@@ -7,12 +7,16 @@ using RoR2;
 using System.Security.Cryptography;
 using TMPro;
 using RoR2.Audio;
+using static RoR2.OverlapAttack;
+using System.Reflection;
+using EntityStates;
 
 namespace HedgehogUtils.Launch
 {
     public class LaunchProjectileController : NetworkBehaviour
     {   
         private const float attacksPerSecond = 10f;
+        private const float wallCollideDamageMultiplier = 0.5f;
         public bool crit;
         public float damage;
 
@@ -21,12 +25,13 @@ namespace HedgehogUtils.Launch
         public float duration;
         public const float baseDuration = 0.85f;
         private const float fadeDurationPercent = 0.8f;
-        private const float noImpactDuration = 0.4f;
+        private const float noImpactDuration = 0.2f;
         private const float hitStopDuration = 0.1f;
 
         protected OverlapAttack attack;
         private float attackTimer;
         public float age;
+        protected bool collidedWithWall;
 
         public CharacterBody attacker;
 
@@ -51,6 +56,9 @@ namespace HedgehogUtils.Launch
             rigidbody = base.GetComponent<Rigidbody>();
             collider = base.GetComponent<SphereCollider>();
             hitBoxGroup = base.GetComponent<HitBoxGroup>();
+
+            vehicle.enterVehicleAllowedCheck.AddCallback(new CallbackCheck<Interactability, CharacterBody>.CallbackDelegate(NoInteractingWithLaunchVehicle));
+            vehicle.exitVehicleAllowedCheck.AddCallback(new CallbackCheck<Interactability, CharacterBody>.CallbackDelegate(NoInteractingWithLaunchVehicle));
         }
 
         public void Start()
@@ -101,6 +109,18 @@ namespace HedgehogUtils.Launch
 
             age += Time.fixedDeltaTime;
 
+            Move();
+
+            AttemptAttack();
+
+            if (age > duration && NetworkServer.active)
+            {
+                Destroy(base.gameObject); // Gotta make sure there's time for client's buff to be removed before the launch ends so that their death after the launch won't be cancelled
+            }
+        }
+
+        public void Move()
+        {
             float finalSpeed = movementVector.magnitude;
             if (age > duration * fadeDurationPercent)
             {
@@ -114,7 +134,10 @@ namespace HedgehogUtils.Launch
 
             this.rigidbody.rotation = Quaternion.LookRotation(movementVector.normalized);
             this.rigidbody.velocity = age <= hitStopDuration ? Vector3.zero : movementVector.normalized * finalSpeed;
+        }
 
+        public void AttemptAttack()
+        {
             if (Util.HasEffectiveAuthority(base.gameObject))
             {
                 attackTimer += Time.fixedDeltaTime;
@@ -128,31 +151,18 @@ namespace HedgehogUtils.Launch
                     }*/
                 }
             }
-
-            if (age > duration && NetworkServer.active)
-            {
-                Destroy(base.gameObject);
-            }
         }
+
 
         public void OnDestroy()
         {
-            if (body)
+            if (NetworkServer.active)
             {
-                if (body.HasBuff(Buffs.launchedBuff) && NetworkServer.active)
+                if (body)
                 {
                     body.RemoveBuff(Buffs.launchedBuff);
-                }
-                if (body.healthComponent)
-                {
-                    if (body.healthComponent.alive)
-                    {
-                        if (vehicle.passengerInfo.bodyStateMachine && Util.HasEffectiveAuthority(vehicle.passengerBodyObject))
-                        {
-                            vehicle.passengerInfo.bodyStateMachine.SetNextStateToMain();
-                        }
-                    }
-                    else
+
+                    if (body.healthComponent && !body.healthComponent.alive)
                     {
                         CharacterDeathBehavior death = body.gameObject.GetComponent<CharacterDeathBehavior>();
                         if (death)
@@ -187,7 +197,7 @@ namespace HedgehogUtils.Launch
             attack.attackerFiltering = AttackerFiltering.NeverHitSelf;
             attack.pushAwayForce = 1500f;
             attack.hitEffectPrefab = crit ? Assets.launchCritHitEffect : Assets.launchHitEffect;
-            attack.impactSound = NetworkSoundEventCatalog.FindNetworkSoundEventIndex("Play_beetle_worker_impact");
+            attack.impactSound = NetworkSoundEventCatalog.FindNetworkSoundEventIndex("Play_beetle_guard_impact"); // I don't think this line actually works and I have no idea why
             attack.addIgnoredHitList(body.healthComponent);
         }
 
@@ -213,18 +223,46 @@ namespace HedgehogUtils.Launch
             }
         }
 
-        public void OnCollisionStay()
+        public void OnCollisionStay(Collision collisionInfo)
         {
-            if (!NetworkServer.active || !vehicleInit || (age < noImpactDuration)) { return; }
+            if (collidedWithWall || !NetworkServer.active || !vehicleInit || (age < noImpactDuration)) { return; }
+            if (collisionInfo.impulse.magnitude < 20f) {  return; }
 
+            EffectManager.SimpleEffect
+                (radius >= 5 ? Assets.launchWallCollisionLargeEffect : Assets.launchWallCollisionEffect,
+                collisionInfo.contacts[0].point,
+                Quaternion.FromToRotation(Vector3.up, Vector3.Lerp(collisionInfo.contacts[0].normal, collisionInfo.impulse.normalized, 0.5f)), 
+                true);
+
+            CollideWithWallDamage(collisionInfo.contacts[0].point);
+            collidedWithWall = true;
             Destroy(base.gameObject);
-
-            /*if (collision.gameObject.layer == LayerIndex.world.intVal || collision.gameObject.layer == LayerIndex.entityPrecise.intVal)
-            {
-                Destroy(base.gameObject);
-            }*/
         }
-        
+
+        protected void CollideWithWallDamage(Vector3 position)
+        {
+            HealthComponent healthComponent = body.healthComponent;
+            if (healthComponent && healthComponent.alive && !body.bodyFlags.HasFlag(CharacterBody.BodyFlags.IgnoreFallDamage))
+            {
+                DamageInfo damageInfo = new DamageInfo();
+                damageInfo.attacker = attacker.gameObject;
+                damageInfo.inflictor = attacker.gameObject;
+                damageInfo.force = Vector3.zero;
+                damageInfo.damage = damage * wallCollideDamageMultiplier;
+                damageInfo.crit = crit;
+                damageInfo.position = position;
+                damageInfo.procCoefficient = 0;
+                healthComponent.TakeDamage(damageInfo);
+                GlobalEventManager.instance.OnHitEnemy(damageInfo, healthComponent.gameObject);
+                GlobalEventManager.instance.OnHitAll(damageInfo, healthComponent.gameObject);
+            }
+        }
+
+        private static void NoInteractingWithLaunchVehicle(CharacterBody callback, ref Interactability? resultOverride)
+        {
+            resultOverride = new Interactability?(Interactability.Disabled);
+        }
+
         public override bool OnSerialize(NetworkWriter writer, bool initialState)
         {
             if (initialState)

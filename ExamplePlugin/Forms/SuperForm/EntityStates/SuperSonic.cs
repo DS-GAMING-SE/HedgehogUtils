@@ -21,7 +21,10 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
         private TemporaryOverlayInstance temporaryOverlay;
 
         private GameObject superAura;
-        private GameObject warning;
+
+        private bool warningApplied;
+        protected float superFormDuration;
+
         private LoopSoundManager.SoundLoopPtr superLoop;
 
         private static float cameraDistance = -15;
@@ -35,17 +38,6 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
         };
         private CameraTargetParams.CameraParamsOverrideHandle camOverrideHandle;
 
-        public static SkillDef melee;
-
-        public static SkillDef sonicBoom;
-        public static SkillDef parry;
-        public static SkillDef idwAttack;
-        public static SkillDef emptyParry;
-
-        public static SkillDef boost;
-
-        public static SkillDef grandSlam;
-
         // Character specific Super compat
         private Boost.BoostLogic boostLogic;
         private VoidSurvivorController viend;
@@ -56,7 +48,7 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
             chest = base.FindModelChild("Chest");
             if (chest)
             {
-                this.superAura = GameObject.Instantiate<GameObject>(Assets.superFormAura, base.FindModelChild("Chest"));
+                this.superAura = GameObject.Instantiate<GameObject>(Assets.superFormAura, chest);
             }
 
             boostLogic = base.GetComponent<HedgehogUtils.Boost.BoostLogic>();
@@ -86,6 +78,11 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
                 RoR2.Util.CleanseBody(base.characterBody, true, false, true, true, true, false);
                 viend = base.GetComponent<VoidSurvivorController>();
                 Heal(1);
+
+                if (characterBody.GetTimedBuffTotalDurationForIndex(Buffs.superFormBuff.buffIndex, out float duration))
+                {
+                    superFormDuration = duration;
+                }
             }
 
             Flash(1);
@@ -107,10 +104,6 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
                 Destroy(this.superAura);
             }
             // Aura had despawning problem because all assets loaded are automatically given a component that makes them go away after 12 seconds
-            if (this.warning)
-            {
-                Destroy(this.warning);
-            }
 
             if (viend && NetworkServer.active)
             {
@@ -135,21 +128,29 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
             {
                 this.superAura.SetActive(this.characterModel.invisibilityCount <= 0);
             }
-            if (base.fixedAge >= StaticValues.superSonicDuration - StaticValues.superSonicWarningDuration && !warning && chest)
+            if (NetworkServer.active && base.fixedAge >= superFormDuration - StaticValues.superSonicWarningDuration && !warningApplied && chest)
             {
-                this.warning = GameObject.Instantiate<GameObject>(Assets.superFormWarning, chest);
+                warningApplied = true;
+                SpawnWarningEffect();
             }
         }
 
-        public void ParryActivated()
+        protected virtual void SpawnWarningEffect()
         {
-            base.skillLocator.secondary.SetSkillOverride(this, idwAttack, GenericSkill.SkillOverridePriority.Contextual);
-        }
+            EffectData data = new EffectData
+            {
+                origin = chest.position
+            };
+            if (base.GetModelTransform())
+            {
+                ChildLocator child = base.GetModelTransform().GetComponent<ChildLocator>();
+                if (child)
+                {
+                    data.SetChildLocatorTransformReference(base.gameObject, child.FindChildIndex(chest));
 
-        public void IDWAttackActivated()
-        {
-            base.skillLocator.secondary.UnsetSkillOverride(this, idwAttack, GenericSkill.SkillOverridePriority.Contextual);
-            base.skillLocator.secondary.SetSkillOverride(this, emptyParry, GenericSkill.SkillOverridePriority.Contextual);
+                    EffectManager.SpawnEffect(Assets.superFormWarning, data, true);
+                }
+            }
         }
 
         private void FireBlastAttack()

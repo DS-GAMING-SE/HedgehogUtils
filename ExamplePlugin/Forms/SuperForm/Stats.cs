@@ -22,6 +22,7 @@ namespace HedgehogUtils.Forms.SuperForm
                 stats.attackSpeedMultAdd += StaticValues.superSonicAttackSpeed;
                 stats.damageMultAdd += StaticValues.superSonicBaseDamage;
                 stats.jumpPowerMultAdd += StaticValues.superSonicJumpHeight;
+                stats.armorAdd += StaticValues.superSonicArmor;
             }
             #endregion
         }
