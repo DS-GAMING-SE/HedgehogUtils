@@ -83,7 +83,7 @@ namespace HedgehogUtils.Forms
             Array.Resize(ref formToItemTracker, FormCatalog.formsCatalog.Length);
             foreach (FormDef form in FormCatalog.formsCatalog)
             {
-                if (form.requiresItems)
+                if (Forms.formToHandler.TryGetValue(form, out FormHandler handler) && form.requiresItems)
                 {
                     CreateTrackerForForm(form);
                 }
