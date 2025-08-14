@@ -2,7 +2,7 @@
     "name": "HedgehogUtils",
     "version_number": "1.0.0",
     "website_url": "https://github.com/DS-GAMING-SE/HedgehogUtils",
-    "description": "Adds Sonic the Hedgehog as a playable survivor. Now with mod support.",
+    "description": "Adds Chaos Emeralds, super forms, and other mechanics designed for other mods to use.",
     "dependencies": [
 	"bbepis-BepInExPack-5.4.1905",
     "RiskofThunder-HookGenPatcher-1.2.4",

@@ -41,8 +41,7 @@ namespace HedgehogUtils.Launch
                 if ((damageInfo.damageType.HasModdedDamageType(DamageTypes.launch)
                     || (damageInfo.damageType.HasModdedDamageType(DamageTypes.launchOnKill) && !self.alive))
                     && !damageInfo.rejected
-                    && damageInfo.procCoefficient > 0.3f
-                    && !self.body.bodyFlags.HasFlag(CharacterBody.BodyFlags.IgnoreKnockback))
+                    && damageInfo.procCoefficient > 0.3f)
                 {
                     Rigidbody rigidbody = self.gameObject.GetComponent<Rigidbody>();
                     if (rigidbody && rigidbody.mass <= damageInfo.force.magnitude)
@@ -59,7 +58,7 @@ namespace HedgehogUtils.Launch
                         }
                         launchDirection = LaunchManager.AngleTowardsEnemies(launchDirection, self.transform.position, self.gameObject, attackerBody.teamComponent.teamIndex);
                         launchDirection = launchDirection.normalized;
-                        LaunchManager.Launch(self.body, attackerBody, launchDirection, damageInfo.damage, damageInfo.crit, LaunchManager.launchSpeed, damageInfo.procCoefficient);
+                        LaunchManager.Launch(self.body, attackerBody, launchDirection, LaunchManager.launchSpeed, damageInfo.damage, damageInfo.damage * 0.5f, damageInfo.crit, 1f, LaunchManager.baseDuration * damageInfo.procCoefficient);
                     }
                 }
             }

@@ -56,7 +56,7 @@ namespace HedgehogUtils
         #region Launch
         public static ConfigEntry<bool> LaunchBodyBlacklist()
         {
-            return HedgehogUtilsPlugin.instance.Config.Bind<bool>("Launch", "Use Body Blacklist", true, "Determines whether certain characters, such as final bosses and worms, are impossible to be launched. Host's config takes priority. Default is true.");
+            return HedgehogUtilsPlugin.instance.Config.Bind<bool>("Launch", "Use Body Blacklist", true, "Determines whether certain characters, such as final bosses and worms, are impossible to be launched. Regardless of what this value is set to, launching may fail for other reasons, such as the target having knockback immunity or being too high mass. Host's config takes priority. Default is true.");
         }
         #endregion
         #region Boost

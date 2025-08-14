@@ -20,9 +20,12 @@ namespace HedgehogUtils.Launch
 
         public const float launchSpeed = 55f;
 
-        public static void Launch(CharacterBody target, CharacterBody attacker, Vector3 direction, float damage, bool crit, float speed, float procCoefficient)
+        public const float baseDuration = 0.85f;
+
+        public static void Launch(CharacterBody target, CharacterBody attacker, Vector3 direction, float speed, float damage, float wallCollisionDamage, bool crit, float procCoefficient, float duration)
         {
             if (Config.LaunchBodyBlacklist().Value && bodyBlacklist.Contains(BodyCatalog.GetBodyName(target.bodyIndex))) { return; }
+            if (target.bodyFlags.HasFlag(CharacterBody.BodyFlags.IgnoreKnockback)) { return; }
             EntityStateMachine bodyState = EntityStateMachine.FindByCustomName(target.gameObject, "Body");
             if (bodyState && !bodyState.CanInterruptState(InterruptPriority.Vehicle)) { return; }
 
@@ -32,7 +35,7 @@ namespace HedgehogUtils.Launch
                 {
                     if (existingController.age > 0.3f)
                     {
-                        existingController.Restart(attacker, direction, damage, crit, speed, procCoefficient);
+                        existingController.Restart(attacker, direction, speed, damage, wallCollisionDamage, crit, procCoefficient, duration);
                     }
                     return;
                 }
@@ -40,7 +43,7 @@ namespace HedgehogUtils.Launch
 
             GameObject launchProjectile = UnityEngine.GameObject.Instantiate(launchProjectilePrefab, target.corePosition, Quaternion.LookRotation(direction));
             LaunchProjectileController launchController = launchProjectile.GetComponent<LaunchProjectileController>();
-            launchController.Restart(attacker, direction, damage, crit, speed, procCoefficient);
+            launchController.Restart(attacker, direction, speed, damage, wallCollisionDamage, crit, procCoefficient, duration);
             VehicleSeat vehicle = launchProjectile.GetComponent<VehicleSeat>();
             vehicle.AssignPassenger(target.gameObject);
             target.AddBuff(Buffs.launchedBuff);

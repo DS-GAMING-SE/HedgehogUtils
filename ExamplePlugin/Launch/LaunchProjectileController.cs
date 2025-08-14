@@ -16,14 +16,14 @@ namespace HedgehogUtils.Launch
     public class LaunchProjectileController : NetworkBehaviour
     {   
         private const float attacksPerSecond = 10f;
-        private const float wallCollideDamageMultiplier = 0.5f;
+        public float wallCollisionDamage = 0.5f;
         public bool crit;
         public float damage;
+        public float procCoefficient;
 
         public Vector3 movementVector;
 
         public float duration;
-        public const float baseDuration = 0.85f;
         private const float fadeDurationPercent = 0.8f;
         private const float noImpactDuration = 0.2f;
         private const float hitStopDuration = 0.1f;
@@ -188,7 +188,7 @@ namespace HedgehogUtils.Launch
         {
             attack = new OverlapAttack();
             ResizeHitBox(2f);
-            attack.procCoefficient = 1;
+            attack.procCoefficient = procCoefficient;
             attack.attacker = attacker.gameObject;
             attack.isCrit = crit;
             attack.damage = damage;
@@ -209,14 +209,16 @@ namespace HedgehogUtils.Launch
             attack.hitBoxGroup = hitBoxGroup;
         }
 
-        public void Restart(CharacterBody attacker, Vector3 direction, float damage, bool crit, float speed, float procCoefficient)
+        public void Restart(CharacterBody attacker, Vector3 direction, float speed, float damage, float wallCollisionDamage, bool crit, float procCoefficient, float duration)
         {
             this.age = 0;
             this.attacker = attacker;
             this.movementVector = direction * speed;
             this.damage = damage;
+            this.wallCollisionDamage = wallCollisionDamage;
             this.crit = crit;
-            this.duration = baseDuration * procCoefficient;
+            this.procCoefficient = procCoefficient;
+            this.duration = duration;
             if (attacker.characterMotor)
             {
                 Physics.IgnoreCollision(collider, attacker.characterMotor.capsuleCollider, true);
@@ -242,13 +244,13 @@ namespace HedgehogUtils.Launch
         protected void CollideWithWallDamage(Vector3 position)
         {
             HealthComponent healthComponent = body.healthComponent;
-            if (healthComponent && healthComponent.alive && !body.bodyFlags.HasFlag(CharacterBody.BodyFlags.IgnoreFallDamage))
+            if (healthComponent && healthComponent.alive)
             {
                 DamageInfo damageInfo = new DamageInfo();
                 damageInfo.attacker = attacker.gameObject;
                 damageInfo.inflictor = attacker.gameObject;
                 damageInfo.force = Vector3.zero;
-                damageInfo.damage = damage * wallCollideDamageMultiplier;
+                damageInfo.damage = wallCollisionDamage;
                 damageInfo.crit = crit;
                 damageInfo.position = position;
                 damageInfo.procCoefficient = 0;
