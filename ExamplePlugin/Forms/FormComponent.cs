@@ -117,7 +117,8 @@ namespace HedgehogUtils.Forms
                 {
                     targetedForm = form;
                     
-                    if (targetedForm != activeForm && Forms.formToHandler.TryGetValue(targetedForm, out FormHandler handler))
+                    if (targetedForm != activeForm && Forms.formToHandler.TryGetValue(targetedForm, out FormHandler handler) &&
+                        superSonicState && (superSonicState.state is not FormStateBase || ((FormStateBase)(superSonicState.state)).CanBeOverridden()))
                     {
                         if (handler.CanTransform(this))
                         {

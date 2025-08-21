@@ -37,14 +37,19 @@ namespace HedgehogUtils.Launch
 
         private void FixedUpdate()
         {
+            if (!body)
+            {
+                Destroy(this);
+            }
             if (die && !body.HasBuff(Buffs.launchedBuff))
             {
                 CharacterDeathBehavior death = body.gameObject.GetComponent<CharacterDeathBehavior>();
+                Destroy(this);
                 if (death)
                 {
                     death.OnDeath();
                 }
-                Destroy(this);
+                die = false;
             }
         }
 

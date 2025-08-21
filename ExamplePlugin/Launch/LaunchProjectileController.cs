@@ -1,15 +1,17 @@
-﻿using System;
+﻿using EntityStates;
+using RoR2;
+using RoR2.Audio;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
-using RoR2;
-using System.Security.Cryptography;
-using TMPro;
-using RoR2.Audio;
+using UnityEngine.Networking.Types;
 using static RoR2.OverlapAttack;
-using System.Reflection;
-using EntityStates;
 
 namespace HedgehogUtils.Launch
 {
@@ -17,13 +19,23 @@ namespace HedgehogUtils.Launch
     {   
         private const float attacksPerSecond = 10f;
         public float wallCollisionDamage = 0.5f;
-        public bool crit;
+
         public float damage;
         public float procCoefficient;
+        
+        [SyncVar]
+        public bool crit;
 
+        public CharacterBody attacker;
+        //[SyncVar]
+        //private NetworkInstanceId attackerID;
+        
+        [SyncVar]
         public Vector3 movementVector;
-
+        
+        [SyncVar]
         public float duration;
+
         private const float fadeDurationPercent = 0.8f;
         private const float noImpactDuration = 0.2f;
         private const float hitStopDuration = 0.1f;
@@ -32,8 +44,6 @@ namespace HedgehogUtils.Launch
         private float attackTimer;
         public float age;
         protected bool collidedWithWall;
-
-        public CharacterBody attacker;
 
         protected GameObject vfxObject;
         protected Renderer vfxRenderer;
@@ -88,6 +98,7 @@ namespace HedgehogUtils.Launch
 
         protected virtual void VFXAura()
         {
+            if (vfxObject) { Destroy(vfxObject); }
             vfxObject = UnityEngine.Object.Instantiate(crit ? Assets.launchCritAuraEffect : Assets.launchAuraEffect, base.transform);
             vfxObject.transform.localScale *= radius;
             vfxRenderer = vfxObject.transform.Find("Aura").GetComponent<Renderer>();
@@ -223,6 +234,7 @@ namespace HedgehogUtils.Launch
             {
                 Physics.IgnoreCollision(collider, attacker.characterMotor.capsuleCollider, true);
             }
+            vehicleInit = false;
         }
 
         public void OnCollisionStay(Collision collisionInfo)
@@ -264,18 +276,81 @@ namespace HedgehogUtils.Launch
         {
             resultOverride = new Interactability?(Interactability.Disabled);
         }
+        // I don't think writing this kinda shit maunally is how you're supposed to do networking
+        #region Networking
+        /*public bool Networkcrit
+        {
+            get { return crit; }
+            [param: In]
+            set
+            {
+                if (NetworkServer.localClientActive && !base.syncVarHookGuard)
+                {
+                    base.syncVarHookGuard = true;
+                    crit = value;
+                    base.syncVarHookGuard = false;
+                }
+                base.SetSyncVar<bool>(value, ref crit, 1U);
+            }
+        }
+        public Vector3 NetworkmovementVector
+        {
+            get { return movementVector; }
+            [param: In]
+            set
+            {
+                if (NetworkServer.localClientActive && !base.syncVarHookGuard)
+                {
+                    base.syncVarHookGuard = true;
+                    movementVector = value;
+                    base.syncVarHookGuard = false;
+                }
+                base.SetSyncVar<Vector3>(value, ref movementVector, 2U);
+            }
+        }
+        public NetworkInstanceId NetworkattackerID
+        {
+            get { return attackerID; }
+            [param: In]
+            set
+            {
+                if (NetworkServer.localClientActive && !base.syncVarHookGuard)
+                {
+                    base.syncVarHookGuard = true;
+                    attackerID = value;
+                    base.syncVarHookGuard = false;
+                }
+                base.SetSyncVar<NetworkInstanceId>(value, ref attackerID, 4U);
+            }
+        }
+        public float Networkduration
+        {
+            get { return duration; }
+            [param: In]
+            set
+            {
+                if (NetworkServer.localClientActive && !base.syncVarHookGuard)
+                {
+                    base.syncVarHookGuard = true;
+                    duration = value;
+                    base.syncVarHookGuard = false;
+                }
+                base.SetSyncVar<float>(value, ref duration, 8U);
+            }
+        }*/
 
         public override bool OnSerialize(NetworkWriter writer, bool initialState)
         {
             if (initialState)
             {
                 writer.Write(crit);
-                writer.Write(damage);
                 writer.Write(movementVector);
                 writer.Write(attacker.netId);
+                writer.Write(duration);
             }
             bool flag = false;
-            /*if ((base.syncVarDirtyBits & 1U) != 0U)
+            /*
+            if ((base.syncVarDirtyBits & 1U) != 0U)
             {
                 if (!flag)
                 {
@@ -291,7 +366,7 @@ namespace HedgehogUtils.Launch
                     writer.WritePackedUInt32(base.syncVarDirtyBits);
                     flag = true;
                 }
-                writer.Write(damage);
+                writer.Write(movementVector);
             }
             if ((base.syncVarDirtyBits & 4U) != 0U)
             {
@@ -300,7 +375,7 @@ namespace HedgehogUtils.Launch
                     writer.WritePackedUInt32(base.syncVarDirtyBits);
                     flag = true;
                 }
-                writer.Write(movementVector);
+                writer.Write(attacker.netId);
             }
             if ((base.syncVarDirtyBits & 8U) != 0U)
             {
@@ -309,7 +384,7 @@ namespace HedgehogUtils.Launch
                     writer.WritePackedUInt32(base.syncVarDirtyBits);
                     flag = true;
                 }
-                writer.Write(attacker.netId);
+                writer.Write(duration);
             }*/
             return flag;
         }
@@ -319,9 +394,9 @@ namespace HedgehogUtils.Launch
             if (initialState)
             {
                 this.crit = reader.ReadBoolean();
-                this.damage = reader.ReadSingle();
                 this.movementVector = reader.ReadVector3();
                 this.attacker = reader.ReadNetworkIdentity().gameObject.GetComponent<CharacterBody>();
+                this.duration = reader.ReadSingle();
             }
             /*int num = (int)reader.ReadPackedUInt32();
             if ((num & 1U) != 0U)
@@ -330,16 +405,17 @@ namespace HedgehogUtils.Launch
             }
             if ((num & 2U) != 0U)
             {
-                this.damage = reader.ReadSingle();
+                this.movementVector = reader.ReadVector3();
             }
             if ((num & 4U) != 0U)
             {
-                this.movementVector = reader.ReadVector3();
+                this.attacker = reader.ReadNetworkIdentity().gameObject.GetComponent<CharacterBody>();
             }
             if ((num & 8U) != 0U)
             {
-                this.attacker = reader.ReadNetworkIdentity().gameObject.GetComponent<CharacterBody>();
+                this.duration = reader.ReadSingle();
             }*/
         }
+        #endregion
     }
 }

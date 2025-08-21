@@ -158,6 +158,11 @@ namespace HedgehogUtils.Forms.EntityStates
             }
         }
 
+        public virtual bool CanBeOverridden()
+        {
+            return true;
+        }
+
         public override void OnSerialize(NetworkWriter writer)
         {
             base.OnSerialize(writer);

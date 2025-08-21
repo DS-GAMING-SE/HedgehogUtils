@@ -36,23 +36,18 @@ namespace HedgehogUtils.Launch
         private static void Launch(On.RoR2.HealthComponent.orig_TakeDamage orig, HealthComponent self, DamageInfo damageInfo)
         {
             orig(self, damageInfo);
-            if (damageInfo.attacker && damageInfo.attacker.TryGetComponent<CharacterBody>(out CharacterBody attackerBody))
+            if ((damageInfo.damageType.HasModdedDamageType(DamageTypes.launch)
+                    || (damageInfo.damageType.HasModdedDamageType(DamageTypes.launchOnKill) && !self.alive)))
             {
-                if ((damageInfo.damageType.HasModdedDamageType(DamageTypes.launch)
-                    || (damageInfo.damageType.HasModdedDamageType(DamageTypes.launchOnKill) && !self.alive))
-                    && !damageInfo.rejected
-                    && damageInfo.procCoefficient > 0.3f)
+                if (damageInfo.attacker && damageInfo.attacker.TryGetComponent<CharacterBody>(out CharacterBody attackerBody))
                 {
-                    Rigidbody rigidbody = self.gameObject.GetComponent<Rigidbody>();
-                    if (rigidbody && rigidbody.mass <= damageInfo.force.magnitude)
+                    if (LaunchManager.AttackCanLaunch(self, attackerBody, damageInfo))
                     {
-                        // Launch is happening
                         Vector3 launchDirection = damageInfo.force.normalized;
                         if (self.body && self.body.characterMotor)
                         {
                             if (self.body.characterMotor.isGrounded)
                             {
-                                if (Vector3.Dot(launchDirection, self.body.characterMotor.estimatedGroundNormal) < -0.6f) { return; }
                                 launchDirection = LaunchManager.AngleAwayFromGround(launchDirection, self.body.characterMotor.estimatedGroundNormal);
                             }
                         }

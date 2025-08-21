@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using EntityStates;
+﻿using EntityStates;
 using R2API;
 using RoR2;
 using RoR2.Projectile;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
+using static Rewired.ComponentControls.Effects.RotateAroundAxis;
 using static UnityEngine.ParticleSystem.PlaybackState;
 
 namespace HedgehogUtils.Launch
@@ -16,7 +17,7 @@ namespace HedgehogUtils.Launch
     {
         public static GameObject launchProjectilePrefab;
         
-        public static string[] bodyBlacklist = { "BrotherBody", "BrotherGlassBody", "BrotherHurtBody", "FalseSonBossBody", "FalseSonBossBodyBrokenLunarShard", "FalseSonBossBodyLunarShard", "MagmaWormBody", "ElectricWormBody", "ShopkeeperBody", "MiniVoidRaidCrabBodyBase", "MiniVoidRaidCrabBodyPhase1", "MiniVoidRaidCrabBodyPhase2", "MiniVoidRaidCrabBodyPhase3", "ScorchlingBody", "GravekeeperTrackingFireball" };
+        public static string[] bodyBlacklist = { "BrotherBody", "BrotherGlassBody", "BrotherHurtBody", "FalseSonBossBody", "FalseSonBossBodyBrokenLunarShard", "FalseSonBossBodyLunarShard", "MagmaWormBody", "ElectricWormBody", "ShopkeeperBody", "MiniVoidRaidCrabBodyBase", "MiniVoidRaidCrabBodyPhase1", "MiniVoidRaidCrabBodyPhase2", "MiniVoidRaidCrabBodyPhase3", "ScorchlingBody", "GravekeeperTrackingFireball", "DeltaConstructBody" };
 
         public const float launchSpeed = 55f;
 
@@ -24,21 +25,12 @@ namespace HedgehogUtils.Launch
 
         public static void Launch(CharacterBody target, CharacterBody attacker, Vector3 direction, float speed, float damage, float wallCollisionDamage, bool crit, float procCoefficient, float duration)
         {
-            if (Config.LaunchBodyBlacklist().Value && bodyBlacklist.Contains(BodyCatalog.GetBodyName(target.bodyIndex))) { return; }
-            if (target.bodyFlags.HasFlag(CharacterBody.BodyFlags.IgnoreKnockback)) { return; }
-            EntityStateMachine bodyState = EntityStateMachine.FindByCustomName(target.gameObject, "Body");
-            if (bodyState && !bodyState.CanInterruptState(InterruptPriority.Vehicle)) { return; }
+            if (!TargetCanBeLaunched(target, out LaunchProjectileController currentLaunchController)) { return; }
 
-            if (target.HasBuff(Buffs.launchedBuff))
+            if (currentLaunchController)
             {
-                if (target.currentVehicle && target.currentVehicle.gameObject.TryGetComponent<LaunchProjectileController>(out LaunchProjectileController existingController))
-                {
-                    if (existingController.age > 0.3f)
-                    {
-                        existingController.Restart(attacker, direction, speed, damage, wallCollisionDamage, crit, procCoefficient, duration);
-                    }
-                    return;
-                }
+                currentLaunchController.Restart(attacker, direction, speed, damage, wallCollisionDamage, crit, procCoefficient, duration);
+                return;
             }
 
             GameObject launchProjectile = UnityEngine.GameObject.Instantiate(launchProjectilePrefab, target.corePosition, Quaternion.LookRotation(direction));
@@ -80,6 +72,64 @@ namespace HedgehogUtils.Launch
                 return (hit.transform.position - (target.transform.position) + new Vector3(0, 0.5f, 0)).normalized;
             }
             return direction;
+        }
+
+        public static bool TargetCanBeLaunched(CharacterBody target)
+        {
+            return TargetCanBeLaunched(target, out _);
+        }
+
+        public static bool TargetCanBeLaunched(CharacterBody target, out LaunchProjectileController currentLaunchController)
+        {
+            currentLaunchController = null;
+            if (!(Config.LaunchBodyBlacklist().Value && bodyBlacklist.Contains(BodyCatalog.GetBodyName(target.bodyIndex)) || target.bodyFlags.HasFlag(CharacterBody.BodyFlags.IgnoreKnockback)) )
+            {
+                EntityStateMachine bodyState = EntityStateMachine.FindByCustomName(target.gameObject, "Body");
+                if (bodyState && bodyState.CanInterruptState(InterruptPriority.Vehicle))
+                {
+                    if (target.HasBuff(Buffs.launchedBuff))
+                    {
+                        if (target.currentVehicle && target.currentVehicle.gameObject.TryGetComponent<LaunchProjectileController>(out LaunchProjectileController existingController))
+                        {
+                            currentLaunchController = existingController;
+                            return existingController.age > 0.3f;
+                        }
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static bool AttackCanLaunch(HealthComponent target, CharacterBody attacker, DamageInfo damageInfo)
+        {
+            return AttackCanLaunch(target.body, attacker, damageInfo.rejected, damageInfo.procCoefficient, damageInfo.force);
+        }
+
+        public static bool AttackCanLaunch(CharacterBody target, CharacterBody attacker, bool targetInvincible, float procCoefficient, Vector3 force)
+        {
+            if (target && attacker)
+            {
+                if (!targetInvincible && procCoefficient > 0.3f)
+                {
+                    Rigidbody rigidbody = target.gameObject.GetComponent<Rigidbody>();
+                    if (rigidbody && rigidbody.mass <= force.magnitude)
+                    {
+                        if (target.characterMotor && target.characterMotor.isGrounded)
+                        {
+                            return ((Vector3.Dot(force.normalized, target.characterMotor.estimatedGroundNormal) >= -0.6f));
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         public static void Initialize()
