@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1279604248
+CRC: 212206444
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 6d89f00024cd2e5f4e0abfde9f2ebb0d
+    Hash: df0500d8e09defa8bd206ea270db496c
   TypeTreeHash:
     serializedVersion: 2
     Hash: 04e687d6d53ab5e626d484fdecfa4f64
@@ -68,75 +68,74 @@ Assets:
 - Assets/AssetBundle/Emeralds/Materials/matCyan.mat
 - Assets/AssetBundle/VFX/Materials/Boost/matPowerBoost.mat
 - Assets/AssetBundle/VFX/Textures/texSparkleGold.png
+- Assets/AssetBundle/Emeralds/Icons/texGrayEmeraldIcon.png
 - Assets/AssetBundle/Emeralds/Materials/matRing.mat
-- Assets/AssetBundle/VFX/Materials/Super Form/FlameRoundYellowParticle.mat
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperWarning.prefab
+- Assets/AssetBundle/VFX/Materials/Super Form/FlameRoundYellowParticle.mat
+- Assets/AssetBundle/Emeralds/Icons/texRedEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/texSpark.png
-- Assets/AssetBundle/Emeralds/Icons/texCyanEmeraldIcon.png
+- Assets/AssetBundle/Emeralds/Prefabs/CyanEmerald.prefab
 - Assets/AssetBundle/BoostMeter/texBoostMeter.png
 - Assets/AssetBundle/BoostMeter/texBoostMeter2.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matFistSwing.mat
-- Assets/AssetBundle/Emeralds/Materials/matYellow.mat
 - Assets/AssetBundle/VFX/Materials/Boost/matPowerBoostFlash.mat
+- Assets/AssetBundle/VFX/Materials/Super Form/matTrail1.mat
 - Assets/AssetBundle/VFX/Textures/texGradient.png
-- Assets/AssetBundle/Emeralds/Prefabs/RedEmerald.prefab
+- Assets/AssetBundle/Emeralds/Materials/matYellow.mat
 - Assets/AssetBundle/VFX/Prefabs/Boost/SonicPowerBoostAura.prefab
-- Assets/AssetBundle/Emeralds/Icons/texBlueEmeraldIcon.png
+- Assets/AssetBundle/VFX/Prefabs/Super Form/SonicChaosEmeraldSwirl.prefab
 - Assets/AssetBundle/VFX/Materials/Super Form/matAnime.mat
 - Assets/AssetBundle/VFX/Materials/Super Form/matSparkleGold.mat
-- Assets/AssetBundle/VFX/Materials/Super Form/matTrail1.mat
+- Assets/AssetBundle/Emeralds/Icons/texPurpleEmeraldIcon.png
+- Assets/AssetBundle/Emeralds/Prefabs/PurpleEmerald.prefab
 - Assets/AssetBundle/Emeralds/Ring.fbx
-- Assets/AssetBundle/Emeralds/Emerald2.fbx
+- Assets/AssetBundle/Emeralds/Prefabs/BlueEmerald.prefab
 - Assets/AssetBundle/VFX/Prefabs/Boost/SonicPowerBoostFlash.prefab
-- Assets/AssetBundle/VFX/Prefabs/Super Form/SonicChaosEmeraldSwirl.prefab
-- Assets/AssetBundle/Emeralds/shaderEmerald.shader
+- Assets/AssetBundle/Emeralds/shaderEmerald.shadergraph
+- Assets/AssetBundle/Emeralds/Icons/texYellowEmeraldIcon.png
 - Assets/AssetBundle/Emeralds/Prefabs/GreenEmerald.prefab
 - Assets/AssetBundle/PrefabBase/LaunchProjectile.prefab
-- Assets/AssetBundle/Emeralds/Prefabs/CyanEmerald.prefab
 - Assets/AssetBundle/VFX/Shaders/shaderBoost.shadergraph
-- Assets/AssetBundle/Emeralds/Prefabs/GrayEmerald.prefab
-- Assets/AssetBundle/Emeralds/Icons/texPurpleEmeraldIcon.png
+- Assets/AssetBundle/Emeralds/Prefabs/RedEmerald.prefab
 - Assets/AssetBundle/VFX/Materials/Super Form/matFlash.mat
-- Assets/AssetBundle/Emeralds/Prefabs/YellowEmerald.prefab
+- Assets/AssetBundle/Emeralds/texEmerald.png
+- Assets/AssetBundle/Emeralds/Icons/texBlueEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/texAnimeShape.png
-- Assets/AssetBundle/Emeralds/Prefabs/BlueEmerald.prefab
+- Assets/AssetBundle/VFX/Textures/texSlash.png
 - Assets/AssetBundle/BoostMeter/texBoostMeterInfinite.png
 - Assets/AssetBundle/Emeralds/Icons/texArtifactChaosEmeraldEnabled.png
-- Assets/AssetBundle/Emeralds/Icons/texRedEmeraldIcon.png
-- Assets/AssetBundle/Emeralds/Prefabs/PurpleEmerald.prefab
-- Assets/AssetBundle/BoostMeter/texBoostMeterSmall.png
 - Assets/AssetBundle/PrefabBase/SuperSonicHandler.prefab
 - Assets/AssetBundle/PrefabBase/ChaosEmeraldInteractable.prefab
+- Assets/AssetBundle/BoostMeter/texBoostMeterSmall.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matRainbowLensFlare.mat
 - Assets/AssetBundle/Emeralds/Materials/matGray.mat
 - Assets/AssetBundle/VFX/Meshes/SwordSwingMesh.fbx
+- Assets/AssetBundle/Emeralds/Prefabs/GrayEmerald.prefab
 - Assets/AssetBundle/VFX/Materials/Super Form/matSpark.mat
 - Assets/AssetBundle/Emeralds/Icons/texEmeraldInteractableIcon.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matSwingShadow.mat
-- Assets/AssetBundle/VFX/Textures/texSlash.png
-- Assets/AssetBundle/Emeralds/Icons/texGrayEmeraldIcon.png
-- Assets/AssetBundle/Emeralds/texEmeraldNormal.png
+- Assets/AssetBundle/Emeralds/EmeraldOld.fbx
 - Assets/AssetBundle/Emeralds/Icons/texBgEmerald.png
 - Assets/AssetBundle/Emeralds/Materials/matBlue.mat
-- Assets/AssetBundle/VFX/Materials/Super Form/matSparkleBlue.mat
+- Assets/AssetBundle/Emeralds/Icons/texGreenEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/texSparkleBlue.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matRingFlash.mat
+- Assets/AssetBundle/VFX/Materials/Super Form/matSparkleBlue.mat
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperAura.prefab
-- Assets/AssetBundle/Emeralds/texEmerald.png
-- Assets/AssetBundle/Emeralds/Icons/texYellowEmeraldIcon.png
 - Assets/AssetBundle/Emeralds/Materials/matRed.mat
-- Assets/AssetBundle/Emeralds/Icons/texGreenEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/texFistSwing.png
 - Assets/AssetBundle/VFX/Textures/texTrail1.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matSlash.mat
 - Assets/AssetBundle/VFX/Textures/texSwingEffect.png
 - Assets/AssetBundle/BoostMeter/BoostMeter.prefab
-- Assets/AssetBundle/Emeralds/Materials/matPurple.mat
+- Assets/AssetBundle/Emeralds/Icons/texCyanEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/FlameRoundGreyParticleSheet.tif
+- Assets/AssetBundle/Emeralds/Materials/matPurple.mat
 - Assets/AssetBundle/VFX/Textures/texRainbowLensFlare 1.png
 - Assets/AssetBundle/Emeralds/Animations/animRing.controller
 - Assets/AssetBundle/VFX/Meshes/Boost.fbx
 - Assets/AssetBundle/Emeralds/Icons/texSuperBuffIcon.png
 - Assets/AssetBundle/Emeralds/Materials/matGreen.mat
 - Assets/AssetBundle/VFX/Textures/texFlash.png
+- Assets/AssetBundle/Emeralds/Prefabs/YellowEmerald.prefab
 Dependencies: []
