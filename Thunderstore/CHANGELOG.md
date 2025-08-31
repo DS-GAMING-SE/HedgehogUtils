@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.1.0
+
+ - (Assets) Redone the design for the Chaos Emeralds. The emeralds have a new model, texture, shader, item icons, and artifact icons. The new Chaos Emerald model and shader look much better than the old one
+
+ - (Internal) Moved the material for the Chaos Emerald interactable's ring into the Assets file so it can be reused easily
+ - (Internal) Cleaned up slightly redundant InstantiateEntityState related code in BoostSkillDef
+ - (Internal) Added a new overload for BoostSkillDef's DetermineNextBoostState method that lets you use a unique EntityState for air boosting
+ - (Internal) Added an easy reference to the language tokens for the launch keyword and the momentum passive in Language.cs
+ - (Internal) Added a Helpers.cs method that colors text to be the Super form color for Super skill overrides
+ - (Internal) Added an overload to the Helpers.cs Flying method that outs an ICharacterFlightParameterProvider so you don't have to do GetComponent yourself
+ - (Internal) LaunchManager's AngleAwayFromGround and AngleTowardsEnemies now returns a Vector of the same magnitude as the one it was given
+ - (Internal) Added missing NetworkServer.active checks to ensure that Launches are only run on host
+
 ## v1.0.1
 
  - (Bug Fix) Blacklisted [Sandswept's](https://thunderstore.io/package/SandsweptTeam/Sandswept) Delta Construct from being launched to prevent framerate killing error spam on death

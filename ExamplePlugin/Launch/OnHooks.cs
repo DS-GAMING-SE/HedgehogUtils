@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace HedgehogUtils.Launch
 {
@@ -36,7 +37,7 @@ namespace HedgehogUtils.Launch
         private static void Launch(On.RoR2.HealthComponent.orig_TakeDamage orig, HealthComponent self, DamageInfo damageInfo)
         {
             orig(self, damageInfo);
-            if ((damageInfo.damageType.HasModdedDamageType(DamageTypes.launch)
+            if (NetworkServer.active && (damageInfo.damageType.HasModdedDamageType(DamageTypes.launch)
                     || (damageInfo.damageType.HasModdedDamageType(DamageTypes.launchOnKill) && !self.alive)))
             {
                 if (damageInfo.attacker && damageInfo.attacker.TryGetComponent<CharacterBody>(out CharacterBody attackerBody))

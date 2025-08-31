@@ -14,6 +14,11 @@ namespace HedgehogUtils
             return "\n<color=#d299ff>SCEPTER: " + desc + "</color>";
         }
 
+        public static string SuperFormText(string desc)
+        {
+            return $"<color=#ffee00>{desc}</color>";
+        }
+
         public static T[] Append<T>(ref T[] array, List<T> list)
         {
             var orig = array.Length;
@@ -25,6 +30,19 @@ namespace HedgehogUtils
 
         public static Func<T[], T[]> AppendDel<T>(List<T> list) => (r) => Append(ref r, list);
 
+        public static bool Flying(GameObject gameObject, out ICharacterFlightParameterProvider flight)
+        {
+            if (gameObject) 
+            { 
+                flight = gameObject.GetComponent<ICharacterFlightParameterProvider>(); 
+                return Flying(flight); 
+            } 
+            else 
+            { 
+                flight = null; 
+                return false; 
+            }
+        }
         public static bool Flying(ICharacterFlightParameterProvider flight)
         {
             return flight != null && flight.isFlying;

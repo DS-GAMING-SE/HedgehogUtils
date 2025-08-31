@@ -27,6 +27,7 @@ namespace HedgehogUtils
             LoadSoundbank();
             BoostAndLaunch();
             SuperForm();
+            Miscellaneous();
         }
 
         internal static void LoadAssetBundle()
@@ -235,6 +236,18 @@ namespace HedgehogUtils
             superLoopSoundDef = ScriptableObject.CreateInstance<LoopSoundDef>();
             superLoopSoundDef.startSoundName = "Play_hedgehogutils_super_loop";
             superLoopSoundDef.stopSoundName = "Stop_hedgehogutils_super_loop";
+        }
+
+        public static Material ringMaterial;
+        public static void Miscellaneous()
+        {
+            AsyncOperationHandle<Material> asyncRingMaterial = Addressables.LoadAssetAsync<Material>("RoR2/DLC2/Elites/EliteAurelionite/matEliteAurelioniteAffixOverlay.mat");
+            asyncRingMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
+            {
+                ringMaterial = x.Result;
+                ringMaterial.SetFloat("_NormalStrength", 0);
+                ringMaterial.SetColor("_Color", new Color(0.8f, 0.65f, 0f, 1));
+            };
         }
 
         public static GameObject MaterialSwap(GameObject prefab, string assetPath, string pathToParticle = "")

@@ -25,7 +25,7 @@ namespace HedgehogUtils.Launch
 
         public static void Launch(CharacterBody target, CharacterBody attacker, Vector3 direction, float speed, float damage, float wallCollisionDamage, bool crit, float procCoefficient, float duration)
         {
-            if (!TargetCanBeLaunched(target, out LaunchProjectileController currentLaunchController)) { return; }
+            if (!NetworkServer.active || !TargetCanBeLaunched(target, out LaunchProjectileController currentLaunchController)) { return; }
 
             if (currentLaunchController)
             {
@@ -49,6 +49,7 @@ namespace HedgehogUtils.Launch
             {
                 adjusted = Vector3.ProjectOnPlane(adjusted, groundNormal).normalized;
                 adjusted = Vector3.Lerp(adjusted, groundNormal, 0.1f);
+                adjusted *= input.magnitude;
             }
             return adjusted;
         }
@@ -69,7 +70,7 @@ namespace HedgehogUtils.Launch
             HurtBox hit = search.GetResults().FirstOrDefault();
             if (hit)
             {
-                return (hit.transform.position - (target.transform.position) + new Vector3(0, 0.5f, 0)).normalized;
+                return ((hit.transform.position - (target.transform.position) + new Vector3(0, 0.5f, 0)).normalized) * direction.magnitude;
             }
             return direction;
         }

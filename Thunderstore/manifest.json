@@ -1,6 +1,6 @@
 {
     "name": "HedgehogUtils",
-    "version_number": "1.0.1",
+    "version_number": "1.1.0",
     "website_url": "https://github.com/DS-GAMING-SE/HedgehogUtils",
     "description": "Adds Chaos Emeralds, super forms, and other mechanics for other mods to use.",
     "dependencies": [

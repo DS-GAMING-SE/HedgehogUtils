@@ -29,8 +29,6 @@ namespace HedgehogUtils.Forms.SuperForm
 
         private static Vector3 dropVelocity = Vector3.up * 20;
 
-        public static Material ringMaterial;
-
         public PurchaseInteraction purchaseInteraction;
 
         public EntityStateMachine stateMachine;
@@ -90,11 +88,8 @@ namespace HedgehogUtils.Forms.SuperForm
             prefabBase.transform.Find("PickupDisplay").gameObject.AddComponent<PickupDisplay>();
             Log.Message("PickupDisplay done");
 
-            //Materials.ShinyMaterial(Assets.mainAssetBundle.LoadAsset<Material>("matRing"));
-            Material ringMaterial = new Material(Addressables.LoadAssetAsync<Material>("RoR2/Base/goldshores/matGoldshoresGold.mat").WaitForCompletion());
-            ringMaterial.SetFloat("_NormalStrength", 0);
-            prefabBase.transform.Find("RingParent/Ring").GetComponent<MeshRenderer>().material = ringMaterial;
-            prefabBase.transform.Find("RingParent/Ring/RingLOD").GetComponent<MeshRenderer>().material = ringMaterial;
+            prefabBase.transform.Find("RingParent/Ring").GetComponent<MeshRenderer>().material = Assets.ringMaterial;
+            prefabBase.transform.Find("RingParent/Ring/RingLOD").GetComponent<MeshRenderer>().material = Assets.ringMaterial;
 
             Log.Message("Material Done");
             

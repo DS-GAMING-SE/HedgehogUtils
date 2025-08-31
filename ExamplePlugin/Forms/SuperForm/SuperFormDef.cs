@@ -23,7 +23,7 @@ namespace HedgehogUtils.Forms.SuperForm
 
             superFormDef.enabled = (self) => 
             { 
-                return FormDef.AnySelectedSurvivorCanUseForm(self) && RunArtifactManager.instance.IsArtifactEnabled(Artifact.chaosEmeraldArtifactDef); 
+                return RunArtifactManager.instance.IsArtifactEnabled(Artifact.chaosEmeraldArtifactDef) && FormDef.AnySelectedSurvivorCanUseForm(self); 
             };
 
             FormCatalog.AddFormDefs(new FormDef[]

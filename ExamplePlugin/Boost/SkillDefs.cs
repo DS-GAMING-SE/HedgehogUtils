@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using EntityStates;
+using HedgehogUtils.Boost.EntityStates;
 using JetBrains.Annotations;
 using RoR2;
 using RoR2.Skills;
-using EntityStates;
+using System;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace HedgehogUtils.Boost
@@ -37,11 +38,11 @@ namespace HedgehogUtils.Boost
                 {
                     if (skillSlot.characterBody.inputBank.moveVector == Vector3.zero)
                     {
-                        return InstantiateBoostIdle(skillSlot, boostIdle);
+                        return InstantiateState(skillSlot, boostIdle);
                     }
                     else
                     {
-                        return InstantiateBoost(skillSlot, boost);
+                        return InstantiateState(skillSlot, boost);
                     }
                 }
                 else
@@ -49,20 +50,38 @@ namespace HedgehogUtils.Boost
                     return InstantiateAirBoost(skillSlot, boost);
                 }
             }
-
+            public static EntityState DetermineNextBoostState([NotNull] GenericSkill skillSlot, SerializableEntityStateType boost, SerializableEntityStateType boostIdle, SerializableEntityStateType airBoost)
+            {
+                ICharacterFlightParameterProvider flight = skillSlot.GetComponent<ICharacterFlightParameterProvider>();
+                if (skillSlot.characterBody.characterMotor.isGrounded || Helpers.Flying(flight))
+                {
+                    if (skillSlot.characterBody.inputBank.moveVector == Vector3.zero)
+                    {
+                        return InstantiateState(skillSlot, boostIdle);
+                    }
+                    else
+                    {
+                        return InstantiateState(skillSlot, boost);
+                    }
+                }
+                else
+                {
+                    return InstantiateState(skillSlot, airBoost);
+                }
+            }
+            // Idk why I made these static methods for making entity states that are both exactly the same.
+            // Probably a result of me changing things a bunch internally until the methods were no longer needed, but I didn't notice
             public static EntityState InstantiateBoostIdle(GenericSkill skillSlot, SerializableEntityStateType boostIdle)
             {
-                EntityState entityState = EntityStateCatalog.InstantiateState(boostIdle.stateType);
-                ISkillState skillState = entityState as ISkillState;
-                if (skillState != null)
-                {
-                    skillState.activatorSkillSlot = skillSlot;
-                }
-                return entityState;
+                return InstantiateState(skillSlot, boostIdle);
             }
             public static EntityState InstantiateBoost(GenericSkill skillSlot, SerializableEntityStateType boost)
             {
-                EntityState entityState = EntityStateCatalog.InstantiateState(boost.stateType);
+                return InstantiateState(skillSlot, boost);
+            }
+            public static EntityState InstantiateState(GenericSkill skillSlot, SerializableEntityStateType state)
+            {
+                EntityState entityState = EntityStateCatalog.InstantiateState(state.stateType);
                 ISkillState skillState = entityState as ISkillState;
                 if (skillState != null)
                 {

@@ -8,6 +8,9 @@ namespace HedgehogUtils
 {
     public static class Language
     {
+        public const string launchKeyword = HedgehogUtilsPlugin.Prefix + "LAUNCH_KEYWORD";
+        public const string momentumPassiveNameToken = HedgehogUtilsPlugin.Prefix + "MOMENTUM_PASSIVE_NAME";
+        public const string momentumPassiveDescriptionToken = HedgehogUtilsPlugin.Prefix + "MOMENTUM_PASSIVE_DESCRIPTION";
         //maybe go back to what the mod had by default with the separate lang file
         public static void Initialize()
         {
@@ -151,7 +154,10 @@ namespace HedgehogUtils
 
             #endregion
 
-            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "LAUNCH_KEYWORD", "<style=CKeywordName>Launch</style><style=cSub>Turn the hit enemy into a projectile that <style=cIsUtility>flys in the direction hit</style> and <style=cIsDamage>deals damage</style> to other enemies it hits equal to the damage that launched it.");
+            LanguageAPI.Add(launchKeyword, "<style=CKeywordName>Launch</style><style=cSub>Turn the hit enemy into a projectile that <style=cIsUtility>flys in the direction hit</style> and <style=cIsDamage>deals damage</style> to other enemies it hits equal to the damage that launched it.");
+
+            LanguageAPI.Add(momentumPassiveNameToken, "Momentum");
+            LanguageAPI.Add(momentumPassiveDescriptionToken, $"<style=cIsUtility>Build up speed</style> by <style=cIsUtility>running down hill</style> to move up to <style=cIsUtility>100% faster</style>. <style=cIsHealth>Lose speed by running up hill to move up to 33% slower.</style>\nIf <style=cIsUtility>flying</style>, <style=cIsUtility>build up speed</style> by <style=cIsUtility>moving in a straight line.</style>");
         }
 
         /*

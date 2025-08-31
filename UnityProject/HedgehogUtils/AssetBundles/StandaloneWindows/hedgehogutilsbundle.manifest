@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 212206444
+CRC: 3356026645
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: df0500d8e09defa8bd206ea270db496c
+    Hash: 21787a8e1ffd498678b46ba5e0c2981d
   TypeTreeHash:
     serializedVersion: 2
     Hash: 04e687d6d53ab5e626d484fdecfa4f64
@@ -114,7 +114,7 @@ Assets:
 - Assets/AssetBundle/VFX/Materials/Super Form/matSpark.mat
 - Assets/AssetBundle/Emeralds/Icons/texEmeraldInteractableIcon.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matSwingShadow.mat
-- Assets/AssetBundle/Emeralds/EmeraldOld.fbx
+- Assets/AssetBundle/Emeralds/Emerald.fbx
 - Assets/AssetBundle/Emeralds/Icons/texBgEmerald.png
 - Assets/AssetBundle/Emeralds/Materials/matBlue.mat
 - Assets/AssetBundle/Emeralds/Icons/texGreenEmeraldIcon.png
