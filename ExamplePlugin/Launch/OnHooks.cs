@@ -45,16 +45,19 @@ namespace HedgehogUtils.Launch
                     if (LaunchManager.AttackCanLaunch(self, attackerBody, damageInfo))
                     {
                         Vector3 launchDirection = damageInfo.force.normalized;
-                        if (self.body && self.body.characterMotor)
+                        if (!damageInfo.damageType.HasModdedDamageType(DamageTypes.removeLaunchAutoAim))
                         {
-                            if (self.body.characterMotor.isGrounded)
+                            if (self.body && self.body.characterMotor)
                             {
-                                launchDirection = LaunchManager.AngleAwayFromGround(launchDirection, self.body.characterMotor.estimatedGroundNormal);
+                                if (self.body.characterMotor.isGrounded)
+                                {
+                                    launchDirection = LaunchManager.AngleAwayFromGround(launchDirection, self.body.characterMotor.estimatedGroundNormal);
+                                }
                             }
+                            launchDirection = LaunchManager.AngleTowardsEnemies(launchDirection, self.transform.position, self.gameObject, attackerBody.teamComponent.teamIndex);
+                            launchDirection = launchDirection.normalized;
                         }
-                        launchDirection = LaunchManager.AngleTowardsEnemies(launchDirection, self.transform.position, self.gameObject, attackerBody.teamComponent.teamIndex);
-                        launchDirection = launchDirection.normalized;
-                        LaunchManager.Launch(self.body, attackerBody, launchDirection, LaunchManager.launchSpeed, damageInfo.damage, damageInfo.damage * 0.5f, damageInfo.crit, 1f, LaunchManager.baseDuration * damageInfo.procCoefficient);
+                        LaunchManager.Launch(self.body, attackerBody, launchDirection, damageInfo.damage, damageInfo.crit, damageInfo.procCoefficient);
                     }
                 }
             }

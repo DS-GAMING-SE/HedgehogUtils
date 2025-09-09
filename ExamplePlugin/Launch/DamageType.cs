@@ -9,10 +9,12 @@ namespace HedgehogUtils.Launch
     {
         public static DamageAPI.ModdedDamageType launch;
         public static DamageAPI.ModdedDamageType launchOnKill;
+        public static DamageAPI.ModdedDamageType removeLaunchAutoAim;
         public static void Initialize()
         {
             launch = DamageAPI.ReserveDamageType();
             launchOnKill = DamageAPI.ReserveDamageType();
+            removeLaunchAutoAim = DamageAPI.ReserveDamageType();
         }
     }
 }

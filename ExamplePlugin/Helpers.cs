@@ -1,9 +1,10 @@
-﻿using RoR2;
+﻿using EntityStates;
+using RoR2;
+using RoR2.Skills;
 using System;
 using System.Collections.Generic;
-using RoR2.Skills;
-using EntityStates;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace HedgehogUtils
 {
@@ -43,9 +44,30 @@ namespace HedgehogUtils
                 return false; 
             }
         }
+
+        public static bool Flying(GameObject gameObject)
+        {
+            return Flying(gameObject, out _);
+        }
         public static bool Flying(ICharacterFlightParameterProvider flight)
         {
             return flight != null && flight.isFlying;
+        }
+
+        public static void EndChrysalis(GameObject gameObject)
+        {
+            if (NetworkServer.active)
+            {
+                JetpackController chrysalis = JetpackController.FindJetpackController(gameObject);
+                if (chrysalis)
+                {
+                    if (chrysalis.stopwatch >= chrysalis.duration)
+                    {
+                        UnityEngine.Object.Destroy(chrysalis.gameObject);
+                    }
+                }
+
+            }
         }
 
         public static T CopySkillDef<T>(SkillDef originDef) where T : SkillDef

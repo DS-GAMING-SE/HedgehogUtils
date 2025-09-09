@@ -115,6 +115,10 @@ namespace HedgehogUtils.Boost.EntityStates
                 outer.SetNextStateToMain();
             }
         }
+        public override InterruptPriority GetMinimumInterruptPriority()
+        {
+            return InterruptPriority.PrioritySkill;
+        }
 
         public override void OnSerialize(NetworkWriter writer)
         {

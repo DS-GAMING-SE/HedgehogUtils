@@ -23,6 +23,8 @@ namespace HedgehogUtils.Boost
             On.RoR2.GenericSkill.CanApplyAmmoPack += CanApplyAmmoPackToBoost;
             On.RoR2.GenericSkill.ApplyAmmoPack += ApplyAmmoPackToBoost;
             On.RoR2.UI.HUD.Awake += CreateBoostMeterUI;
+            // I realized it's probably a bad idea to make multiple hooks for hte same method in the same mod. Seems like it might be a performance issue. There's a Recalc hook in SuperForms.Stats
+            // that's meant to be here but I put it there to not have duplicate hooks for the same method
         }
 
         private static bool CanApplyAmmoPackToBoost(On.RoR2.GenericSkill.orig_CanApplyAmmoPack orig, GenericSkill self)

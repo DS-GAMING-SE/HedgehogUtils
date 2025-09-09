@@ -227,7 +227,7 @@ namespace HedgehogUtils
             AsyncOperationHandle<Material> asyncOutlineMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/LunarGolem/matLunarGolemShield.mat");
             asyncOutlineMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
             {
-                superFormOverlay = x.Result;
+                superFormOverlay = new Material(x.Result);
                 superFormOverlay.SetColor("_TintColor", new Color(1, 0.8f, 0.4f, 1));
                 superFormOverlay.SetColor("_EmissionColor", new Color(1, 0.8f, 0.4f, 1));
                 superFormOverlay.SetFloat("_OffsetAmount", 0.01f);
@@ -244,9 +244,9 @@ namespace HedgehogUtils
             AsyncOperationHandle<Material> asyncRingMaterial = Addressables.LoadAssetAsync<Material>("RoR2/DLC2/Elites/EliteAurelionite/matEliteAurelioniteAffixOverlay.mat");
             asyncRingMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
             {
-                ringMaterial = x.Result;
+                ringMaterial = new Material(x.Result);
                 ringMaterial.SetFloat("_NormalStrength", 0);
-                ringMaterial.SetColor("_Color", new Color(0.8f, 0.65f, 0f, 1));
+                ringMaterial.SetColor("_Color", new Color(0.9f, 0.8f, 0.1f, 1));
             };
         }
 

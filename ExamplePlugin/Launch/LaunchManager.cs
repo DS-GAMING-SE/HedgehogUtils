@@ -1,4 +1,5 @@
 ﻿using EntityStates;
+using HedgehogUtils.Forms.SuperForm;
 using R2API;
 using RoR2;
 using RoR2.Projectile;
@@ -40,6 +41,11 @@ namespace HedgehogUtils.Launch
             vehicle.AssignPassenger(target.gameObject);
             target.AddBuff(Buffs.launchedBuff);
             NetworkServer.Spawn(launchProjectile);
+        }
+
+        public static void Launch(CharacterBody target, CharacterBody attacker, Vector3 direction, float damage, bool crit, float procCoefficient)
+        {
+            Launch(target, attacker, direction, LaunchManager.launchSpeed, damage, damage * 0.5f, crit, 1f, LaunchManager.baseDuration * procCoefficient);
         }
 
         public static Vector3 AngleAwayFromGround(Vector3 input, Vector3 groundNormal)

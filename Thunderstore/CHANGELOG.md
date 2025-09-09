@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.1.2
+ - (+ Buff) Sliiiiightly reduced the speed the boost meter drains so 2 Alien Heads is enough to reach infinite boost
+
+ - (Bug Fix) Fixed boost not properly updating meter recharge stats when on characters other than Sonic
+
+ - (Internal) Added a new DamageType that can be added alongside a Launching DamageType to easily ignore Launch's usual auto-aim
+ - (Internal) Added a new overload for LaunchManager.Launch that lets you more easily create a launch that uses most of the default values
+ - (Internal) Added a new overload to the new overload of Helpers.Flying() that doesn't out an ICharacterFlightParameterProvider
+ - (Internal) Added a new method to Helpers.cs that cancels the slow downwards floating that Milky Chrysalis does after its duration has run out
+ - (Internal) Set BoostIdle and Brake's interrupt priority to PrioritySkill for consistency with Boost. They're both body skill states that don't read inputs, so I'm not even sure if this does anything
+ 
+### Known Issues
+
+ - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
+ - Some enemies become invisible in their death animations after being killed by a launch
+
+## v1.1.1
+
+ - (Bug Fix) Fixed issue causing Gilded elites to be miscolored
+
 ## v1.1.0
 
  - (Assets) Redone the design for the Chaos Emeralds. The emeralds have a new model, texture, shader, item icons, and artifact icons. The new Chaos Emerald model and shader look much better than the old one
@@ -20,11 +40,7 @@
  - (Internal) The check for whether an enemy is unable to be launched has been moved into its own static method
  - (Internal) The check for whether a damagetype launch attack is able to launch a given enemy has been moved into its own static method
  - (Internal) Added a new CanBeOverridden method to FormStateBase that determines whether the form can be cancelled by trying to transform into a different form
- 
-### Known Issues
 
- - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
- - Some enemies become invisible in their death animations after being killed by a launch
  
 ## v1.0.0
 

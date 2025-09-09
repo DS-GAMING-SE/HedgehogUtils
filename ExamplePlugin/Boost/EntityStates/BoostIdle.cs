@@ -55,7 +55,7 @@ namespace HedgehogUtils.Boost.EntityStates
 
         public override InterruptPriority GetMinimumInterruptPriority()
         {
-            return InterruptPriority.Pain;
+            return InterruptPriority.PrioritySkill;
         }
     }
 }
