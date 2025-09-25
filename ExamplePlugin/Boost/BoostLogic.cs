@@ -24,7 +24,6 @@ namespace HedgehogUtils.Boost
 
         public float boostRegen;
 
-        [SyncVar(hook = nameof(OnBoostAvailableChanged))]
         public bool boostAvailable = true;
 
         public float predictedMeter;
@@ -39,7 +38,7 @@ namespace HedgehogUtils.Boost
 
         private const float baseMaxBoostMeter = 100f;
         private const float boostMeterPerFlatReduction = 100/3f;
-        protected float baseBoostRegen = 0.35f;
+        public float baseBoostRegen = 21f;
         public const float boostRegenPerBandolier = 25f;
 
         #region Boost Meter Functionality
@@ -67,7 +66,7 @@ namespace HedgehogUtils.Boost
                     }
                     else
                     {
-                        this.AddBoost(boostRegen);
+                        this.AddBoost(boostRegen * Time.fixedDeltaTime);
                     }
                 }
             }
@@ -176,22 +175,6 @@ namespace HedgehogUtils.Boost
             this.NetworkboostMeter = newBoostMeter;
         }
 
-        private void OnBoostAvailableChanged(bool newBoostAvailable)
-        {
-            if (body)
-            {
-                if (newBoostAvailable)
-                {
-                    body.skillLocator.utility.stock = body.skillLocator.utility.maxStock;
-                }
-                else
-                {
-                    body.skillLocator.utility.stock = 0;
-                }
-            }
-            this.NetworkboostAvailable = newBoostAvailable;
-        }
-
         private void PredictMeter()
         {
             if (this.boostRegen >= boostMeterDrain || alwaysMaxBoost)
@@ -200,7 +183,7 @@ namespace HedgehogUtils.Boost
             }
             else
             {
-                predictedMeter = Mathf.Clamp(this.predictedMeter + (boostDraining ? boostRegen - boostMeterDrain : boostRegen), 0, this.maxBoostMeter);
+                predictedMeter = Mathf.Clamp(this.predictedMeter + (boostDraining ? (boostRegen - boostMeterDrain) * Time.fixedDeltaTime : boostRegen * Time.fixedDeltaTime), 0, this.maxBoostMeter);
             }
         }
         #endregion
@@ -273,7 +256,7 @@ namespace HedgehogUtils.Boost
                 if (NetworkServer.localClientActive && !base.syncVarHookGuard)
                 {
                     base.syncVarHookGuard = true;
-                    this.OnBoostAvailableChanged(value);
+                    this.NetworkboostAvailable = value;
                     //NetworkboostAvailable = value;
                     base.syncVarHookGuard = false;
                 }
@@ -349,7 +332,7 @@ namespace HedgehogUtils.Boost
             if ((num & 4U) != 0U)
             {
                 //this.boostAvailable = reader.ReadBoolean();
-                this.OnBoostAvailableChanged(reader.ReadBoolean());
+                this.boostAvailable = reader.ReadBoolean();
             }
         }
         #endregion

@@ -26,6 +26,11 @@ namespace HedgehogUtils.Boost
 
             public Color boostHUDColor { get; set; }
 
+            public override BaseSkillInstanceData OnAssigned([NotNull] GenericSkill skillSlot)
+            {
+                return new InstanceData { boostLogic = skillSlot.GetComponent<BoostLogic>() };
+            }
+
             public override EntityState InstantiateNextState([NotNull] GenericSkill skillSlot)
             {
                 if (!skillSlot.characterBody || !skillSlot.characterBody.characterMotor) { return base.InstantiateNextState(skillSlot); }
@@ -69,6 +74,11 @@ namespace HedgehogUtils.Boost
                     return InstantiateState(skillSlot, airBoost);
                 }
             }
+
+            public override bool IsReady([NotNull] GenericSkill skillSlot)
+            {
+                return base.IsReady(skillSlot) && (!(skillSlot.skillInstanceData is InstanceData) || ((InstanceData)skillSlot.skillInstanceData).boostLogic.boostAvailable);
+            }
             // Idk why I made these static methods for making entity states that are both exactly the same.
             // Probably a result of me changing things a bunch internally until the methods were no longer needed, but I didn't notice
             public static EntityState InstantiateBoostIdle(GenericSkill skillSlot, SerializableEntityStateType boostIdle)
@@ -103,6 +113,11 @@ namespace HedgehogUtils.Boost
                 }
                 return entityState;
             }
+
+            public class InstanceData : BaseSkillInstanceData
+            {
+                public BoostLogic boostLogic;
+            }
         }
 
         public class RequiresFormBoostSkillDef : Forms.SkillDefs.RequiresFormSkillDef, IBoostSkill
@@ -111,10 +126,25 @@ namespace HedgehogUtils.Boost
             public SerializableEntityStateType brakeState { get; set; }
             public Color boostHUDColor { get; set; }
 
+            public override BaseSkillInstanceData OnAssigned([NotNull] GenericSkill skillSlot)
+            {
+                InstanceData oldData = (InstanceData)base.OnAssigned(skillSlot);
+                return new BoostInstanceData { boostLogic = skillSlot.GetComponent<BoostLogic>(), formComponent = oldData.formComponent };
+            }
+
             public override EntityState InstantiateNextState([NotNull] GenericSkill skillSlot)
             {
                 if (!skillSlot.characterBody || !skillSlot.characterBody.characterMotor) { return base.InstantiateNextState(skillSlot); }
                 return BoostSkillDef.DetermineNextBoostState(skillSlot, activationState, boostIdleState);
+            }
+            public override bool IsReady([NotNull] GenericSkill skillSlot)
+            {
+                return base.IsReady(skillSlot) && (!(skillSlot.skillInstanceData is BoostInstanceData) || ((BoostInstanceData)skillSlot.skillInstanceData).boostLogic.boostAvailable);
+            }
+
+            protected class BoostInstanceData : InstanceData
+            {
+                public BoostLogic boostLogic;
             }
         }
     }

@@ -38,7 +38,7 @@ namespace HedgehogUtils
         public const string PluginGUID = "com.ds_gaming.HedgehogUtils";
         public const string PluginAuthor = "ds_gaming";
         public const string PluginName = "HedgehogUtils";
-        public const string PluginVersion = "1.1.2";
+        public const string PluginVersion = "1.1.3";
 
         public const string Prefix = "DS_GAMING_HEDGEHOG_UTILS_";
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.1.3
+ - (Internal) **Potentially breaks custom Boost skills**. Added missing Time.fixedDeltaTime to boost meter FixedUpdate stuff. The default values for BoostLogic.baseBoostRegen and the Boost entity state's boostMeterDrain are now 60x what they previously were
+ 
+ - (Internal) Instead of adding/removing Boost skill stocks when the meter comes-back/runs-out, now it checks for whether boost is available within the BoostSkillDef's IsReady()
+ 
+ - (Bug Fix) Added missing </style> to the launch keyword
+ 
+### Known Issues
+
+ - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
+ - Some enemies become invisible in their death animations after being killed by a launch
+
 ## v1.1.2
  - (+ Buff) Sliiiiightly reduced the speed the boost meter drains so 2 Alien Heads is enough to reach infinite boost
 
@@ -10,11 +22,6 @@
  - (Internal) Added a new overload to the new overload of Helpers.Flying() that doesn't out an ICharacterFlightParameterProvider
  - (Internal) Added a new method to Helpers.cs that cancels the slow downwards floating that Milky Chrysalis does after its duration has run out
  - (Internal) Set BoostIdle and Brake's interrupt priority to PrioritySkill for consistency with Boost. They're both body skill states that don't read inputs, so I'm not even sure if this does anything
- 
-### Known Issues
-
- - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
- - Some enemies become invisible in their death animations after being killed by a launch
 
 ## v1.1.1
 

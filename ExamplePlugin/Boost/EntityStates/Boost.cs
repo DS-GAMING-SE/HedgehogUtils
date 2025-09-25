@@ -21,7 +21,7 @@ namespace HedgehogUtils.Boost.EntityStates
         }
         protected virtual float boostMeterDrain
         {
-            get { return 0.6f; }
+            get { return 36f; }
         }
 
         public static float screenShake = 3.5f;
@@ -117,7 +117,7 @@ namespace HedgehogUtils.Boost.EntityStates
             {
                 if (NetworkServer.active)
                 {
-                    boostLogic.RemoveBoost(boostMeterDrain);
+                    boostLogic.RemoveBoost(boostMeterDrain * Time.fixedDeltaTime);
                 }
                 boostLogic.boostMeterDrain = boostMeterDrain;
                 boostLogic.boostDraining = true;
