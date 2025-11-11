@@ -130,7 +130,7 @@ namespace HedgehogUtils.Forms
                 {
                     Chat.SendBroadcastChat(new Chat.SubjectFormatChatMessage
                     {
-                        baseToken = HedgehogUtilsPlugin.Prefix + "_SUPER_FORM_ANNOUNCE_TEXT",
+                        baseToken = HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT",
                         subjectAsNetworkUser = component.body.master.playerCharacterMasterController.networkUser,
                         paramTokens = new string[] { RoR2.Language.GetString(form.name) }
                     });
@@ -139,7 +139,7 @@ namespace HedgehogUtils.Forms
                 {
                     Chat.SendBroadcastChat(new Chat.SubjectFormatChatMessage
                     {
-                        baseToken = HedgehogUtilsPlugin.Prefix + "_SUPER_FORM_ANNOUNCE_TEXT",
+                        baseToken = HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT",
                         subjectAsCharacterBody = component.body,
                         paramTokens = new string[] { RoR2.Language.GetString(form.name) }
                     });

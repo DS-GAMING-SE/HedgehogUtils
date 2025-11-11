@@ -11,6 +11,7 @@ using HedgehogUtils.Forms.SuperForm;
 using RoR2.Audio;
 using static RoR2.VFXAttributes;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.Rendering.PostProcessing;
 
 namespace HedgehogUtils
 {
@@ -72,6 +73,10 @@ namespace HedgehogUtils
 
         internal static GameObject launchWallCollisionEffect;
         internal static GameObject launchWallCollisionLargeEffect;
+        #endregion
+
+        #region Teleport
+        // Look into using texRampLightning2
         #endregion
 
         public static void BoostAndLaunch()
@@ -194,6 +199,7 @@ namespace HedgehogUtils
         public static GameObject superFormAura;
         public static GameObject superFormWarning;
         public static LoopSoundDef superLoopSoundDef;
+        public static GameObject superFormPPVolume;
         #endregion
 
         public static void SuperForm()
@@ -236,6 +242,11 @@ namespace HedgehogUtils
             superLoopSoundDef = ScriptableObject.CreateInstance<LoopSoundDef>();
             superLoopSoundDef.startSoundName = "Play_hedgehogutils_super_loop";
             superLoopSoundDef.stopSoundName = "Stop_hedgehogutils_super_loop";
+
+            superFormPPVolume = mainAssetBundle.LoadAsset<GameObject>("SonicSuperPostProcess");
+            PostProcessVolume postProcess = superFormPPVolume.GetComponent<PostProcessVolume>();
+            postProcess.sharedProfile = Addressables.LoadAssetAsync<PostProcessProfile>("RoR2/Base/title/PostProcessing/ppLocalGrandparent.asset").WaitForCompletion();
+            postProcess.weight = 0.5f;
         }
 
         public static Material ringMaterial;

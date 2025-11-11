@@ -14,13 +14,12 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
 {
     public class SuperSonic : FormStateBase
     {
-        protected CharacterModel model;
-
         protected Transform chest;
 
         private TemporaryOverlayInstance temporaryOverlay;
 
         private GameObject superAura;
+        private GameObject postProcessing;
 
         private bool warningApplied;
         protected float superFormDuration;
@@ -49,6 +48,10 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
             if (chest)
             {
                 this.superAura = GameObject.Instantiate<GameObject>(Assets.superFormAura, chest);
+            }
+            if (Config.SuperFormPostProcessing().Value)
+            {
+                postProcessing = GameObject.Instantiate(Assets.superFormPPVolume, characterModel.transform);
             }
 
             boostLogic = base.GetComponent<HedgehogUtils.Boost.BoostLogic>();
@@ -97,6 +100,10 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
             if (boostLogic)
             {
                 boostLogic.alwaysMaxBoost = false;
+            }
+            if (postProcessing)
+            {
+                Destroy(postProcessing);
             }
 
             if (this.superAura)

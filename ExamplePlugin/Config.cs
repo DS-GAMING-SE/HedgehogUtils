@@ -52,6 +52,10 @@ namespace HedgehogUtils
         {
             return HedgehogUtilsPlugin.instance.Config.Bind<bool>("Super Form", "Consume Emeralds On Use", true, "Whether the Chaos Emeralds will be consumed when transforming into Super Sonic. If not, the emeralds will stay but won't be able to be used until the next stage. Host's config takes priority. Default is true.");
         }
+        public static ConfigEntry<bool> SuperFormPostProcessing()
+        {
+            return HedgehogUtilsPlugin.instance.Config.Bind<bool>("Super Form", "Post Processing", true, $"Whether the Super form subtly tints the screen yellow. Default is true.");
+        }
         #endregion
         #region Launch
         public static ConfigEntry<bool> LaunchBodyBlacklist()
@@ -92,6 +96,8 @@ namespace HedgehogUtils
 
             ModSettingsManager.AddOption(new CheckBoxOption(Config.SuperFormInvincible()));
             Config.SuperFormInvincible().SettingChanged += Forms.SuperForm.SuperFormDef.UpdateSuperFormInvincibleConfig;
+
+            ModSettingsManager.AddOption(new CheckBoxOption(Config.SuperFormPostProcessing()));
 
             ModSettingsManager.AddOption(new SliderOption(SuperFormDuration(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 15, max = 600, formatString = "{0:0}s" }));
             Config.SuperFormDuration().SettingChanged += Forms.SuperForm.SuperFormDef.UpdateSuperFormDurationConfig;
