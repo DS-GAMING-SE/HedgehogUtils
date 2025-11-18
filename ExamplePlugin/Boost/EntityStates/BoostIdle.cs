@@ -45,7 +45,14 @@ namespace HedgehogUtils.Boost.EntityStates
 
         public virtual void EnterBoost()
         {
-            outer.SetNextState(EntityStateCatalog.InstantiateState(base.skillLocator.utility.skillDef.activationState.stateType));
+            if (typeof(SkillDefs.IBoostSkill).IsAssignableFrom(base.skillLocator.utility.skillDef.GetType()))
+            {
+                outer.SetNextState(EntityStateCatalog.InstantiateState(base.skillLocator.utility.skillDef.activationState.stateType));
+            }
+            else
+            {
+                outer.SetNextStateToMain();
+            }
         }
 
         public virtual void PlayBoostIdleEnterAnimation()

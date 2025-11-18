@@ -47,6 +47,7 @@ namespace HedgehogUtils.Forms.SuperForm
             prefabBase = Assets.mainAssetBundle.LoadAsset<GameObject>("ChaosEmeraldInteractable");
 
             Assets.MaterialSwap(prefabBase, "RoR2/Base/Common/VFX/matInverseDistortion.mat", "RingParent/PurchaseParticle/Distortion");
+            Assets.ReplaceRainbow(prefabBase.transform.Find("RingParent/PurchaseParticle/Rainbow"));
 
             Log.Message("Loaded Base");
             prefabBase.AddComponent<NetworkIdentity>();

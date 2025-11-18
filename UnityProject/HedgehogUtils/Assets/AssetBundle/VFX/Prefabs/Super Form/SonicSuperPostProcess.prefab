@@ -60,6 +60,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sharedProfile: {fileID: 0}
   isGlobal: 0
-  blendDistance: 20
-  weight: 1
+  blendDistance: 40
+  weight: 0.55
   priority: 30

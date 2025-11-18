@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 755891469
+CRC: 2000983499
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 7c3f4a9d20b4146348ad03723351b8da
+    Hash: a862cb30e7f3efa7099f9feda954b1ec
   TypeTreeHash:
     serializedVersion: 2
     Hash: d7815b418e4f73d84f8136e6014204d6
@@ -69,6 +69,7 @@ Assets:
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperTransformation.prefab
 - Assets/AssetBundle/Emeralds/Materials/matCyan.mat
 - Assets/AssetBundle/VFX/Materials/Boost/matPowerBoost.mat
+- Assets/AssetBundle/VFX/Textures/texFlash.png
 - Assets/AssetBundle/VFX/Textures/texSparkleGold.png
 - Assets/AssetBundle/Emeralds/Icons/texGrayEmeraldIcon.png
 - Assets/AssetBundle/Emeralds/Materials/matRing.mat
@@ -123,7 +124,9 @@ Assets:
 - Assets/AssetBundle/Emeralds/Icons/texGreenEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/texSparkleBlue.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matRingFlash.mat
+- Assets/AssetBundle/VFX/Textures/texRampRainbow.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matSparkleBlue.mat
+- Assets/AssetBundle/VFX/Prefabs/Chaos Snap/ChaosSnapOutVFX.prefab
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperAura.prefab
 - Assets/AssetBundle/Emeralds/Materials/matRed.mat
 - Assets/AssetBundle/VFX/Textures/texFistSwing.png
@@ -139,6 +142,6 @@ Assets:
 - Assets/AssetBundle/VFX/Meshes/Boost.fbx
 - Assets/AssetBundle/Emeralds/Icons/texSuperBuffIcon.png
 - Assets/AssetBundle/Emeralds/Materials/matGreen.mat
-- Assets/AssetBundle/VFX/Textures/texFlash.png
+- Assets/AssetBundle/VFX/Prefabs/Chaos Snap/ChaosSnapInVFX.prefab
 - Assets/AssetBundle/Emeralds/Prefabs/YellowEmerald.prefab
 Dependencies: []

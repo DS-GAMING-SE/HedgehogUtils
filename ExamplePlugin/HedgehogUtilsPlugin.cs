@@ -7,6 +7,7 @@ using UnityEngine.AddressableAssets;
 using HedgehogUtils.Internal;
 using R2API.Networking;
 using HedgehogUtils.Forms;
+using HedgehogUtils.Miscellaneous;
 
 namespace HedgehogUtils
 {
@@ -90,7 +91,9 @@ namespace HedgehogUtils
             #endregion
 
             #region Misc
-            Miscellaneous.MomentumStats.Initialize();
+            ChaosSnapManager.Initialize();
+
+            MomentumStats.Initialize();
             #endregion
 
             Language.Initialize();

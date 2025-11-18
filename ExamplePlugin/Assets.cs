@@ -26,9 +26,9 @@ namespace HedgehogUtils
         {
             LoadAssetBundle();
             LoadSoundbank();
+            Miscellaneous();
             BoostAndLaunch();
             SuperForm();
-            Miscellaneous();
         }
 
         internal static void LoadAssetBundle()
@@ -73,10 +73,6 @@ namespace HedgehogUtils
 
         internal static GameObject launchWallCollisionEffect;
         internal static GameObject launchWallCollisionLargeEffect;
-        #endregion
-
-        #region Teleport
-        // Look into using texRampLightning2
         #endregion
 
         public static void BoostAndLaunch()
@@ -194,6 +190,8 @@ namespace HedgehogUtils
 
         #region Super Form
         public static Material superFormOverlay;
+        public static Material rainbowGlowMaterial;
+        public static Material rainbowGlowSubtleMaterial;
         public static GameObject superFormTransformationEffect;
         public static GameObject transformationEmeraldSwirl;
         public static GameObject superFormAura;
@@ -220,9 +218,12 @@ namespace HedgehogUtils
                     cycleOffset = 0f
                 };
             }
+            ReplaceRainbow(superFormTransformationEffect.transform.Find("Rainbow"));
             transformationEmeraldSwirl = Assets.LoadEffect("SonicChaosEmeraldSwirl");
 
             superFormAura = Assets.LoadAsyncedEffect("SonicSuperAura");
+
+            ReplaceRainbow(superFormAura.transform.Find("Rainbow"), true);
 
             superFormWarning = Assets.LoadEffect("SonicSuperWarning");
             superFormWarning.AddComponent<Miscellaneous.DestroyOnExitForm>();
@@ -246,12 +247,29 @@ namespace HedgehogUtils
             superFormPPVolume = mainAssetBundle.LoadAsset<GameObject>("SonicSuperPostProcess");
             PostProcessVolume postProcess = superFormPPVolume.GetComponent<PostProcessVolume>();
             postProcess.sharedProfile = Addressables.LoadAssetAsync<PostProcessProfile>("RoR2/Base/title/PostProcessing/ppLocalGrandparent.asset").WaitForCompletion();
-            postProcess.weight = 0.5f;
+        }
+        public static void ReplaceRainbow(Transform particle, bool subtle = false)
+        {
+            ParticleSystemRenderer rainbowAura = particle.GetComponent<ParticleSystemRenderer>();
+            rainbowAura.sharedMaterial = subtle ? rainbowGlowSubtleMaterial : rainbowGlowMaterial;
+            rainbowAura.mesh = Addressables.LoadAssetAsync<Mesh>("RoR2/Base/Common/VFX/mdlVFXDonut1.fbx").WaitForCompletion();
         }
 
         public static Material ringMaterial;
+        #region Chaos Snap
+        // Look into using texRampLightning2
+        public static GameObject chaosSnapInEffect;
+        public static GameObject chaosSnapOutEffect;
+        public static Material chaosSnapMaterial;
+        #endregion
         public static void Miscellaneous()
         {
+            rainbowGlowMaterial = new Material(Addressables.LoadAssetAsync<Material>("RoR2/DLC2/Elites/EliteBead/matEliteBeadSpikeGrowthRing.mat").WaitForCompletion());
+            rainbowGlowMaterial.SetTexture("_RemapTex", mainAssetBundle.LoadAsset<Texture>("texRampRainbow"));
+            rainbowGlowMaterial.SetFloat("_Boost", 10f);
+            rainbowGlowSubtleMaterial = new Material(rainbowGlowMaterial);
+            rainbowGlowSubtleMaterial.SetFloat("_Boost", 1.5f);
+
             AsyncOperationHandle<Material> asyncRingMaterial = Addressables.LoadAssetAsync<Material>("RoR2/DLC2/Elites/EliteAurelionite/matEliteAurelioniteAffixOverlay.mat");
             asyncRingMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
             {
@@ -259,6 +277,41 @@ namespace HedgehogUtils
                 ringMaterial.SetFloat("_NormalStrength", 0);
                 ringMaterial.SetColor("_Color", new Color(0.9f, 0.8f, 0.1f, 1));
             };
+
+            chaosSnapMaterial = new Material(Addressables.LoadAssetAsync<Material>("RoR2/Base/Huntress/matHuntressSwipe.mat").WaitForCompletion());
+            chaosSnapMaterial.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>("RoR2/Base/Common/ColorRamps/texRampLightning2.png").WaitForCompletion());
+            chaosSnapInEffect = CreateChaosSnapEffect("ChaosSnapInVFX");
+            chaosSnapOutEffect = CreateChaosSnapEffect("ChaosSnapOutVFX");
+        }
+
+        public static GameObject CreateChaosSnapEffect(string assetBundlePrefabName)
+        {
+            GameObject effect = mainAssetBundle.LoadAsset<GameObject>(assetBundlePrefabName);
+            VFXAttributes vfxAttributes = effect.AddComponent<VFXAttributes>();
+            vfxAttributes.vfxPriority = VFXPriority.Medium;
+            ParticleSystem teleportLine = effect.transform.Find("TeleportLine").GetComponent<ParticleSystem>();
+            ParticleSystemRenderer teleportLineRenderer = teleportLine.GetComponent<ParticleSystemRenderer>();
+            ParticleSystem distortion = effect.transform.Find("Distortion").GetComponent<ParticleSystem>();
+            ParticleSystemRenderer distortionRenderer = distortion.GetComponent<ParticleSystemRenderer>();
+            ParticleSystem flash = effect.transform.Find("Flash").GetComponent<ParticleSystem>();
+            ParticleSystemRenderer flashRenderer = flash.GetComponent<ParticleSystemRenderer>();
+            effect.AddComponent<DestroyOnParticleEnd>().trackedParticleSystem = teleportLine;
+            // Scale Particle Duration
+            ScaleParticleSystemDuration scaleParticleSystemDuration = effect.AddComponent<ScaleParticleSystemDuration>();
+            scaleParticleSystemDuration.initialDuration = 0.5f;
+            scaleParticleSystemDuration.particleSystems = [teleportLine, distortion, flash];
+            // Light
+            Transform light = effect.transform.Find("Point Light");
+            vfxAttributes.optionalLights = [light.GetComponent<Light>()];
+            LightIntensityCurve lightCurve = light.gameObject.AddComponent<LightIntensityCurve>();
+            lightCurve.curve = AnimationCurve.EaseInOut(0, 1, 1, 0);
+            lightCurve.timeMax = 0.5f;
+            // Material swapping
+            teleportLineRenderer.sharedMaterial = chaosSnapMaterial;
+            distortionRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/Common/VFX/matInverseDistortion.mat").WaitForCompletion();
+            flashRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/Common/VFX/matGenericFlash.mat").WaitForCompletion();
+
+            return effect;
         }
 
         public static GameObject MaterialSwap(GameObject prefab, string assetPath, string pathToParticle = "")

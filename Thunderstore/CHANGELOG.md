@@ -1,8 +1,10 @@
 # Changelog
 
 ## v1.1.4
+ - (Assets) Small improvements to Super form related VFX
  - (Assets) Added a post processing effect to super forms. This subtly tints the screen yellow when you're near someone in their super form. There is a config to turn this off
  - (Bug Fix) Fixed the "Announce Super Transform" text not being formatted correctly. How long has this not been working?
+ - (Bug Fix) Fixed an issue where having your utility skill changed (removed by False Son) while Boost Idling would softlock
 
 ### Known Issues
 

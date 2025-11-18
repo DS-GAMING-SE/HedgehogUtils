@@ -12,6 +12,7 @@ using HarmonyLib;
 using LookingGlass.ItemStatsNameSpace;
 using LookingGlass.LookingGlassLanguage;
 using System.Linq;
+using HedgehogUtils.Miscellaneous;
 
 namespace HedgehogUtils.Forms
 {
@@ -145,6 +146,8 @@ namespace HedgehogUtils.Forms
         {
             orig(self);
             if (!NetworkServer.active) return;
+
+            NetworkServer.Spawn(GameObject.Instantiate<GameObject>(ChaosSnapManager.prefab));
 
             SceneDef scene = SceneCatalog.GetSceneDefForCurrentScene();
             /*if (sceneName == "intro")
