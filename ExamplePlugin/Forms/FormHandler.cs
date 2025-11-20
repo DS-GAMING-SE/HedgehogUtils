@@ -337,7 +337,7 @@ namespace HedgehogUtils.Forms
                     if (player)
                     {
                         if (!player.master || !player.master.inventory) { continue; }
-                        collectiveItemCount += player.master.inventory.GetItemCount(item);
+                        collectiveItemCount += player.master.inventory.GetItemCountEffective(item);
                     }
                 }
                 if (collectiveItemCount < item.count)
@@ -422,9 +422,9 @@ namespace HedgehogUtils.Forms
                 int neededItems = item.count;
                 if (component.body.master)
                 {
-                    int numToConstume = Math.Min(component.body.master.inventory.GetItemCount(item), neededItems);
+                    int numToConstume = Math.Min(component.body.master.inventory.GetItemCountEffective(item), neededItems);
                     neededItems -= numToConstume;
-                    component.body.master.inventory.RemoveItem(item, numToConstume);
+                    component.body.master.inventory.RemoveTempOrPermanentItem(item, numToConstume);
                     if (neededItems <= 0)
                     {
                         continue;
@@ -432,9 +432,9 @@ namespace HedgehogUtils.Forms
                 }
                 foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
                 {
-                    int numToConstume = Math.Min(player.master.inventory.GetItemCount(item), neededItems);
+                    int numToConstume = Math.Min(player.master.inventory.GetItemCountEffective(item), neededItems);
                     neededItems -= numToConstume;
-                    player.master.inventory.RemoveItem(item, numToConstume);
+                    player.master.inventory.RemoveTempOrPermanentItem(item, numToConstume);
                     if (neededItems <= 0)
                     {
                         break;
@@ -588,14 +588,14 @@ namespace HedgehogUtils.Forms
                 {
                     foreach (NeededItem item in handler.form.neededItems)
                     {
-                        if (component.body.master.inventory.GetItemCount(item) >= item.count)
+                        if (component.body.master.inventory.GetItemCountEffective(item) >= item.count)
                         {
-                            component.body.master.inventory.RemoveItem(item, item.count);
+                            component.body.master.inventory.RemoveTempOrPermanentItem(item, item.count);
                         }
                         else
                         {
                             Log.Warning("Does not have the items to be removed for transforming");
-                            component.body.master.inventory.RemoveItem(item, component.body.master.inventory.GetItemCount(item));
+                            component.body.master.inventory.RemoveTempOrPermanentItem(item, component.body.master.inventory.GetItemCountEffective(item));
                         }
                     }
                 }

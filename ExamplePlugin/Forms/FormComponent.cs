@@ -397,13 +397,13 @@ namespace HedgehogUtils.Forms
             foreach (NeededItem item in form.neededItems)
             {
                 if (item == ItemIndex.None) { Log.Error("No item?"); return; }
-                if (inventory.GetItemCount(item) > 0)
+                if (inventory.GetItemCountEffective(item) > 0)
                 {
-                    numItemsCollected += Math.Min(item.count, inventory.GetItemCount(item));
-                    if (inventory.GetItemCount(item) < item.count && allItemsTemp)
+                    numItemsCollected += Math.Min(item.count, inventory.GetItemCountEffective(item));
+                    if (inventory.GetItemCountEffective(item) < item.count && allItemsTemp)
                     {
                         allItemsTemp = false;
-                        Log.Message(body.GetDisplayName() + " player missing items needed for form " + form.ToString() + ": \n" + (new NeededItem { item = item.item, count = item.count - inventory.GetItemCount(item) }).ToString());
+                        Log.Message(body.GetDisplayName() + " player missing items needed for form " + form.ToString() + ": \n" + (new NeededItem { item = item.item, count = item.count - inventory.GetItemCountEffective(item) }).ToString());
                     }
                 }
                 else

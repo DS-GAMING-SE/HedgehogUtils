@@ -65,7 +65,7 @@ namespace HedgehogUtils
 
             Buffs.RegisterBuffs();
 
-            Boost.OnHooks.Initialize();
+            //Boost.OnHooks.Initialize();
 
             #region Forms
 
@@ -73,9 +73,10 @@ namespace HedgehogUtils
 
             Forms.SuperForm.SuperFormDef.Initialize();
 
+            Miscellaneous.DamageTypes.Initialize();
             Forms.SuperForm.ChaosEmeraldInteractable.Initialize();
 
-            Forms.OnHooks.Initialize();
+            //Forms.OnHooks.Initialize();
 
             Forms.SuperForm.Stats.Initialize();
 
@@ -87,7 +88,7 @@ namespace HedgehogUtils
 
             Launch.LaunchManager.Initialize();
 
-            Launch.OnHooks.Initialize();
+            //Launch.OnHooks.Initialize();
             #endregion
 
             #region Misc
@@ -95,6 +96,8 @@ namespace HedgehogUtils
 
             MomentumStats.Initialize();
             #endregion
+
+            OnHooks.Initialize();
 
             Language.Initialize();
 

@@ -1,13 +1,31 @@
 # Changelog
 
 ## v1.1.4
- - (Assets) Small improvements to Super form related VFX
- - (Assets) Added a post processing effect to super forms. This subtly tints the screen yellow when you're near someone in their super form. There is a config to turn this off
+ - (+ Buff) Launched enemies now apply the same enemy-specific on-hit effects as enemies thrown by Drifter
+ 
+ - (Assets) Small improvements to Super form related VFX, mainly the rainbow effects
+ - (Assets) Added a post processing effect to super forms. This subtly tints the screen yellow when you're near someone in their super form. Don't worry, it's far from as strong as Magma Worm's screen yellowing. There is a config to turn this effect off
+ 
+ - (Bug Fix) Fixed for Alloyed Collective. Forms should work with temporary items now too, but I haven't tested it.
  - (Bug Fix) Fixed the "Announce Super Transform" text not being formatted correctly. How long has this not been working?
- - (Bug Fix) Fixed an issue where having your utility skill changed (removed by False Son) while Boost Idling would softlock
+ - (Bug Fix) Fixed an issue where having your utility skill changed to an invalid skill (such as False Son's skill disabling) while Boost Idling would softlock
+ 
+ - (Compatibility) I notice those Chaos Emeralds aren't bolted to the ground...
+ 
+<details>
+<summary>(Internal) Spoiler for the compatibility part of this update</summary>
+
+- Added a new ChaosSnapManager object for handling Chaos/Shadow style teleporting. Will put something in the wiki about how to use this.. eventually
+- There is a new Miscellaneous.DamageType class with a new chaosSnapRandom DamageType for handling the Chaos Emeralds' random teleporting effect
+</details>
+
+ - (Internal) Added Helper method RemoveTempOrPermanentItem which attempts to remove temporary items first, then permanent items
+ 
+ - (Internal) All OnHooks have been moved into one file instead of being split up per feature in the mod. This prevents OnHooking the same method multiple times in multiple different places
 
 ### Known Issues
 
+ - Clients in multiplayer may be able to "damage" corpses (I'm assuming only corpses killed by launching attacks)
  - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
  - Some enemies become invisible in their death animations after being killed by a launch
 
@@ -16,7 +34,7 @@
  
  - (Internal) Instead of adding/removing Boost skill stocks when the meter comes-back/runs-out, now it checks for whether boost is available within the BoostSkillDef's IsReady()
  
- - (Bug Fix) Added missing </style> to the launch keyword
+ - (Bug Fix) Fixed subtle miscoloring in some keywords (Added missing </style> to the launch keyword)
 
 ## v1.1.2
  - (+ Buff) Sliiiiightly reduced the speed the boost meter drains so 2 Alien Heads is enough to reach infinite boost

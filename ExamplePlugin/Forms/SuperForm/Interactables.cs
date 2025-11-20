@@ -10,6 +10,8 @@ using RoR2.Hologram;
 using HedgehogUtils.Forms;
 using HedgehogUtils.Internal;
 using UnityEngine.AddressableAssets;
+using HedgehogUtils.Forms.SuperForm.EntityStates;
+using HedgehogUtils.Miscellaneous;
 
 namespace HedgehogUtils.Forms.SuperForm
 {
@@ -35,7 +37,10 @@ namespace HedgehogUtils.Forms.SuperForm
 
         public PickupDisplay pickupDisplay;
 
+        public SpecialObjectAttributes specialObjectAttributes;
+
         public PickupIndex pickupIndex;
+        public UniquePickup uniquePickup;
 
         [SyncVar]
         public EmeraldColor color;
@@ -57,9 +62,12 @@ namespace HedgehogUtils.Forms.SuperForm
                 purchaseInteractionBase = prefabBase.AddComponent<RoR2.PurchaseInteraction>();
             }
 
+            var ring = prefabBase.transform.Find("RingParent/Ring");
+            var ring2 = prefabBase.transform.Find("RingParent/Ring/RingLOD");
+
             Log.Message("PurchaseInteraction added");
 
-            prefabBase.GetComponent<Highlight>().targetRenderer = prefabBase.transform.Find("RingParent/Ring").GetComponent<MeshRenderer>();
+            prefabBase.GetComponent<Highlight>().targetRenderer = ring.GetComponent<MeshRenderer>();
 
             GameObject trigger = prefabBase.transform.Find("Trigger").gameObject;
 
@@ -85,12 +93,12 @@ namespace HedgehogUtils.Forms.SuperForm
             purchaseInteractionBase.contextToken = HedgehogUtilsPlugin.Prefix + "EMERALD_TEMPLE_CONTEXT";
 
             prefabBase.AddComponent<PingInfoProvider>().pingIconOverride = Assets.mainAssetBundle.LoadAsset<Sprite>("texEmeraldInteractableIcon");
-
-            prefabBase.transform.Find("PickupDisplay").gameObject.AddComponent<PickupDisplay>();
+            var pickupDisplayTransform = prefabBase.transform.Find("PickupDisplay");
+            var pickupDisplay = pickupDisplayTransform.gameObject.AddComponent<PickupDisplay>();
             Log.Message("PickupDisplay done");
 
-            prefabBase.transform.Find("RingParent/Ring").GetComponent<MeshRenderer>().material = Assets.ringMaterial;
-            prefabBase.transform.Find("RingParent/Ring/RingLOD").GetComponent<MeshRenderer>().material = Assets.ringMaterial;
+            ring.GetComponent<MeshRenderer>().material = Assets.ringMaterial;
+            ring2.GetComponent<MeshRenderer>().material = Assets.ringMaterial;
 
             Log.Message("Material Done");
             
@@ -115,6 +123,22 @@ namespace HedgehogUtils.Forms.SuperForm
             var giip = prefabBase.gameObject.AddComponent<GenericInspectInfoProvider>();
             giip.InspectInfo = inspect;
 
+            var drifter = prefabBase.gameObject.AddComponent<SpecialObjectAttributes>();
+            drifter.hullClassification = HullClassification.Human;
+            drifter.useSkillHighlightRenderers = true;
+            List<Renderer> ringRenderers = [ring.GetComponent<Renderer>(), ring2.GetComponent<Renderer>()];
+            drifter.skillHighlightRenderers = ringRenderers;
+            drifter.renderersToDisable = ringRenderers;
+            drifter.pickupDisplaysToDisable = [pickupDisplay];
+            drifter.collisionToDisable = [prefabBase.transform.Find("Trigger").gameObject];
+            drifter.childObjectsToDisable = [prefabBase.transform.Find("Hologram").gameObject];
+            drifter.indicatorOffset = prefabBase.transform.Find("RingParent");
+            drifter.maxDurability = 20;
+            drifter.orientToFloor = false;
+            drifter.breakoutState = new SerializableEntityStateType(typeof(InteractablePurchased));
+            drifter.damageTypeOverride = DamageTypeCombo.Generic | DamageType.Stun1s;
+            drifter.damageTypeOverride.AddModdedDamageType(DamageTypes.chaosSnapRandom);
+
             PrefabAPI.RegisterNetworkPrefab(prefabBase);
 
             //Content.AddNetworkedObjectPrefab(prefabBase);
@@ -137,6 +161,7 @@ namespace HedgehogUtils.Forms.SuperForm
             pickupDisplay = base.GetComponentInChildren<PickupDisplay>();
             purchaseInteraction = base.GetComponent<PurchaseInteraction>();
             HologramProjector hologram = base.GetComponent<HologramProjector>();
+            specialObjectAttributes = base.GetComponent<SpecialObjectAttributes>();
 
             purchaseInteraction.costType = purchaseInteraction.cost == 0 ? CostTypeIndex.None : CostTypeIndex.Money;
             hologram.enabled = purchaseInteraction.cost != 0;
@@ -145,7 +170,7 @@ namespace HedgehogUtils.Forms.SuperForm
 
             if (NetworkServer.active)
             {
-                purchaseInteraction.onPurchase.AddListener(OnPurchase);
+                purchaseInteraction.onDetailedPurchaseServer.AddListener(OnPurchase);
                 int emeraldIndex = Run.instance.stageRng.RangeInt(0, SuperSonicHandler.available.Count);
                 this.color = SuperSonicHandler.available[emeraldIndex];
                 SuperSonicHandler.available.RemoveAt(emeraldIndex);
@@ -183,30 +208,30 @@ namespace HedgehogUtils.Forms.SuperForm
             }
 
             pickupIndex = GetPickupIndex();
-
-            pickupDisplay.SetPickupIndex(pickupIndex);
+            uniquePickup = new UniquePickup(pickupIndex);
+            pickupDisplay.SetPickup(uniquePickup);
         }
 
-        public void OnPurchase(Interactor interactor)
+        public void OnPurchase(CostTypeDef.PayCostContext context, CostTypeDef.PayCostResults results)
         {
-            Log.Message("Bought " + color + " Chaos Emerald.");
             purchaseInteraction.SetAvailable(false);
-            this.stateMachine.SetNextState(new EntityStates.InteractablePurchased());
+            specialObjectAttributes.grabbable = false;
+            this.stateMachine.SetNextState(new InteractablePurchased());
         }
 
         public void DropPickup()
         {
-            pickupDisplay.SetPickupIndex(PickupIndex.none);
             if (!NetworkServer.active)
             {
                 //Debug.LogWarning("[Server] function 'ChaosEmeraldInteractable::DropPickup()' called on client");
                 return;
             }
-            PickupDropletController.CreatePickupDroplet(this.pickupIndex, (pickupDisplay.transform).position, base.transform.TransformVector(dropVelocity));
+            PickupDropletController.CreatePickupDroplet(uniquePickup, (pickupDisplay.transform).position, base.transform.TransformVector(dropVelocity), false, false);
         }
 
         public void Disappear()
         {
+            pickupDisplay.DestroyModel();
             gameObject.transform.Find("Trigger").gameObject.SetActive(false);
             gameObject.transform.Find("RingParent/Ring").gameObject.SetActive(false);
         }

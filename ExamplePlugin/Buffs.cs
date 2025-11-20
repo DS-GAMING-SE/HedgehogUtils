@@ -10,6 +10,8 @@ namespace HedgehogUtils
 
         public static BuffDef launchedBuff;
 
+        public static BuffDef chaosSnapRandomIdentifierBuff;
+
         internal static void RegisterBuffs()
         {
             superFormBuff = AddNewBuff("bdHedgehogSuperForm",
@@ -19,6 +21,12 @@ namespace HedgehogUtils
                 false,
                 false);
             launchedBuff = AddNewBuff("bdHedgehogLaunch",
+                LegacyResourcesAPI.Load<BuffDef>("BuffDefs/Weak").iconSprite,
+                new Color(1f, 1f, 1f),
+                false,
+                false,
+                true);
+            chaosSnapRandomIdentifierBuff = AddNewBuff("bdHedgehogChaosSnap",
                 LegacyResourcesAPI.Load<BuffDef>("BuffDefs/Weak").iconSprite,
                 new Color(1f, 1f, 1f),
                 false,

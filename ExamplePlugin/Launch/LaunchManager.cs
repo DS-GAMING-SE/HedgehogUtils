@@ -89,7 +89,7 @@ namespace HedgehogUtils.Launch
         public static bool TargetCanBeLaunched(CharacterBody target, out LaunchProjectileController currentLaunchController)
         {
             currentLaunchController = null;
-            if (!(Config.LaunchBodyBlacklist().Value && bodyBlacklist.Contains(BodyCatalog.GetBodyName(target.bodyIndex)) || target.bodyFlags.HasFlag(CharacterBody.BodyFlags.IgnoreKnockback)) )
+            if (!(Config.LaunchBodyBlacklist().Value && bodyBlacklist.Contains(BodyCatalog.GetBodyName(target.bodyIndex)) || target.bodyFlags.HasFlag(CharacterBody.BodyFlags.IgnoreKnockup)) )
             {
                 EntityStateMachine bodyState = EntityStateMachine.FindByCustomName(target.gameObject, "Body");
                 if (bodyState && bodyState.CanInterruptState(InterruptPriority.Vehicle))

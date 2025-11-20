@@ -12,6 +12,7 @@ using RoR2.Audio;
 using static RoR2.VFXAttributes;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.Rendering.PostProcessing;
+using HedgehogUtils.Miscellaneous;
 
 namespace HedgehogUtils
 {
@@ -261,6 +262,8 @@ namespace HedgehogUtils
         public static GameObject chaosSnapInEffect;
         public static GameObject chaosSnapOutEffect;
         public static Material chaosSnapMaterial;
+        public static NetworkSoundEventDef chaosSnapSoundEventDef;
+        public static NetworkSoundEventDef chaosSnapLargeSoundEventDef;
         #endregion
         public static void Miscellaneous()
         {
@@ -280,11 +283,14 @@ namespace HedgehogUtils
 
             chaosSnapMaterial = new Material(Addressables.LoadAssetAsync<Material>("RoR2/Base/Huntress/matHuntressSwipe.mat").WaitForCompletion());
             chaosSnapMaterial.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>("RoR2/Base/Common/ColorRamps/texRampLightning2.png").WaitForCompletion());
-            chaosSnapInEffect = CreateChaosSnapEffect("ChaosSnapInVFX");
-            chaosSnapOutEffect = CreateChaosSnapEffect("ChaosSnapOutVFX");
+            chaosSnapInEffect = CreateChaosSnapEffect("ChaosSnapInVFX", true);
+            chaosSnapOutEffect = CreateChaosSnapEffect("ChaosSnapOutVFX", false);
+
+            chaosSnapSoundEventDef = CreateNetworkSoundEventDef("Play_hedgehogutils_teleport");
+            chaosSnapLargeSoundEventDef = CreateNetworkSoundEventDef("Play_hedgehogutils_teleport_large");
         }
 
-        public static GameObject CreateChaosSnapEffect(string assetBundlePrefabName)
+        public static GameObject CreateChaosSnapEffect(string assetBundlePrefabName, bool teleportIn)
         {
             GameObject effect = mainAssetBundle.LoadAsset<GameObject>(assetBundlePrefabName);
             VFXAttributes vfxAttributes = effect.AddComponent<VFXAttributes>();
@@ -304,12 +310,20 @@ namespace HedgehogUtils
             Transform light = effect.transform.Find("Point Light");
             vfxAttributes.optionalLights = [light.GetComponent<Light>()];
             LightIntensityCurve lightCurve = light.gameObject.AddComponent<LightIntensityCurve>();
-            lightCurve.curve = AnimationCurve.EaseInOut(0, 1, 1, 0);
+            lightCurve.curve = teleportIn ? AnimationCurve.EaseInOut(0, 0, 1, 1) : AnimationCurve.EaseInOut(0, 1, 1, 0);
             lightCurve.timeMax = 0.5f;
             // Material swapping
             teleportLineRenderer.sharedMaterial = chaosSnapMaterial;
             distortionRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/Common/VFX/matInverseDistortion.mat").WaitForCompletion();
             flashRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/Common/VFX/matGenericFlash.mat").WaitForCompletion();
+
+            EffectComponent effectComponent = effect.AddComponent<EffectComponent>();
+            effectComponent.applyScale = true;
+            effectComponent.applyScaleFirst = true;
+            effectComponent.positionAtReferencedTransform = false;
+            effect.AddComponent<ChaosSnapVFX>().reverse = teleportIn;
+
+            AddNewEffectDef(effect);
 
             return effect;
         }
@@ -409,7 +423,16 @@ namespace HedgehogUtils
         }
 
 
+        private static NetworkSoundEventDef CreateNetworkSoundEventDef(string eventName)
+        {
+            NetworkSoundEventDef networkSoundEventDef = ScriptableObject.CreateInstance<NetworkSoundEventDef>();
+            networkSoundEventDef.akId = AkSoundEngine.GetIDFromString(eventName);
+            networkSoundEventDef.eventName = eventName;
 
+            Content.AddNetworkSoundEventDef(networkSoundEventDef);
+
+            return networkSoundEventDef;
+        }
 
         private static GameObject LoadEffect(string resourceName)
         {

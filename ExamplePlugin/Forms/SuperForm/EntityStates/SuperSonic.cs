@@ -78,7 +78,7 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
             }
             if (NetworkServer.active)
             {
-                RoR2.Util.CleanseBody(base.characterBody, true, false, true, true, true, false);
+                CleanseSystem.CleanseBodyServer(base.characterBody, true, false, true, true, true, false);
                 viend = base.GetComponent<VoidSurvivorController>();
                 Heal(1);
 

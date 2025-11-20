@@ -31,6 +31,24 @@ namespace HedgehogUtils
 
         public static Func<T[], T[]> AppendDel<T>(List<T> list) => (r) => Append(ref r, list);
 
+        public static void RemoveTempOrPermanentItem(this Inventory inventory, ItemIndex item, int count)
+        {
+            if (inventory)
+            {
+                int itemsToRemove = count;
+                if (inventory.GetItemCountTemp(item) > 0)
+                {
+                    int removing = Math.Min(inventory.GetItemCountTemp(item), itemsToRemove);
+                    inventory.RemoveItemTemp(item, removing);
+                    itemsToRemove -= removing;
+                }
+                if (itemsToRemove > 0)
+                {
+                    inventory.RemoveItemPermanent(item, Math.Min(inventory.GetItemCountPermanent(item), itemsToRemove));
+                }
+            }
+        }
+
         public static bool Flying(GameObject gameObject, out ICharacterFlightParameterProvider flight)
         {
             if (gameObject) 

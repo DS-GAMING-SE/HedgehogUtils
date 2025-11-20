@@ -16,9 +16,6 @@ namespace HedgehogUtils.Miscellaneous
         public static ChaosSnapManager instance;
         public static GameObject prefab;
         public static Material tempOverlayMaterial;
-        public static EffectManagerHelper effectManagerHelper;
-        private static EffectManagerHelper _emh_teleportInEffectInstance;
-        private static EffectManagerHelper _emh_teleportOutEffectInstance;
 
         public static void Initialize()
         {
@@ -54,38 +51,29 @@ namespace HedgehogUtils.Miscellaneous
                     duration = 0.25f;
                     break;
             }
-            Teleport(target, null, teleportFootPosition, duration, duration, duration);
+            Teleport(target, teleportFootPosition, duration, duration);
         }
-        public void Teleport(CharacterBody target, CharacterModel characterModel, Vector3 teleportFootPosition, float startVFXDuration, float teleportDelay, float endVFXDuration)
+        public void Teleport(CharacterBody target, Vector3 teleportFootPosition, float startDuration, float endDuration)
         {
-            if (!target) { return; }
-            CharacterModel model = characterModel;
-            if (!model && target.modelLocator && target.modelLocator.modelTransform)
+            if (startDuration > 0)
             {
-                model = target.modelLocator.modelTransform.GetComponent<CharacterModel>();
-            }
-            if (teleportDelay > 0)
-            {
-                StartCoroutine(TeleportAfterDelay(target, model, teleportFootPosition, startVFXDuration, teleportDelay, endVFXDuration));
+                StartCoroutine(TeleportAfterDelay(target, teleportFootPosition, startDuration, endDuration));
             }
             else
             {
-                TeleportVFX(target, target.corePosition, true, startVFXDuration);
-                TeleportVFX(target, VFXPosition(target, teleportFootPosition), false, endVFXDuration);
+                TeleportVFX(target, target.corePosition, true, 0.2f, false);
+                TeleportVFX(target, VFXPosition(target, teleportFootPosition), false, endDuration, true);
                 TeleportHelper.TeleportBody(target, teleportFootPosition, true);
-                Flash(model, endVFXDuration);
             }
         }
-        IEnumerator TeleportAfterDelay(CharacterBody target, CharacterModel characterModel, Vector3 teleportFootPosition, float startVFXDuration, float teleportDelay, float endVFXDuration)
+        IEnumerator TeleportAfterDelay(CharacterBody target, Vector3 teleportFootPosition, float startDuration, float endDuration)
         {
-            ReverseFlash(characterModel, teleportDelay);
-            TeleportVFX(target, target.corePosition, true, startVFXDuration);
-            yield return new WaitForSeconds(teleportDelay);
+            TeleportVFX(target, target.corePosition, true, startDuration, true);
+            yield return new WaitForSeconds(startDuration);
             if (target)
             {
-                TeleportVFX(target, VFXPosition(target, teleportFootPosition), false, endVFXDuration);
+                TeleportVFX(target, VFXPosition(target, teleportFootPosition), false, endDuration, true);
                 TeleportHelper.TeleportBody(target, teleportFootPosition, true);
-                Flash(characterModel, endVFXDuration);
             }
 
         }
@@ -98,68 +86,34 @@ namespace HedgehogUtils.Miscellaneous
             }
             return false;
         }
-        public static void TeleportVFX(CharacterBody target, Vector3 position, bool teleportIn, float duration)
+        public static void TeleportVFX(CharacterBody target, Vector3 position, bool teleportIn, float duration, bool useTemporaryOverlay)
         {
-            GameObject vfx = CreatePooledVFX(teleportIn? Assets.chaosSnapInEffect : Assets.chaosSnapOutEffect, teleportIn, position);
+            if (duration <= 0.05f) { return; }
+            float scale;
             switch (target.hullClassification)
             {
                 case HullClassification.Golem:
-                    vfx.transform.localScale = new Vector3(2f, 2f, 2f);
+                    scale = 2f;
                     break;
                 case HullClassification.BeetleQueen:
-                    vfx.transform.localScale = new Vector3(5f, 5f, 5f);
+                    scale = 5f;
                     break;
                 default:
-                    vfx.transform.localScale = new Vector3(1f, 1f, 1f);
+                    scale = 1f;
                     break;
             }
-            ScaleTeleportVFX(vfx, duration);
-            Util.PlaySound(duration < 0.27f ? "Play_hedgehogutils_teleport" : "Play_hedgehogutils_teleport_large", vfx);
-        }
-        public static void ScaleTeleportVFX(GameObject vfx, float duration)
-        {
-            if (vfx.TryGetComponent<ScaleParticleSystemDuration>(out ScaleParticleSystemDuration particle))
+            EffectData data = new EffectData
             {
-                ScaleTeleportVFX(particle, duration);
-            }
+                scale = scale,
+                genericFloat = duration,
+                networkSoundEventIndex = duration < 0.27f ? Assets.chaosSnapSoundEventDef.index : Assets.chaosSnapLargeSoundEventDef.index,
+                origin = position,
+                rootObject = target ? target.gameObject : null,
+                genericBool = useTemporaryOverlay
+            };
+            EffectManager.SpawnEffect(teleportIn ? Assets.chaosSnapInEffect : Assets.chaosSnapOutEffect, data, true);
         }
-        public static void ScaleTeleportVFX(ScaleParticleSystemDuration vfx, float duration)
-        {
-            vfx.newDuration = duration;
-            vfx.UpdateDuration();
-            Transform light = vfx.transform.Find("Point Light");
-            light.GetComponent<LightIntensityCurve>().timeMax = duration;
-        }
-        private static GameObject CreatePooledVFX(GameObject prefab, bool teleportIn, Vector3 position)
-        {
-            if (prefab)
-            {
-                if (teleportIn)
-                {
-                    _emh_teleportInEffectInstance = EffectManager.GetAndActivatePooledEffect(prefab, position, Quaternion.identity);
-                    return _emh_teleportInEffectInstance.gameObject;
-                }
-                else
-                {
-                    _emh_teleportOutEffectInstance = EffectManager.GetAndActivatePooledEffect(prefab, position, Quaternion.identity);
-                    return _emh_teleportOutEffectInstance.gameObject;
-                }
-            }
-            return null;
-        }
-        private static GameObject CreatePooledVFX(GameObject prefab, ref EffectManagerHelper emh, Vector3 position)
-        {
-            if (prefab)
-            {
-                if (emh)
-                {
-                    emh = EffectManager.GetAndActivatePooledEffect(prefab, position, Quaternion.identity);
-                    return emh.gameObject;
-                }
-                CreatePooledVFX(prefab, false, position);
-            }
-            return null;
-        }
+
         private static Vector3 VFXPosition(CharacterBody target, Vector3 footPosition)
         {
             return (target.corePosition - target.footPosition) + footPosition;
@@ -200,32 +154,6 @@ namespace HedgehogUtils.Miscellaneous
             nodeGraph.GetNodePosition(nodeIndex, out Vector3 vector3);
             destination = vector3;
             return true;
-        }
-        public static void Flash(CharacterModel characterModel, float duration)
-        {
-            if (characterModel)
-            {
-                TemporaryOverlayInstance flashOverlay = TemporaryOverlayManager.AddOverlay(characterModel.gameObject); // Flash
-                flashOverlay.duration = duration;
-                flashOverlay.animateShaderAlpha = true;
-                flashOverlay.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
-                flashOverlay.originalMaterial = tempOverlayMaterial;
-                flashOverlay.destroyComponentOnEnd = true;
-                flashOverlay.inspectorCharacterModel = characterModel;
-            }
-        }
-        public static void ReverseFlash(CharacterModel characterModel, float duration)
-        {
-            if (characterModel)
-            {
-                TemporaryOverlayInstance flashOverlay = TemporaryOverlayManager.AddOverlay(characterModel.gameObject); // Flash
-                flashOverlay.duration = duration;
-                flashOverlay.animateShaderAlpha = true;
-                flashOverlay.alphaCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-                flashOverlay.originalMaterial = tempOverlayMaterial;
-                flashOverlay.destroyComponentOnEnd = true;
-                flashOverlay.inspectorCharacterModel = characterModel;
-            }
         }
     }
 }

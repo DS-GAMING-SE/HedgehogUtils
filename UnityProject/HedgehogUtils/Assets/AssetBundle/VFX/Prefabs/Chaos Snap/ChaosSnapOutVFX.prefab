@@ -15,6 +15,42 @@ PrefabInstance:
       propertyPath: startDelay.scalar
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4665684494049261379, guid: fb4bcb428d648a742b09b2ef9a473db7, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.atime1
+      value: 8096
+      objectReference: {fileID: 0}
+    - target: {fileID: 4665684494049261379, guid: fb4bcb428d648a742b09b2ef9a473db7, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.key1.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4665684494049261379, guid: fb4bcb428d648a742b09b2ef9a473db7, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.m_NumAlphaKeys
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4665684494049261379, guid: fb4bcb428d648a742b09b2ef9a473db7, type: 3}
+      propertyPath: SizeModule.curve.maxCurve.m_Curve.Array.data[0].value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4665684494049261379, guid: fb4bcb428d648a742b09b2ef9a473db7, type: 3}
+      propertyPath: SizeModule.curve.maxCurve.m_Curve.Array.data[1].value
+      value: 0.5810814
+      objectReference: {fileID: 0}
+    - target: {fileID: 4665684494049261379, guid: fb4bcb428d648a742b09b2ef9a473db7, type: 3}
+      propertyPath: SizeModule.curve.maxCurve.m_Curve.Array.data[0].inSlope
+      value: -0.4189186
+      objectReference: {fileID: 0}
+    - target: {fileID: 4665684494049261379, guid: fb4bcb428d648a742b09b2ef9a473db7, type: 3}
+      propertyPath: SizeModule.curve.maxCurve.m_Curve.Array.data[1].inSlope
+      value: -0.4189186
+      objectReference: {fileID: 0}
+    - target: {fileID: 4665684494049261379, guid: fb4bcb428d648a742b09b2ef9a473db7, type: 3}
+      propertyPath: SizeModule.curve.maxCurve.m_Curve.Array.data[0].outSlope
+      value: -0.4189186
+      objectReference: {fileID: 0}
+    - target: {fileID: 4665684494049261379, guid: fb4bcb428d648a742b09b2ef9a473db7, type: 3}
+      propertyPath: SizeModule.curve.maxCurve.m_Curve.Array.data[1].outSlope
+      value: -0.4189186
+      objectReference: {fileID: 0}
     - target: {fileID: 5017078513658599173, guid: fb4bcb428d648a742b09b2ef9a473db7, type: 3}
       propertyPath: m_RootOrder
       value: 0
