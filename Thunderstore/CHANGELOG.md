@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.1.5
+ - (Bug Fix) Fixed corpses being able to be hit by players after being launched in multiplayer
+ 
+ - (Internal) Added new sound effects. Some of these sounds were originally part of the Sonic mod but have been moved here
+     - Lock-On
+	 - Launch colliding with wall
+     - Death (From Sonic)
+	 - Jump ball (From Sonic)
+	 - Braking (From Sonic)
+
+### Known Issues
+
+ - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
+ - Some enemies become invisible in their death animations after being killed by a launch
+
+
 ## v1.1.4
  - (+ Buff) Launched enemies now apply the same enemy-specific on-hit effects as enemies thrown by Drifter
  
@@ -22,12 +38,6 @@
  - (Internal) Added Helper method RemoveTempOrPermanentItem which attempts to remove temporary items first, then permanent items
  
  - (Internal) All OnHooks have been moved into one file instead of being split up per feature in the mod. This prevents OnHooking the same method multiple times in multiple different places
-
-### Known Issues
-
- - Clients in multiplayer may be able to "damage" corpses (I'm assuming only corpses killed by launching attacks)
- - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
- - Some enemies become invisible in their death animations after being killed by a launch
 
 ## v1.1.3
  - (Internal) **Potentially breaks custom Boost skills**. Added missing Time.fixedDeltaTime to boost meter FixedUpdate stuff. The default values for BoostLogic.baseBoostRegen and the Boost entity state's boostMeterDrain are now 60x what they previously were

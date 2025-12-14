@@ -48,7 +48,7 @@ namespace HedgehogUtils
                 }
             }
         }
-
+        // I never realized CharacterMotor just has an isFlying var in it so all these Flying helper methods are basically useless
         public static bool Flying(GameObject gameObject, out ICharacterFlightParameterProvider flight)
         {
             if (gameObject) 

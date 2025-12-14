@@ -44,12 +44,12 @@ namespace HedgehogUtils.Launch
             if (die && !body.HasBuff(Buffs.launchedBuff))
             {
                 CharacterDeathBehavior death = body.gameObject.GetComponent<CharacterDeathBehavior>();
-                Destroy(this);
                 if (death)
                 {
                     death.OnDeath();
                 }
                 die = false;
+                Destroy(this);
             }
         }
 

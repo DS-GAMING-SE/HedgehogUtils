@@ -120,7 +120,7 @@ namespace HedgehogUtils
                 GameObject.Destroy(launchWallCollisionLargeEffect.transform.Find("Particles/Point Light").gameObject);
                 ParticleSystem.ShapeModule dustLargeShapeModule = launchWallCollisionLargeEffect.transform.Find("Particles/Dust, Directional").GetComponent<ParticleSystem>().shape;
                 dustLargeShapeModule.radius = 6f;
-                launchWallCollisionLargeEffect.GetComponent<EffectComponent>().soundName = "Play_titanboss_impact";
+                launchWallCollisionLargeEffect.GetComponent<EffectComponent>().soundName = "";
 
 
                 // Launch Wall
@@ -166,10 +166,10 @@ namespace HedgehogUtils
                 debris3DBurst.count = 3;
                 debris3D.emission.SetBurst(0, debris3DBurst);*/
 
-                launchWallCollisionEffect.GetComponent<EffectComponent>().soundName = "Play_golem_impact";
+                launchWallCollisionEffect.GetComponent<EffectComponent>().soundName = "";
 
-                AddNewEffectDef(launchWallCollisionEffect, "Play_golem_impact");
-                AddNewEffectDef(launchWallCollisionLargeEffect, "Play_titanboss_impact");
+                AddNewEffectDef(launchWallCollisionEffect, "Play_hedgehogutils_launch_collide");
+                AddNewEffectDef(launchWallCollisionLargeEffect, "Play_hedgehogutils_launch_collide_large");
             };
         }
 

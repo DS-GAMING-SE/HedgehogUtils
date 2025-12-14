@@ -44,10 +44,10 @@ namespace HedgehogUtils.Launch
                         }
                     }
                 }
-                if (NetworkClient.active)
-                {
-                    base.gameObject.AddComponent<DieOnLaunchEnd>();
-                }
+            }
+            if (!NetworkServer.active)
+            {
+                base.gameObject.AddComponent<DieOnLaunchEnd>();
             }
         }
 

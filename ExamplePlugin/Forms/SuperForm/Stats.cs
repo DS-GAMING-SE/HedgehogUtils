@@ -35,12 +35,6 @@ namespace HedgehogUtils.Forms.SuperForm
             {
                 self.acceleration *= 5;
             }
-
-            Boost.BoostLogic boost = self.GetComponent<Boost.BoostLogic>();
-            if (boost)
-            {
-                boost.CalculateBoostVariables();
-            }
         }
     }
 }

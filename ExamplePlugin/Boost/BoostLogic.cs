@@ -45,11 +45,11 @@ namespace HedgehogUtils.Boost
         private void Start()
         {
             body=GetComponent<CharacterBody>();
-            flight = GetComponent<ICharacterFlightParameterProvider>();
             body.characterMotor.onHitGroundAuthority += ResetAirBoost;
             body.skillLocator.utility.onSkillChanged += OnSkillChanged;
             BoostExists();
-            CalculateBoostVariables();
+            CalculateBoostVariables(body);
+            body.onRecalculateStats += CalculateBoostVariables;
             this.NetworkboostMeter = maxBoostMeter;
         }
         
@@ -72,14 +72,14 @@ namespace HedgehogUtils.Boost
             }
         }
 
-        public virtual void CalculateBoostVariables()
+        public virtual void CalculateBoostVariables(CharacterBody body)
         {
             if (body && boostExists)
             {
                 this.boostRegen = baseBoostRegen / body.skillLocator.utility.cooldownScale;
                 this.maxBoostMeter = Mathf.Round((baseMaxBoostMeter + (boostMeterPerFlatReduction * Mathf.Max(body.skillLocator.utility.flatCooldownReduction, -2))) / 10) * 10;
                 this.NetworkmaxBoostMeter = maxBoostMeter;
-                if ((body.characterMotor.isGrounded || Helpers.Flying(flight)) && body.skillLocator.utility.stock != body.skillLocator.utility.maxStock && boostAvailable)
+                if ((body.characterMotor.isGrounded || body.characterMotor.isFlying) && body.skillLocator.utility.stock != body.skillLocator.utility.maxStock && boostAvailable)
                 {
                     body.skillLocator.utility.stock = body.skillLocator.utility.maxStock;
                 }
@@ -106,6 +106,7 @@ namespace HedgehogUtils.Boost
         {
             body.characterMotor.onHitGroundAuthority -= ResetAirBoost;
             body.skillLocator.utility.onSkillChanged -= OnSkillChanged;
+            body.onRecalculateStats -= CalculateBoostVariables;
         }
 
         [Server]

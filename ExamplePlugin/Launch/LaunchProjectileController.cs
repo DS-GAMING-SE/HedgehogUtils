@@ -208,7 +208,7 @@ namespace HedgehogUtils.Launch
             attack.attackerFiltering = AttackerFiltering.NeverHitSelf;
             attack.pushAwayForce = 1500f;
             attack.hitEffectPrefab = crit ? Assets.launchCritHitEffect : Assets.launchHitEffect;
-            attack.impactSound = NetworkSoundEventCatalog.FindNetworkSoundEventIndex("Play_beetle_guard_impact"); // I really should get custom sounds for this
+            //attack.impactSound = NetworkSoundEventCatalog.FindNetworkSoundEventIndex("Play_beetle_guard_impact"); // I really should get custom sounds for this
             attack.addIgnoredHitList(body.healthComponent);
 
             if (body.gameObject.TryGetComponent(out SpecialObjectAttributes drifter))

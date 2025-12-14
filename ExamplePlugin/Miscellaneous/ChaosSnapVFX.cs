@@ -32,8 +32,11 @@ namespace HedgehogUtils.Miscellaneous
         }
         public void TeleportVFX()
         {
-            scale.newDuration = effectComponent.effectData.genericFloat;
-            scale.UpdateDuration();
+            if (scale)
+            {
+                scale.newDuration = effectComponent.effectData.genericFloat;
+                scale.UpdateDuration();
+            }
             if (lightIntensityCurve)
             {
                 lightIntensityCurve.timeMax = effectComponent.effectData.genericFloat;

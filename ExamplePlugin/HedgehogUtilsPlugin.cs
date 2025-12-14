@@ -39,7 +39,7 @@ namespace HedgehogUtils
         public const string PluginGUID = "com.ds_gaming.HedgehogUtils";
         public const string PluginAuthor = "ds_gaming";
         public const string PluginName = "HedgehogUtils";
-        public const string PluginVersion = "1.1.4";
+        public const string PluginVersion = "1.1.5";
 
         public const string Prefix = "DS_GAMING_HEDGEHOG_UTILS_";
 
@@ -65,8 +65,6 @@ namespace HedgehogUtils
 
             Buffs.RegisterBuffs();
 
-            //Boost.OnHooks.Initialize();
-
             #region Forms
 
             Forms.SuperForm.Items.RegisterItems();
@@ -75,8 +73,6 @@ namespace HedgehogUtils
 
             Miscellaneous.DamageTypes.Initialize();
             Forms.SuperForm.ChaosEmeraldInteractable.Initialize();
-
-            //Forms.OnHooks.Initialize();
 
             Forms.SuperForm.Stats.Initialize();
 
@@ -87,8 +83,6 @@ namespace HedgehogUtils
             Launch.DamageTypes.Initialize();
 
             Launch.LaunchManager.Initialize();
-
-            //Launch.OnHooks.Initialize();
             #endregion
 
             #region Misc

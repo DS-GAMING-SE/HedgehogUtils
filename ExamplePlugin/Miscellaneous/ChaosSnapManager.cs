@@ -1,4 +1,5 @@
-﻿using R2API;
+﻿using EntityStates.MinePod;
+using R2API;
 using Rewired;
 using RoR2;
 using RoR2.Navigation;
@@ -88,19 +89,25 @@ namespace HedgehogUtils.Miscellaneous
         }
         public static void TeleportVFX(CharacterBody target, Vector3 position, bool teleportIn, float duration, bool useTemporaryOverlay)
         {
+            TeleportVFX(target, position, teleportIn ? Assets.chaosSnapInEffect : Assets.chaosSnapOutEffect, duration, useTemporaryOverlay);
+        }
+        public static void TeleportVFX(CharacterBody target, Vector3 position, GameObject vfxPrefab, float duration, bool useTemporaryOverlay)
+        {
             if (duration <= 0.05f) { return; }
-            float scale;
-            switch (target.hullClassification)
+            float scale = 1f;
+            if (target)
             {
-                case HullClassification.Golem:
-                    scale = 2f;
-                    break;
-                case HullClassification.BeetleQueen:
-                    scale = 5f;
-                    break;
-                default:
-                    scale = 1f;
-                    break;
+                switch (target.hullClassification)
+                {
+                    case HullClassification.Golem:
+                        scale = 2f;
+                        break;
+                    case HullClassification.BeetleQueen:
+                        scale = 5f;
+                        break;
+                    default:
+                        break;
+                }
             }
             EffectData data = new EffectData
             {
@@ -109,9 +116,9 @@ namespace HedgehogUtils.Miscellaneous
                 networkSoundEventIndex = duration < 0.27f ? Assets.chaosSnapSoundEventDef.index : Assets.chaosSnapLargeSoundEventDef.index,
                 origin = position,
                 rootObject = target ? target.gameObject : null,
-                genericBool = useTemporaryOverlay
+                genericBool = useTemporaryOverlay && target
             };
-            EffectManager.SpawnEffect(teleportIn ? Assets.chaosSnapInEffect : Assets.chaosSnapOutEffect, data, true);
+            EffectManager.SpawnEffect(vfxPrefab, data, true);
         }
 
         private static Vector3 VFXPosition(CharacterBody target, Vector3 footPosition)
