@@ -75,7 +75,6 @@ namespace HedgehogUtils.Forms
             Array.Resize(ref numberOfTimesTransformed, FormCatalog.formsCatalog.Length);
 
             initialized = true;
-            Log.Message("FormComponent init");
         }
 
         public void CreateUnsyncItemTrackers()
@@ -122,7 +121,6 @@ namespace HedgehogUtils.Forms
                     {
                         if (handler.CanTransform(this))
                         {
-                            Log.Message("Attempt Transform");
                             Transform();
                             break;
                         }
@@ -337,7 +335,6 @@ namespace HedgehogUtils.Forms
                 {
                     if (body.inventory)
                     {
-                        Log.Message("inventory found");
                         inventory = body.inventory;
                         SubscribeEvents(true);
                     }
@@ -365,7 +362,6 @@ namespace HedgehogUtils.Forms
                         {
                             syncedItemTracker.CheckHighestItemCountEvent += HighestItemCount;
                         }
-                        Log.Message("subscribe");
                         eventsSubscribed = true;
                         SetItemsDirty();
                     }
@@ -391,19 +387,19 @@ namespace HedgehogUtils.Forms
         {
             itemsDirty = false;
             numItemsCollected = 0;
-            if (!form) { Log.Error("No form?"); allItems= false; return; }
-            if (!inventory) { Log.Error("No inventory?"); allItems = false; return; }
+            if (!form) { Log.Error("No form?", Config.Logs.All); allItems= false; return; }
+            if (!inventory) { Log.Error("No inventory?", Config.Logs.All); allItems = false; return; }
             bool allItemsTemp = true;
             foreach (NeededItem item in form.neededItems)
             {
-                if (item == ItemIndex.None) { Log.Error("No item?"); return; }
+                if (item == ItemIndex.None) { Log.Error("No item?", Config.Logs.All); return; }
                 if (inventory.GetItemCountEffective(item) > 0)
                 {
                     numItemsCollected += Math.Min(item.count, inventory.GetItemCountEffective(item));
                     if (inventory.GetItemCountEffective(item) < item.count && allItemsTemp)
                     {
                         allItemsTemp = false;
-                        Log.Message(body.GetDisplayName() + " player missing items needed for form " + form.ToString() + ": \n" + (new NeededItem { item = item.item, count = item.count - inventory.GetItemCountEffective(item) }).ToString());
+                        Log.Message(body.GetDisplayName() + " player missing items needed for form " + form.ToString() + ": \n" + (new NeededItem { item = item.item, count = item.count - inventory.GetItemCountEffective(item) }).ToString(), Config.Logs.All);
                     }
                 }
                 else
@@ -413,7 +409,7 @@ namespace HedgehogUtils.Forms
             }
             // FormHandler's item tracking counts numItemsCollected before it gets updated here
             allItems = allItemsTemp;
-            Log.Message(body.GetDisplayName() + " player's items needed for form " + form.ToString() +"\nNumber of items: " + numItemsCollected + "\nAll: " + allItems);
+            Log.Message(body.GetDisplayName() + " player's items needed for form " + form.ToString() +"\nNumber of items: " + numItemsCollected + "\nAll: " + allItems, Config.Logs.All);
             if (syncedItemTracker)
             {
                 syncedItemTracker.CheckHighestItemCount();

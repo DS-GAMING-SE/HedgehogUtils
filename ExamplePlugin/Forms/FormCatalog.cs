@@ -21,7 +21,7 @@ namespace HedgehogUtils.Forms
         [SystemInitializer]
         private static void SystemInit()
         {
-            Log.Message("FormCatalog initialized");
+            Log.Message("FormCatalog initialized", Config.Logs.All);
             InitializeFormConfigs();
             availability.MakeAvailable();
         }
@@ -30,18 +30,17 @@ namespace HedgehogUtils.Forms
             string formNamesListed = string.Concat(forms.Select(x => x.ToString() + "\n"));
             if (availability.available)
             {
-                Log.Message("Forms "+formNamesListed+" are trying to be added after the catalog is initialized");
+                Log.Warning("Forms "+formNamesListed+" are trying to be added after the catalog is initialized");
                 return;
             }
 
-            Log.Message("Adding new FormDef(s) to catalog.\n"+ formNamesListed);
+            Log.Message("Adding new FormDef(s) to catalog.\n"+ formNamesListed, Config.Logs.All);
             int length = formsCatalog.Length;
             Array.Resize(ref formsCatalog, length + forms.Length);
             for (int i = 0; i < forms.Length; i++)
             {
                 // Adding form to catalog
                 formsCatalog[length + i] = forms[i];
-                Log.Message("FormDef "+ forms[i].name +" added to catalog");
             }
 
             formsCatalog = formsCatalog.OrderBy(form => form.name).ToArray();
@@ -61,7 +60,7 @@ namespace HedgehogUtils.Forms
                     form.keybind = HedgehogUtilsPlugin.instance.Config.Bind<KeyboardShortcut>("Controls", form.ToString() + " Transform Key", new KeyboardShortcut(form.defaultKeyBind), "The key you press to transform into the " + form.ToString() + " form. This config is automatically generated.");
                     if (usedKeys.Contains(form.defaultKeyBind))
                     {
-                        Log.Warning("Form " + form.ToString() + " shares the same default keybind of " + form.defaultKeyBind.ToString() + " with some other form(s).");
+                        Log.Warning("Form " + form.ToString() + " shares the same default keybind of " + form.defaultKeyBind.ToString() + " with some other form(s).", Config.Logs.All);
                     }
                     else
                     {

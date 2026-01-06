@@ -17,8 +17,8 @@ namespace HedgehogUtils.Launch
     public static class LaunchManager
     {
         public static GameObject launchProjectilePrefab;
-        
-        public static string[] bodyBlacklist = { "BrotherBody", "BrotherGlassBody", "BrotherHurtBody", "FalseSonBossBody", "FalseSonBossBodyBrokenLunarShard", "FalseSonBossBodyLunarShard", "MagmaWormBody", "ElectricWormBody", "ShopkeeperBody", "MiniVoidRaidCrabBodyBase", "MiniVoidRaidCrabBodyPhase1", "MiniVoidRaidCrabBodyPhase2", "MiniVoidRaidCrabBodyPhase3", "ScorchlingBody", "GravekeeperTrackingFireball", "DeltaConstructBody" };
+
+        public static string[] bodyBlacklist = { "BrotherBody", "BrotherGlassBody", "BrotherHurtBody", "FalseSonBossBody", "FalseSonBossBodyBrokenLunarShard", "FalseSonBossBodyLunarShard", "MagmaWormBody", "ElectricWormBody", "ShopkeeperBody", "MiniVoidRaidCrabBodyBase", "MiniVoidRaidCrabBodyPhase1", "MiniVoidRaidCrabBodyPhase2", "MiniVoidRaidCrabBodyPhase3", "ScorchlingBody", "GravekeeperTrackingFireball" };
 
         public const float launchSpeed = 55f;
 

@@ -20,6 +20,8 @@ namespace HedgehogUtils
             return $"<color=#ffee00>{desc}</color>";
         }
 
+        public const string wipIcon = "<sprite name=\"WIP\">";
+
         public static T[] Append<T>(ref T[] array, List<T> list)
         {
             var orig = array.Length;

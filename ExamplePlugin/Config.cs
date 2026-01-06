@@ -8,9 +8,15 @@ namespace HedgehogUtils
 {
     public static class Config
     {
-        public static ConfigEntry<bool> EnableLogs()
+        public static ConfigEntry<Logs> EnableLogs()
         {
-            return HedgehogUtilsPlugin.instance.Config.Bind<bool>("Misc.", "Enable Logs", false, "This controls whether this mod will put any information in the logs. This information can help the mod creator fix issues should any come up, but it does impact performance a bit. Default is false.");
+            return HedgehogUtilsPlugin.instance.Config.Bind<Logs>("Misc.", "Enable Logs", Logs.Minimum, "This controls how much information this mod will put in the logs. This information can help the mod creator fix issues should any come up, but it does impact performance a bit. Default is false.");
+        }
+        public enum Logs
+        {
+            None,
+            Minimum,
+            All
         }
         #region Forms
         public static ConfigEntry<bool> AnnounceSuperTransformation()
@@ -102,15 +108,14 @@ namespace HedgehogUtils
             ModSettingsManager.AddOption(new SliderOption(SuperFormDuration(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = 15, max = 600, formatString = "{0:0}s" }));
             Config.SuperFormDuration().SettingChanged += Forms.SuperForm.SuperFormDef.UpdateSuperFormDurationConfig;
 
-            ModSettingsManager.AddOption(new CheckBoxOption(Config.EnableLogs()));
-
-            ModSettingsManager.AddOption(new CheckBoxOption(Config.LaunchBodyBlacklist()));
-
             float minLocation = -500;
             float maxLocation = 500;
             ModSettingsManager.AddOption(new SliderOption(BoostMeterLocationX(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = minLocation, max = maxLocation, formatString = "{0:0}" }));
             ModSettingsManager.AddOption(new SliderOption(BoostMeterLocationY(), new RiskOfOptions.OptionConfigs.SliderConfig() { min = minLocation, max = maxLocation, formatString = "{0:0}" }));
 
+            ModSettingsManager.AddOption(new CheckBoxOption(Config.LaunchBodyBlacklist()));
+
+            ModSettingsManager.AddOption(new ChoiceOption(Config.EnableLogs()));
         }
         #endregion
     }

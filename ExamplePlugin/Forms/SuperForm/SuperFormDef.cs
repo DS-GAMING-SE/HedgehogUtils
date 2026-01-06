@@ -31,14 +31,13 @@ namespace HedgehogUtils.Forms.SuperForm
                 superFormDef
             });
 
-            Miscellaneous.DestroyOnExitForm destroy = Assets.superFormWarning.GetComponent<Miscellaneous.DestroyOnExitForm>();
-            destroy.neededForm = superFormDef;
+            Assets.superFormWarning.GetComponent<Miscellaneous.DestroyOnExitForm>().neededForm = superFormDef;
         }
 
         [SystemInitializer(typeof(ItemCatalog))]
         public static void InitializeFormItemRequirements()
         {
-            Log.Message("NeededItems initialized");
+            Log.Message("NeededItems initialized", Config.Logs.All);
             superFormDef.neededItems = new NeededItem[] { Items.yellowEmerald.itemIndex, Items.redEmerald.itemIndex, Items.blueEmerald.itemIndex, Items.cyanEmerald.itemIndex, Items.grayEmerald.itemIndex, Items.greenEmerald.itemIndex, Items.purpleEmerald.itemIndex };
         }
 

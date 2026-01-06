@@ -121,8 +121,6 @@ namespace HedgehogUtils.Forms.SuperForm
                 ItemTag.AIBlacklist
             };
 
-            itemDef.CreatePickupDef();
-
             Content.AddItemDef(itemDef);
 
             return itemDef;

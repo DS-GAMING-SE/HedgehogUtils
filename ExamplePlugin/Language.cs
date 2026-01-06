@@ -11,17 +11,20 @@ namespace HedgehogUtils
         public const string launchKeyword = HedgehogUtilsPlugin.Prefix + "LAUNCH_KEYWORD";
         public const string momentumPassiveNameToken = HedgehogUtilsPlugin.Prefix + "MOMENTUM_PASSIVE_NAME";
         public const string momentumPassiveDescriptionToken = HedgehogUtilsPlugin.Prefix + "MOMENTUM_PASSIVE_DESCRIPTION";
+
+        public const string voicelinesTitleToken = HedgehogUtilsPlugin.Prefix + "VOICELINES_TITLE";
+        public const string voicelinesEnableToken = HedgehogUtilsPlugin.Prefix + "VOICELINES_ENABLE";
+        public const string voicelinesDisableToken = HedgehogUtilsPlugin.Prefix + "VOICELINES_DISABLE";
         //maybe go back to what the mod had by default with the separate lang file
         public static void Initialize()
         {
             #region Super Form
-            string superSonicColor = "<color=#ffee00>";
             LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_PREFIX", "Super {0}");
 
             LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM", "Super");
 
-            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT", superSonicColor + "<size=110%>{0} has transformed into their {1} form!</color></size>");
-            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT_2P", superSonicColor + "<size=110%>You transformed into your {1} form!</color></size>");
+            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT", Helpers.SuperFormText("<size=110%>{0} has transformed into their {1} form!</color></size>"));
+            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT_2P", Helpers.SuperFormText("<size=110%>You transformed into your {1} form!</color></size>"));
 
             #endregion
 
@@ -158,6 +161,10 @@ namespace HedgehogUtils
 
             LanguageAPI.Add(momentumPassiveNameToken, "Momentum");
             LanguageAPI.Add(momentumPassiveDescriptionToken, $"<style=cIsUtility>Build up speed</style> by <style=cIsUtility>running down hill</style> to move up to <style=cIsUtility>100% faster</style>. <style=cIsHealth>Lose speed by running up hill to move up to 33% slower.</style>\nIf <style=cIsUtility>flying</style>, <style=cIsUtility>build up speed</style> by <style=cIsUtility>moving in a straight line.</style>");
+
+            LanguageAPI.Add(voicelinesTitleToken, "Voicelines");
+            LanguageAPI.Add(voicelinesEnableToken, "Enable Voicelines");
+            LanguageAPI.Add(voicelinesDisableToken, "Disable Voicelines");
         }
 
         /*

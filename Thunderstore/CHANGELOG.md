@@ -1,20 +1,29 @@
 # Changelog
 
+## v1.1.6
+ - (Bug Fix) Fixed harmless *"ItemDef 'ChaosEmerald' has an item index of 'None'. Attempting to fix..."* error that appeared in the logs when opening the game
+
+ - (Compatibility) Removed [Sandswept's](https://thunderstore.io/package/SandsweptTeam/Sandswept) Delta Construct from the launch blacklist since the issue has been fixed on their end
+
+ - (Config) The Enable Logs config now has options for showing no logs, minimal logs, or all logs. Any previous changes to this config may need to be redone. This config is now set to minimal by default. *Why did I think it was a good idea to have logs be disabled by default before?*
+
+ - (Internal) There is a new entity state in HedgehogUtils.Miscellaneous that handles death states for characters like Sonic. It will play the animation named "Death" in the "FullBody, Override" layer. The character's model will gradually fade away and be destroyed as the animation is about to end. The state automatically uses the duration of the death animation, so you should be able to use the state directly on whatever character with whatever death animation and it should work
+
+ - (Internal) GenericTransformationBase transforming animations now play on the FullBody, Override layer by default. There are now properties for changing the animation's state, layer, and playback rate parameter
+ 
+### Known Issues
+ - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
+ - Some enemies become invisible in their death animations after being killed by a launch
+
 ## v1.1.5
  - (Bug Fix) Fixed corpses being able to be hit by players after being launched in multiplayer
  
  - (Internal) Added new sound effects. Some of these sounds were originally part of the Sonic mod but have been moved here
-     - Lock-On
 	 - Launch colliding with wall
      - Death (From Sonic)
 	 - Jump ball (From Sonic)
 	 - Braking (From Sonic)
-
-### Known Issues
-
- - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
- - Some enemies become invisible in their death animations after being killed by a launch
-
+	 - Lock-On (Currently unused)
 
 ## v1.1.4
  - (+ Buff) Launched enemies now apply the same enemy-specific on-hit effects as enemies thrown by Drifter

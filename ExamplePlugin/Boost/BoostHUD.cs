@@ -28,7 +28,9 @@ namespace HedgehogUtils.Boost
         public Image meterFillOuter;
 
         public RawImage meterBackgroundBackup;
+        public RectTransform meterBackgroundBackupRect;
         public RawImage meterFillBackup;
+        public RectTransform meterFillBackupRect;
 
         public Image infiniteFill;
         public Image infiniteBackground;
@@ -68,7 +70,9 @@ namespace HedgehogUtils.Boost
             this.meterBackgroundOuter = this.boostMeter.transform.Find("BackgroundOuter").gameObject.GetComponent<Image>();
             this.meterFillOuter = this.boostMeter.transform.Find("BackgroundOuter/FillOuter").gameObject.GetComponent<Image>();
             this.meterBackgroundBackup = this.boostMeter.transform.Find("BackgroundBackup").gameObject.GetComponent<RawImage>();
+            this.meterBackgroundBackupRect = meterBackgroundBackup.GetComponent<RectTransform>();
             this.meterFillBackup = this.boostMeter.transform.Find("BackgroundBackup/FillBackup").gameObject.GetComponent<RawImage>();
+            this.meterFillBackupRect = meterFillBackup.GetComponent<RectTransform>();
             this.infiniteBackground = this.boostMeter.transform.Find("InfiniteBackground").gameObject.GetComponent<Image>();
             this.infiniteFill = this.boostMeter.transform.Find("InfiniteBackground/InfiniteFill").gameObject.GetComponent<Image>();
         }
@@ -127,7 +131,6 @@ namespace HedgehogUtils.Boost
             {
                 meterFill.fillAmount = 1;
                 fadeTimer += Time.fixedDeltaTime;
-                if (boostSkillDef == null) { Log.Warning("No skill"); }
                 Color fill = Color.Lerp(boostSkillDef.boostHUDColor, boostSkillDef.boostHUDColor.AlphaMultiplied(0), fadeTimer);
                 Color background = Color.Lerp(backgroundDefaultColor, new Color(0, 0, 0, 0), fadeTimer);
                 if (boostLogic.boostRegen < boostLogic.boostMeterDrain && !boostLogic.alwaysMaxBoost)
@@ -193,7 +196,7 @@ namespace HedgehogUtils.Boost
             {
                 meterFillBackup.uvRect = new Rect(meterBackgroundBackup.uvRect.x, meterBackgroundBackup.uvRect.y, backupFillNum, meterBackgroundBackup.uvRect.height);
                 meterFillBackup.gameObject.SetActive(true);
-                meterFillBackup.gameObject.GetComponent<RectTransform>().localScale = new Vector3((float)backupFillNum/backupBackgroundNum, 1, 1);
+                meterFillBackupRect.localScale = new Vector3((float)backupFillNum/backupBackgroundNum, 1, 1);
             }
         }
 
@@ -212,7 +215,7 @@ namespace HedgehogUtils.Boost
             {
                 meterBackgroundBackup.uvRect = new Rect(meterBackgroundBackup.uvRect.x, meterBackgroundBackup.uvRect.y, backupBackgroundNum, meterBackgroundBackup.uvRect.height);
                 meterBackgroundBackup.gameObject.SetActive(true);
-                meterBackgroundBackup.gameObject.GetComponent<RectTransform>().localScale = new Vector3(0.3f * backupBackgroundNum, 0.3f, 0.3f);
+                meterBackgroundBackupRect.localScale = new Vector3(0.3f * backupBackgroundNum, 0.3f, 0.3f);
             }
         }
         public void OnSkillChanged(GenericSkill skill)

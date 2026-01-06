@@ -9,13 +9,22 @@ namespace HedgehogUtils.Boost.EntityStates
 {
     public abstract class BoostIdle : BaseSkillState
     {
-        protected ICharacterFlightParameterProvider flight;
+        public Animator modelAnimator;
+        public AimAnimator aimAnimator;
         public override void OnEnter()
         {
             base.OnEnter();
-            flight = base.characterBody.GetComponent<ICharacterFlightParameterProvider>();
             PlayBoostIdleEnterAnimation();
-            base.GetModelAnimator().SetBool("isBoosting", true);
+            modelAnimator = GetModelAnimator();
+            aimAnimator = GetAimAnimator();
+            if (aimAnimator)
+            {
+                aimAnimator.enabled = true;
+            }
+            if (modelAnimator)
+            {
+                modelAnimator.SetBool("isBoosting", true);
+            }
         }
 
         public override void FixedUpdate()
@@ -28,7 +37,7 @@ namespace HedgehogUtils.Boost.EntityStates
                     EnterBoost();
                     return;
                 }
-                if (!base.inputBank.skill3.down || (!base.characterMotor.isGrounded && !Helpers.Flying(flight)))
+                if (!base.inputBank.skill3.down || (!base.characterMotor.isGrounded && !characterMotor.isFlying))
                 {
                     outer.SetNextStateToMain();
                     return;
@@ -39,7 +48,15 @@ namespace HedgehogUtils.Boost.EntityStates
 
         public override void OnExit()
         {
-            base.GetModelAnimator().SetBool("isBoosting", false);
+            if (modelAnimator)
+            {
+                modelAnimator.SetBool("isBoosting", false);
+            }
+            if (aimAnimator)
+            {
+                aimAnimator.enabled = false;
+            }
+            if (GetModelTransform())
             base.OnExit();
         }
 

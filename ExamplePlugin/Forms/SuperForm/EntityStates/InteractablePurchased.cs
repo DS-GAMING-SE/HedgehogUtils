@@ -21,7 +21,7 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
         public override void OnEnter()
         {
             base.OnEnter();
-            Log.Message("Emerald Interactable purchase state enter");
+            Log.Message("Emerald Interactable purchase state enter", Config.Logs.All);
             this.interactable = this.gameObject.GetComponent<ChaosEmeraldInteractable>();
             base.gameObject.transform.Find("RingParent/PurchaseParticle").gameObject.GetComponent<ParticleSystem>().Play();
         }

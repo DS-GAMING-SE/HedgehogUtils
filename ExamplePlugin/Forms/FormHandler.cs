@@ -99,7 +99,7 @@ namespace HedgehogUtils.Forms
         public virtual bool CanTransform(FormComponent component)
         {
             bool hasItems = HasItems(component);
-            Log.Message("FormHandler with form " + form.ToString() + "\nTeam Super? " + teamSuper + ". Has Items? " + hasItems + ". Number of transforms? " + numberOfTimesTransformed + "/" + component.GetNumberOfTimesTransformed(form) + " out of max " + form.maxTransforms);
+            Log.Message("FormHandler with form " + form.ToString() + "\nTeam Super? " + teamSuper + ". Has Items? " + hasItems + ". Number of transforms? " + numberOfTimesTransformed + "/" + component.GetNumberOfTimesTransformed(form) + " out of max " + form.maxTransforms, Config.Logs.All);
             return (hasItems && HasNotTransformedMaxAmountOfTimes(component)) || teamSuper;
         }
 
@@ -176,7 +176,7 @@ namespace HedgehogUtils.Forms
                 if (teamSuperTimer <= 0)
                 {
                     NetworkteamSuper = false;
-                    Log.Message("Team Super window ended");
+                    Log.Message("Team Super window ended", Config.Logs.All);
                 }
             }
         }
@@ -327,7 +327,7 @@ namespace HedgehogUtils.Forms
         {
             missingItems = new List<NeededItem>();
             itemsDirty = false;
-            if (!handler) { Log.Warning("no handler yet"); return; }
+            if (!handler) { Log.Warning("no handler yet", Config.Logs.All); return; }
             if (handler.form.neededItems == null) { Log.Warning("Form says it needs items but has no list of needed items... curious..."); return; }
             foreach (NeededItem item in handler.form.neededItems)
             {
@@ -348,7 +348,7 @@ namespace HedgehogUtils.Forms
                 }
             }
             NetworkallItems = missingItems.Count == 0;
-            Log.Message("Missing items for "+ handler.form.ToString() + ": " + string.Concat(missingItems.Select(x => x.ToString())));
+            //Log.Message("Missing items for "+ handler.form.ToString() + ": " + string.Concat(missingItems.Select(x => x.ToString())));
         }
         public bool CanTakeSharedItems(FormDef form, FormComponent super)
         {
@@ -386,7 +386,7 @@ namespace HedgehogUtils.Forms
                 }
             }
             highestItemCount = CheckHighestItemCountArgs.highestItemCount;
-            Log.Message("highestItemCount " + highestItemCount);
+            Log.Message("highestItemCount " + highestItemCount, Config.Logs.All);
         }
 
         public event CheckHighestItemCountEventHandler CheckHighestItemCountEvent;
@@ -460,7 +460,7 @@ namespace HedgehogUtils.Forms
                     {
                         Network_serverItemSharing = (byte)Config.NeededItemSharing().Value;
                     }
-                    Log.Message("Subscribed to inventory events");
+                    Log.Message("Subscribed to inventory events", Config.Logs.All);
                     CheckItems();
                 }
                 else
@@ -576,7 +576,7 @@ namespace HedgehogUtils.Forms
 
         public bool ItemRequirementMet(FormComponent component)
         {
-            Log.Message("Checking unsynceditemtracker");
+            Log.Message("Checking unsynceditemtracker", Config.Logs.All);
             return component.formToItemTracker[(int)handler.form.formIndex].allItems;
         }
 

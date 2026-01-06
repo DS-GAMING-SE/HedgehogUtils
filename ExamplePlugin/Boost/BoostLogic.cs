@@ -88,7 +88,6 @@ namespace HedgehogUtils.Boost
 
         public void OnSkillChanged(GenericSkill skill)
         {
-            Log.Message("Utility skill changed");
             BoostExists();
         }
 
@@ -114,7 +113,7 @@ namespace HedgehogUtils.Boost
         {
             if (!NetworkServer.active)
             {
-                Log.Warning("AddBoost run on client");
+                Log.Warning("AddBoost run on client", Config.Logs.All);
                 return;
             }
             this.NetworkboostMeter = Mathf.Clamp(this.boostMeter + amount, 0, this.maxBoostMeter);
@@ -131,7 +130,7 @@ namespace HedgehogUtils.Boost
         {
             if (!NetworkServer.active)
             {
-                Log.Warning("RemoveBoost run on client");
+                Log.Warning("RemoveBoost run on client", Config.Logs.All);
                 return;
             }
             this.NetworkboostMeter = Mathf.Clamp(this.boostMeter - amount, 0, this.maxBoostMeter);

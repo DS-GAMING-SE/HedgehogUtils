@@ -2,6 +2,7 @@
 using System;
 using HedgehogUtils.Forms.SuperForm.EntityStates;
 using HedgehogUtils.Boost.EntityStates;
+using HedgehogUtils.Miscellaneous;
 
 namespace HedgehogUtils
 {
@@ -16,6 +17,8 @@ namespace HedgehogUtils
 
             Internal.Content.AddEntityState(typeof(BoostIdle));
             Internal.Content.AddEntityState(typeof(Brake));
+
+            Internal.Content.AddEntityState(typeof(Death));
         }
     }
 }

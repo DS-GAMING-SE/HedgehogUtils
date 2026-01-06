@@ -12,10 +12,14 @@ namespace HedgehogUtils
         }
 
         internal static void Debug(object data) => _logSource.LogDebug(data);
-        internal static void Error(object data) { if (Config.EnableLogs().Value) {_logSource.LogError(data); } }
+        internal static void Error(object data) { if (Config.EnableLogs().Value != Config.Logs.None) { _logSource.LogError(data); } }
+        internal static void Error(object data, Config.Logs priority) { if (priority >= Config.EnableLogs().Value) { _logSource.LogError(data); } }
         internal static void Fatal(object data) => _logSource.LogFatal(data);
         internal static void Info(object data) => _logSource.LogInfo(data);
-        internal static void Message(object data) { if (Config.EnableLogs().Value) { _logSource.LogMessage(data); } }
-        internal static void Warning(object data) { if (Config.EnableLogs().Value) { _logSource.LogWarning(data); } }
+        internal static void Message(object data) { if (Config.EnableLogs().Value != Config.Logs.None) { _logSource.LogMessage(data); } }
+        internal static void Message(object data, Config.Logs priority) { if (priority >= Config.EnableLogs().Value) { _logSource.LogMessage(data); } }
+        internal static void Warning(object data) { if (Config.EnableLogs().Value != Config.Logs.None) { _logSource.LogWarning(data); } }
+        internal static void Warning(object data, Config.Logs priority) { if (priority >= Config.EnableLogs().Value) { _logSource.LogWarning(data); } }
+
     }
 }

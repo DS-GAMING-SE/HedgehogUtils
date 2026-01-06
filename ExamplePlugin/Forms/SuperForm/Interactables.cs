@@ -48,13 +48,11 @@ namespace HedgehogUtils.Forms.SuperForm
 
         public static void Initialize()
         {
-            Log.Message("Starting Emerald Interactable Init");
+            Log.Message("Starting Emerald Interactable Init", Config.Logs.All);
             prefabBase = Assets.mainAssetBundle.LoadAsset<GameObject>("ChaosEmeraldInteractable");
 
             Assets.MaterialSwap(prefabBase, "RoR2/Base/Common/VFX/matInverseDistortion.mat", "RingParent/PurchaseParticle/Distortion");
             Assets.ReplaceRainbow(prefabBase.transform.Find("RingParent/PurchaseParticle/Rainbow"));
-
-            Log.Message("Loaded Base");
             prefabBase.AddComponent<NetworkIdentity>();
 
             if (!prefabBase.TryGetComponent<RoR2.PurchaseInteraction>(out purchaseInteractionBase))
@@ -64,8 +62,6 @@ namespace HedgehogUtils.Forms.SuperForm
 
             var ring = prefabBase.transform.Find("RingParent/Ring");
             var ring2 = prefabBase.transform.Find("RingParent/Ring/RingLOD");
-
-            Log.Message("PurchaseInteraction added");
 
             prefabBase.GetComponent<Highlight>().targetRenderer = ring.GetComponent<MeshRenderer>();
 
@@ -80,7 +76,6 @@ namespace HedgehogUtils.Forms.SuperForm
                 trigger.AddComponent<RoR2.EntityLocator>().entity = prefabBase;
             }
 
-            Log.Message("Trigger done");
 
             hologramBase = prefabBase.AddComponent<RoR2.Hologram.HologramProjector>();
             hologramBase.hologramPivot = prefabBase.transform.Find("Hologram");
@@ -95,12 +90,9 @@ namespace HedgehogUtils.Forms.SuperForm
             prefabBase.AddComponent<PingInfoProvider>().pingIconOverride = Assets.mainAssetBundle.LoadAsset<Sprite>("texEmeraldInteractableIcon");
             var pickupDisplayTransform = prefabBase.transform.Find("PickupDisplay");
             var pickupDisplay = pickupDisplayTransform.gameObject.AddComponent<PickupDisplay>();
-            Log.Message("PickupDisplay done");
 
             ring.GetComponent<MeshRenderer>().material = Assets.ringMaterial;
             ring2.GetComponent<MeshRenderer>().material = Assets.ringMaterial;
-
-            Log.Message("Material Done");
             
             prefabBase.AddComponent<ChaosEmeraldInteractable>();
 
@@ -156,8 +148,6 @@ namespace HedgehogUtils.Forms.SuperForm
 
         private void Start()
         {
-            Log.Message("Emerald Start");
-
             pickupDisplay = base.GetComponentInChildren<PickupDisplay>();
             purchaseInteraction = base.GetComponent<PurchaseInteraction>();
             HologramProjector hologram = base.GetComponent<HologramProjector>();
