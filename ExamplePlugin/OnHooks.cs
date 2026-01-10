@@ -39,6 +39,8 @@ namespace HedgehogUtils
             On.RoR2.GenericSkill.CanApplyAmmoPack += CanApplyAmmoPackToBoost;
             On.RoR2.GenericSkill.ApplyAmmoPack += ApplyAmmoPackToBoost;
             On.RoR2.UI.HUD.Awake += CreateBoostMeterUI;
+
+            //On.EntityStates.SolusHeart.SolusWebMissionPhaseBaseState.OnEnter += For Solus Heart phase advance voicelines?
         }
         private static void DontDieWhileLaunched(On.RoR2.CharacterDeathBehavior.orig_OnDeath orig, CharacterDeathBehavior self)
         {

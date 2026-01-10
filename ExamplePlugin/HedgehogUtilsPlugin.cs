@@ -8,6 +8,7 @@ using HedgehogUtils.Internal;
 using R2API.Networking;
 using HedgehogUtils.Forms;
 using HedgehogUtils.Miscellaneous;
+using HedgehogUtils.Voicelines;
 
 namespace HedgehogUtils
 {
@@ -89,6 +90,12 @@ namespace HedgehogUtils
             ChaosSnapManager.Initialize();
 
             MomentumStats.Initialize();
+            #endregion
+
+            #region Voicelines
+            VoicelineManager.Initialize();
+
+            NetworkingAPI.RegisterMessageType<NetworkVoiceline>();
             #endregion
 
             OnHooks.Initialize();
