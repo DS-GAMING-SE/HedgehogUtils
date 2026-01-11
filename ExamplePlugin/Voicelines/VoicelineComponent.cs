@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace HedgehogUtils.Voicelines
 {
-    public class VoicelineComponent : MonoBehaviour
+    public class VoicelineComponent : MonoBehaviour, ILifeBehavior
     {
         public string soundBankFilePath;
         protected uint soundBankID;
@@ -25,28 +25,38 @@ namespace HedgehogUtils.Voicelines
 
         public List<VoicelineComponent> nearbyVoices = new List<VoicelineComponent>();
 
-        public virtual void StageStart(Stage stage)
+        public virtual NetworkedVoiceline StageStart(Stage stage)
         {
             Chat.AddMessage("Stage start");
+            return default;
         }
-        public virtual void BossDefeated()
+        public virtual NetworkedVoiceline BossDefeated(BodyIndex bossBodyIndex)
         {
             Chat.AddMessage("Boss Defeated");
+            return default;
         }
-        public virtual void BossStart()
+        public virtual NetworkedVoiceline BossStart(BodyIndex bossBodyIndex)
         {
             Chat.AddMessage("Boss Start");
+            return default;
         }
-        public virtual void FinalBossStart(FinalBoss boss)
+        public virtual NetworkedVoiceline FinalBossStart(FinalBoss boss)
         {
             Chat.AddMessage($"{boss.ToString()} Start");
+            return default;
         }
-        public virtual void FinalBossDefeated(FinalBoss boss)
+        public virtual NetworkedVoiceline FinalBossDefeated(FinalBoss boss)
         {
             Chat.AddMessage($"{boss.ToString()} Defeated");
+            return default;
+        }
+        public virtual void OnDeathStart()
+        {
+            StopCurrentVoiceline();
         }
         public void PlayVoiceline(string soundString, VoicelinePriority priority)
         {
+            Chat.AddMessage("Voiceline");
             if (string.IsNullOrEmpty(soundString)) return;
             if (priority > currentVoicelinePriority)
             {
@@ -58,6 +68,12 @@ namespace HedgehogUtils.Voicelines
         public void PlayVoiceline(NetworkSoundEventIndex soundIndex, VoicelinePriority priority)
         {
             PlayVoiceline(NetworkSoundEventCatalog.GetEventNameFromNetworkIndex(soundIndex), priority);
+        }
+        public void StopCurrentVoiceline()
+        {
+            AkSoundEngine.StopPlayingID(currentVoicelineID);
+            currentVoicelineID = 0;
+            currentVoicelinePriority = 0;
         }
         private void OnVoicelineEnd(object in_cookie, AkCallbackType in_type, object in_info)
         {

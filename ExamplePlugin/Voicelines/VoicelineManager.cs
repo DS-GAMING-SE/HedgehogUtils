@@ -50,45 +50,48 @@ namespace HedgehogUtils.Voicelines
             BossGroup.onBossGroupStartServer += BossStartVoicelines;
             BossGroup.onBossGroupDefeatedServer += BossDefeatedVoicelines;
 
+            StartCoroutine(StageStartVoicelines());
+        }
+        private IEnumerator StageStartVoicelines()
+        {
+            yield return new WaitForSeconds(3.5f);
             if (Stage.instance && !Stage.instance.usePod)
             {
-                StartCoroutine(StaggerVoicelines(voice =>
+                List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
+                List<VoicelineComponent> voices = InstanceTracker.GetInstancesList<VoicelineComponent>();
+                foreach (var voice in voices)
                 {
-                    Log.Message("HedgehogUtils VoicelineManager Enabled", Config.Logs.All);
-                    voice.StageStart(Stage.instance);
-                }, 3f));
+                    NetworkedVoiceline voiceline = voice.StageStart(Stage.instance);
+                    if (voiceline.IsValid()) voicelinesToSend.Add(voiceline);
+                }
+                StartCoroutine(StaggerVoicelines(voicelinesToSend));
             }
         }
-        // Boss defined out of scope of lambda?
         private void BossStartVoicelines(BossGroup boss)
         {
-            StartCoroutine(StaggerVoicelines(voice =>
+            List<VoicelineComponent> voices = InstanceTracker.GetInstancesList<VoicelineComponent>();
+            BodyIndex bodyIndex = GetBossBodyIndex(boss);
+            FinalBoss finalBoss = GetFinalBoss(bodyIndex);
+            List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
+            foreach (var voice in voices)
             {
-                FinalBoss finalBoss = GetFinalBoss(boss);
-                if (finalBoss == FinalBoss.None)
-                {
-                    voice.BossStart();
-                }
-                else
-                {
-                    voice.FinalBossStart(finalBoss);
-                }
-            }, 1f));
+                NetworkedVoiceline voiceline = finalBoss == FinalBoss.None ? voice.BossStart(bodyIndex) : voice.FinalBossStart(finalBoss);
+                if (voiceline.IsValid()) voicelinesToSend.Add(voiceline);
+            }
+            StartCoroutine(StaggerVoicelines(voicelinesToSend, 2.5f));
         }
         private void BossDefeatedVoicelines(BossGroup boss)
         {
-            StartCoroutine(StaggerVoicelines(voice =>
+            List<VoicelineComponent> voices = InstanceTracker.GetInstancesList<VoicelineComponent>();
+            BodyIndex bodyIndex = GetBossBodyIndex(boss);
+            FinalBoss finalBoss = GetFinalBoss(bodyIndex);
+            List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
+            foreach (var voice in voices)
             {
-                FinalBoss finalBoss = GetFinalBoss(boss);
-                if (finalBoss == FinalBoss.None)
-                {
-                    voice.BossDefeated();
-                }
-                else
-                {
-                    voice.FinalBossDefeated(finalBoss);
-                }
-            }, 0.5f));
+                NetworkedVoiceline voiceline = finalBoss == FinalBoss.None ? voice.BossDefeated(bodyIndex) : voice.FinalBossDefeated(finalBoss);
+                if (voiceline.IsValid()) voicelinesToSend.Add(voiceline);
+            }
+            StartCoroutine(StaggerVoicelines(voicelinesToSend, 1f));
         }
         public IEnumerator RefreshNearby()
         {
@@ -106,30 +109,31 @@ namespace HedgehogUtils.Voicelines
                 yield return null;
             }
         }
-        public IEnumerator StaggerVoicelines(Action<VoicelineComponent> playVoiceline, float startDelay)
+        public IEnumerator StaggerVoicelines(List<NetworkedVoiceline> voicelines, float startDelay = 0f)
         {
-            RefreshNearby();
-
             if (startDelay > 0) yield return new WaitForSeconds(startDelay);
-            List<VoicelineComponent> voices = InstanceTracker.GetInstancesList<VoicelineComponent>();
-            if (voices.Count > 0)
+
+            RefreshNearby();
+            if (voicelines.Count > 0)
             {
                 List<VoicelineComponent> skippedVoices = new List<VoicelineComponent>();
-                while (voices.Count > 0)
+                while (voicelines.Count > 0)
                 {
                     skippedVoices.Clear();
-                    for (int i = 0; i < voices.Count; i++)
+                    for (int i = 0; i < voicelines.Count; i++)
                     {
-                        if (voices[i])
+                        if (voicelines[i].IsValid())
                         {
-                            if (skippedVoices.Contains(voices[i])) { continue; }
-                            if (voices[i].nearbyVoices.Count > 0) skippedVoices.Concat(voices[i].nearbyVoices);
-                            playVoiceline(voices[i]);
+                            if (skippedVoices.Contains(voicelines[i].voicelineComponent)) { continue; }
+                            if (voicelines[i].voicelineComponent.nearbyVoices.Count > 0) skippedVoices.Concat(voicelines[i].voicelineComponent.nearbyVoices);
+
+                            Log.Message("HedgehogUtils Staggered Voiceline sent", Config.Logs.All);
+                            new NetworkVoiceline(voicelines[i]).Send(NetworkDestination.Clients);
                         }
-                        voices.RemoveAt(i);
+                        voicelines.RemoveAt(i);
                         i--;
                     }
-                    if (voices.Count > 0) yield return new WaitForSeconds(1.8f);
+                    if (voicelines.Count > 0) yield return new WaitForSeconds(1.8f);
                 }
             }
         }
@@ -157,8 +161,20 @@ namespace HedgehogUtils.Voicelines
                 BodyCatalog.FindBodyIndex("ScavLunar4Body"),
             BodyCatalog.FindBodyIndex("ArraignP1Body"),
             BodyCatalog.FindBodyIndex("ProvidenceP1Body")};
-            BodyCatalog.FindBodyPrefab("SonicTheHedgehog").AddComponent<VoicelineComponent>();
         }
+        public static BodyIndex GetBossBodyIndex(BossGroup boss)
+        {
+            if (boss.bossMemories.Length > 0)
+            {
+                BossGroup.BossMemory bossMemory = boss.bossMemories.First();
+                if (bossMemory.cachedBody)
+                {
+                    return bossMemory.cachedBody.bodyIndex;
+                }
+            }
+            return BodyIndex.None;
+        }
+
         public static FinalBoss GetFinalBoss(BossGroup boss)
         {
             if (boss.bossMemories.Length > 0)
@@ -198,10 +214,9 @@ namespace HedgehogUtils.Voicelines
                             return FinalBoss.FalseSon2;
                         case MeridianEventState.Phase3:
                             return FinalBoss.FalseSon3;
-                        default:
-                            return FinalBoss.FalseSon1;
                     }
                 }
+                return FinalBoss.FalseSon1;
             }
             if (index == solusWingBodyIndex) { return FinalBoss.SolusWing; }
             if (index == solusHeartBodyIndex) { return FinalBoss.SolusHeart; }
@@ -227,9 +242,21 @@ namespace HedgehogUtils.Voicelines
     }
     public struct NetworkedVoiceline
     {
-        public NetworkInstanceId netId;
+        public VoicelineComponent voicelineComponent;
         public NetworkSoundEventIndex soundIndex;
         public VoicelinePriority priority;
+
+        public NetworkedVoiceline(VoicelineComponent voicelineComponent, NetworkSoundEventIndex networkSoundEventIndex, VoicelinePriority voicelinePriority)
+        {
+            this.voicelineComponent = voicelineComponent;
+            this.soundIndex = networkSoundEventIndex;
+            this.priority = voicelinePriority;
+        }
+
+        public bool IsValid()
+        {
+            return soundIndex != NetworkSoundEventIndex.Invalid && voicelineComponent;
+        }
     }
     public enum VoicelinePriority : byte
     {
