@@ -16,9 +16,16 @@ namespace HedgehogUtils.Forms.EntityStates
 
         public bool fromTeamSuper = false;
 
+        protected CharacterModel characterModel;
+
         public override void OnEnter()
         {
             base.OnEnter();
+            Transform modelTransform = base.GetModelTransform();
+            if (modelTransform)
+            {
+                this.characterModel = modelTransform.GetComponent<CharacterModel>();
+            }
             this.formComponent= base.GetComponent<FormComponent>();
             if (base.isAuthority)
             {

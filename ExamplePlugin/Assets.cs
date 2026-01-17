@@ -13,6 +13,7 @@ using static RoR2.VFXAttributes;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.Rendering.PostProcessing;
 using HedgehogUtils.Miscellaneous;
+using HedgehogUtils.Boost;
 
 namespace HedgehogUtils
 {
@@ -82,6 +83,7 @@ namespace HedgehogUtils
             powerBoostAuraEffect = Assets.LoadAsyncedEffect("SonicPowerBoostAura");
 
             boostHUD = Assets.mainAssetBundle.LoadAsset<GameObject>("BoostMeter");
+            boostHUD.AddComponent<BoostHUD>();
 
             #region Launch
             launchAuraEffect = CreateNewBoostAura(HedgehogUtilsPlugin.Prefix + "LAUNCH_AURA_VFX",
@@ -190,6 +192,7 @@ namespace HedgehogUtils
         }
 
         #region Super Form
+        public static Material superFormGlowingMaterial;
         public static Material superFormOverlay;
         public static Material rainbowGlowMaterial;
         public static Material rainbowGlowSubtleMaterial;
@@ -240,6 +243,12 @@ namespace HedgehogUtils
                 superFormOverlay.SetColor("_EmissionColor", new Color(1, 0.8f, 0.4f, 1));
                 superFormOverlay.SetFloat("_OffsetAmount", 0.01f);
             };
+            AsyncOperationHandle<Material> asyncGlowingMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/Huntress/matHuntressFlashBright.mat");
+            asyncGlowingMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
+            {
+                superFormGlowingMaterial = new Material(x.Result);
+                superFormGlowingMaterial.SetColor("_TintColor", new Color(1, 0.8f, 0.4f, 1));
+            };
 
             superLoopSoundDef = ScriptableObject.CreateInstance<LoopSoundDef>();
             superLoopSoundDef.startSoundName = "Play_hedgehogutils_super_loop";
@@ -288,6 +297,8 @@ namespace HedgehogUtils
 
             chaosSnapSoundEventDef = CreateNetworkSoundEventDef("Play_hedgehogutils_teleport");
             chaosSnapLargeSoundEventDef = CreateNetworkSoundEventDef("Play_hedgehogutils_teleport_large");
+
+            //matDustExhaust for wind stuff
         }
 
         public static GameObject CreateChaosSnapEffect(string assetBundlePrefabName, bool teleportIn)

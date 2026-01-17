@@ -1,5 +1,15 @@
 # Changelog
 
+## v?
+ - (Voicelines) Added a new system for handling voicelines
+ 
+ - (Visuals) The super form transformation now has a subtle glow around your character
+ 
+ - (Internal) TransformationBase now has a reference to CharacterModel
+ - (Internal) The point at which GenericTransformationBase triggers the transformation is no longer hardcoded, and can now be changed via the abstract transformationDurationPercent
+ - (Internal) Removed unnecessary On.RoR2.UI.HUD.Awake hook used for creating the boost meter. The boost meter hud is now handled through RoR2's Hud Overlay system
+ - (Internal) Removed unnecessary On.RoR2.SceneDirector.Start hook used for spawning technical objects at the start of the stage. This is now done via the Stage.onServerStageBegin event
+
 ## v1.1.6
  - (Bug Fix) Fixed harmless *"ItemDef 'ChaosEmerald' has an item index of 'None'. Attempting to fix..."* error that appeared in the logs when opening the game
 

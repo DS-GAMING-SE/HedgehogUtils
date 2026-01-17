@@ -24,12 +24,18 @@ namespace HedgehogUtils.Voicelines
 
         public static BodyIndex mithrix1BodyIndex;
         public static BodyIndex mithrix4BodyIndex;
-        public static BodyIndex voidlingBodyIndex;
-        public static BodyIndex falseSonBodyIndex;
+        public static BodyIndex voidlingBigBodyIndex;
+        public static BodyIndex voidling1BodyIndex;
+        public static BodyIndex voidling2BodyIndex;
+        public static BodyIndex voidling3BodyIndex;
+        public static BodyIndex falseSon1BodyIndex;
+        public static BodyIndex falseSon2BodyIndex;
+        public static BodyIndex falseSon3BodyIndex;
         public static BodyIndex solusWingBodyIndex;
         public static BodyIndex solusHeartBodyIndex;
         public static BodyIndex[] lunarScavengerIndices;
-        public static BodyIndex arraignEnemiesReturnsBodyIndex;
+        public static BodyIndex arraign1EnemiesReturnsBodyIndex;
+        public static BodyIndex arraign2EnemiesReturnsBodyIndex;
 
         public static void Initialize()
         {
@@ -150,17 +156,24 @@ namespace HedgehogUtils.Voicelines
         {
             mithrix1BodyIndex = BodyCatalog.FindBodyIndex("BrotherBody");
             mithrix4BodyIndex = BodyCatalog.FindBodyIndex("BrotherHurtBody");
-            voidlingBodyIndex = BodyCatalog.FindBodyIndex("VoidRaidCrabBody");
-            falseSonBodyIndex = BodyCatalog.FindBodyIndex("FalseSonBossBody");
+            voidlingBigBodyIndex = BodyCatalog.FindBodyIndex("VoidRaidCrabBody");
+            voidling1BodyIndex = BodyCatalog.FindBodyIndex("MiniVoidRaidCrabBodyPhase1");
+            voidling2BodyIndex = BodyCatalog.FindBodyIndex("MiniVoidRaidCrabBodyPhase2");
+            voidling3BodyIndex = BodyCatalog.FindBodyIndex("MiniVoidRaidCrabBodyPhase3");
+            falseSon1BodyIndex = BodyCatalog.FindBodyIndex("FalseSonBossBody");
+            falseSon2BodyIndex = BodyCatalog.FindBodyIndex("FalseSonBossBodyLunarShard");
+            falseSon3BodyIndex = BodyCatalog.FindBodyIndex("FalseSonBossBodyBrokenLunarShard");
             solusWingBodyIndex = BodyCatalog.FindBodyIndex("SolusWingBody");
             solusHeartBodyIndex = BodyCatalog.FindBodyIndex("SolusHeartBody");
-            lunarScavengerIndices = new BodyIndex[]{ 
+            lunarScavengerIndices = [
                 BodyCatalog.FindBodyIndex("ScavLunar1Body"),
                 BodyCatalog.FindBodyIndex("ScavLunar2Body"),
                 BodyCatalog.FindBodyIndex("ScavLunar3Body"),
-                BodyCatalog.FindBodyIndex("ScavLunar4Body"),
-            BodyCatalog.FindBodyIndex("ArraignP1Body"),
-            BodyCatalog.FindBodyIndex("ProvidenceP1Body")};
+                BodyCatalog.FindBodyIndex("ScavLunar4Body")];
+            arraign1EnemiesReturnsBodyIndex = BodyCatalog.FindBodyIndex("ArraignP1Body");
+            arraign2EnemiesReturnsBodyIndex = BodyCatalog.FindBodyIndex("ArraignP2Body");
+            BodyCatalog.GetBodyPrefab(BodyCatalog.FindBodyIndex("SonicTheHedgehog")).AddComponent<VoicelineComponent>();
+            //BodyCatalog.FindBodyIndex("ProvidenceP1Body")};
         }
         public static BodyIndex GetBossBodyIndex(BossGroup boss)
         {
@@ -203,25 +216,38 @@ namespace HedgehogUtils.Voicelines
                 }
             }
             if (index == mithrix4BodyIndex) { return FinalBoss.Mithrix4; }
-            if (index == voidlingBodyIndex) { return FinalBoss.Voidling; }
-            if (index == falseSonBodyIndex) 
-            {  
-                if (MeridianEventTriggerInteraction.instance)
+
+            if (index == voidlingBigBodyIndex) // I'd assume Fathomless uses this or something? Might as well keep it in
+            { 
+                if (VoidRaidGauntletController.instance)
                 {
-                    switch (MeridianEventTriggerInteraction.instance.meridianEventState)
+                    switch (VoidRaidGauntletController.instance.gauntletIndex)
                     {
-                        case MeridianEventState.Phase2:
-                            return FinalBoss.FalseSon2;
-                        case MeridianEventState.Phase3:
-                            return FinalBoss.FalseSon3;
+                        case 1:
+                            return FinalBoss.Voidling2;
+                        case 2:
+                            return FinalBoss.Voidling3;
+                        default:
+                            return FinalBoss.Voidling1;
                     }
                 }
-                return FinalBoss.FalseSon1;
+                return FinalBoss.Voidling1; 
             }
+
+            if (index == voidling1BodyIndex) { return FinalBoss.Voidling1; }
+            if (index == voidling2BodyIndex) { return FinalBoss.Voidling2; }
+            if (index == voidling3BodyIndex) { return FinalBoss.Voidling3; }
+
+            if (index == falseSon1BodyIndex) {  return FinalBoss.FalseSon1; }
+            if (index == falseSon2BodyIndex) { return FinalBoss.FalseSon2; }
+            if (index == falseSon3BodyIndex) { return FinalBoss.FalseSon3; }
+
             if (index == solusWingBodyIndex) { return FinalBoss.SolusWing; }
             if (index == solusHeartBodyIndex) { return FinalBoss.SolusHeart; }
+
             if (lunarScavengerIndices.Contains(index)) { return FinalBoss.LunarScavenger; }
-            if (index == arraignEnemiesReturnsBodyIndex) { return FinalBoss.Arraign; }
+            if (index == arraign1EnemiesReturnsBodyIndex) { return FinalBoss.Arraign1; }
+            if (index == arraign2EnemiesReturnsBodyIndex) { return FinalBoss.Arraign2; }
             return FinalBoss.None;
         }
     }
@@ -231,14 +257,17 @@ namespace HedgehogUtils.Voicelines
         Mithrix1,
         Mithrix3,
         Mithrix4,
-        Voidling,
+        Voidling1,
+        Voidling2,
+        Voidling3,
         FalseSon1,
         FalseSon2,
         FalseSon3,
         SolusWing,
         SolusHeart,
         LunarScavenger,
-        Arraign
+        Arraign1,
+        Arraign2
     }
     public struct NetworkedVoiceline
     {

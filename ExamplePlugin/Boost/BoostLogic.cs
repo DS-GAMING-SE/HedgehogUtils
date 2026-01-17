@@ -1,5 +1,6 @@
 ﻿using R2API;
 using RoR2;
+using RoR2.HudOverlay;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace HedgehogUtils.Boost
         // I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING I HATE NETWORKING 
         // I've been putting this SyncVar stuff all around because that's what I've seen other people do but apparently it doesn't do anything without some extra thing I don't have
         public CharacterBody body;
-        protected ICharacterFlightParameterProvider flight;
+        public SkillDefs.IBoostSkill boostSkillDef;
 
         [SyncVar(hook = nameof(OnBoostMeterChanged))]
         public float boostMeter;
@@ -41,16 +42,23 @@ namespace HedgehogUtils.Boost
         public float baseBoostRegen = 21f;
         public const float boostRegenPerBandolier = 25f;
 
+        private OverlayController overlayController;
+
         #region Boost Meter Functionality
-        private void Start()
+        public void Awake()
         {
-            body=GetComponent<CharacterBody>();
+            body = GetComponent<CharacterBody>();
+        }
+        public void Start()
+        {
             body.characterMotor.onHitGroundAuthority += ResetAirBoost;
             body.skillLocator.utility.onSkillChanged += OnSkillChanged;
             BoostExists();
             CalculateBoostVariables(body);
             body.onRecalculateStats += CalculateBoostVariables;
             this.NetworkboostMeter = maxBoostMeter;
+
+            CreateBoostHUD();
         }
         
         public void FixedUpdate()
@@ -94,15 +102,48 @@ namespace HedgehogUtils.Boost
         private void BoostExists()
         {
             bool prevBoostExists = boostExists;
-            boostExists = typeof(EntityStates.Boost).IsAssignableFrom(body.skillLocator.utility.activationState.stateType);
+            if (typeof(SkillDefs.IBoostSkill).IsAssignableFrom(body.skillLocator.utility.skillDef.GetType()))
+            {
+                boostSkillDef = body.skillLocator.utility.skillDef as SkillDefs.IBoostSkill;
+                boostExists = true;
+            }
+            else
+            {
+                boostExists = false;
+            }
             if (!prevBoostExists)
             {
                 this.NetworkboostAvailable = true;
             }
         }
 
-        private void OnDestroy()
+        protected virtual void CreateBoostHUD()
         {
+            overlayController = HudOverlayManager.AddOverlay(base.gameObject, new OverlayCreationParams
+            {
+                prefab = Assets.boostHUD,
+                childLocatorEntry = "CrosshairExtras"
+            });
+            overlayController.onInstanceAdded += PrepareBoostHUD;
+        }
+        private void PrepareBoostHUD(OverlayController overlayController, GameObject instance)
+        {
+            if (instance.TryGetComponent<BoostHUD>(out var boostHud))
+            {
+                boostHud.PrepareBoostMeter();
+                boostHud.boostLogic = this;
+                BoostHUDCreated(instance);
+            }
+        }
+        protected virtual void BoostHUDCreated(GameObject hud)
+        {
+
+        }
+
+        public void OnDestroy()
+        {
+            overlayController.onInstanceAdded -= PrepareBoostHUD;
+            HudOverlayManager.RemoveOverlay(overlayController);
             body.characterMotor.onHitGroundAuthority -= ResetAirBoost;
             body.skillLocator.utility.onSkillChanged -= OnSkillChanged;
             body.onRecalculateStats -= CalculateBoostVariables;

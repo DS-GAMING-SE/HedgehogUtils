@@ -27,7 +27,7 @@ namespace HedgehogUtils
 
             On.RoR2.Util.GetBestBodyName += SuperNamePrefix;
 
-            On.RoR2.SceneDirector.Start += SceneDirectorOnStart;
+            Stage.onServerStageBegin += StageBegin;
 
             if (HedgehogUtilsPlugin.lookingGlassLoaded)
             {
@@ -38,7 +38,6 @@ namespace HedgehogUtils
 
             On.RoR2.GenericSkill.CanApplyAmmoPack += CanApplyAmmoPackToBoost;
             On.RoR2.GenericSkill.ApplyAmmoPack += ApplyAmmoPackToBoost;
-            On.RoR2.UI.HUD.Awake += CreateBoostMeterUI;
 
             //On.EntityStates.SolusHeart.SolusWebMissionPhaseBaseState.OnEnter += For Solus Heart phase advance voicelines?
         }
@@ -211,14 +210,13 @@ namespace HedgehogUtils
             }
         }
 
-        private static void SceneDirectorOnStart(On.RoR2.SceneDirector.orig_Start orig, SceneDirector self)
+        private static void StageBegin(Stage stage)
         {
-            orig(self);
             if (!NetworkServer.active) return;
 
             NetworkServer.Spawn(GameObject.Instantiate<GameObject>(ChaosSnapManager.prefab));
             #region Form Handlers
-            SceneDef scene = SceneCatalog.GetSceneDefForCurrentScene();
+            SceneDef scene = stage.sceneDef;
             /*if (sceneName == "intro")
             {
                 return;
@@ -277,7 +275,7 @@ namespace HedgehogUtils
 
         private static bool CanApplyAmmoPackToBoost(On.RoR2.GenericSkill.orig_CanApplyAmmoPack orig, GenericSkill self)
         {
-            if (typeof(Boost.EntityStates.Boost).IsAssignableFrom(self.activationState.stateType))
+            if (typeof(Boost.SkillDefs.IBoostSkill).IsAssignableFrom(self.skillDef.GetType()))
             {
                 BoostLogic boost = self.characterBody.GetComponent<BoostLogic>();
                 if (boost)
@@ -290,7 +288,7 @@ namespace HedgehogUtils
         private static void ApplyAmmoPackToBoost(On.RoR2.GenericSkill.orig_ApplyAmmoPack orig, GenericSkill self)
         {
             orig(self);
-            if (typeof(Boost.EntityStates.Boost).IsAssignableFrom(self.activationState.stateType))
+            if (typeof(Boost.SkillDefs.IBoostSkill).IsAssignableFrom(self.skillDef.GetType()))
             {
                 BoostLogic boost = self.characterBody.GetComponent<BoostLogic>();
                 if (boost)
@@ -298,14 +296,6 @@ namespace HedgehogUtils
                     boost.AddBoost(BoostLogic.boostRegenPerBandolier);
                 }
             }
-        }
-
-        public static void CreateBoostMeterUI(On.RoR2.UI.HUD.orig_Awake orig, RoR2.UI.HUD self)
-        {
-            orig.Invoke(self);
-            BoostHUD boostHud = self.gameObject.AddComponent<BoostHUD>();
-            GameObject boostUI = GameObject.Instantiate(Assets.boostHUD, self.transform.Find("MainContainer/MainUIArea/CrosshairCanvas"));
-            boostHud.boostMeter = boostUI;
         }
     }
 }

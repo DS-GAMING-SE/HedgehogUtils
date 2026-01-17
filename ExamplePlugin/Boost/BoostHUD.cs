@@ -13,13 +13,8 @@ namespace HedgehogUtils.Boost
     public class BoostHUD : MonoBehaviour
     {
         //thanks red mist
-        private BoostLogic boostLogic;
-        private CharacterBody body;
-        private GameObject lastBodyObject;
-        private SkillDefs.IBoostSkill boostSkillDef;
+        public BoostLogic boostLogic;
         protected bool boostHudActive;
-
-        public GameObject boostMeter;
 
         public Image meterBackground;
         public Image meterFill;
@@ -38,7 +33,6 @@ namespace HedgehogUtils.Boost
         private Color fillUnavailableColor = new Color(0.8f, 0, 0, 1);
         private Color backgroundDefaultColor = new Color (0, 0, 0, 0.5f);
 
-        private HUD hud;
         private float fadeTimer;
 
         private int backupBackgroundNum;
@@ -46,18 +40,17 @@ namespace HedgehogUtils.Boost
 
         private void Awake()
         {
-            this.hud = base.GetComponent<HUD>();
             if (HedgehogUtilsPlugin.riskOfOptionsLoaded)
             {
                 ConfigEntry<float> configX = Config.BoostMeterLocationX();
                 ConfigEntry<float> configY = Config.BoostMeterLocationY();
-                configX.SettingChanged += (orig, self) => { this.boostMeter.GetComponent<RectTransform>().anchoredPosition = new Vector2(configX.Value, configY.Value); };
-                configY.SettingChanged += (orig, self) => { this.boostMeter.GetComponent<RectTransform>().anchoredPosition = new Vector2(configX.Value, configY.Value); };
+                configX.SettingChanged += (orig, self) => { GetComponent<RectTransform>().anchoredPosition = new Vector2(configX.Value, configY.Value); };
+                configY.SettingChanged += (orig, self) => { GetComponent<RectTransform>().anchoredPosition = new Vector2(configX.Value, configY.Value); };
             }
         }
         public virtual void PrepareBoostMeter()
         {
-            RectTransform rectTransform = this.boostMeter.GetComponent<RectTransform>();
+            RectTransform rectTransform = GetComponent<RectTransform>();
             rectTransform.anchorMin = Vector2.zero;
             rectTransform.anchorMax = Vector2.one;
             rectTransform.localScale = new Vector3(1f, 1f, 1f);
@@ -65,61 +58,40 @@ namespace HedgehogUtils.Boost
 
             rectTransform.anchoredPosition = new Vector2(Config.BoostMeterLocationX().Value, Config.BoostMeterLocationY().Value);
 
-            this.meterBackground = this.boostMeter.transform.Find("Background").gameObject.GetComponent<Image>();
-            this.meterFill = this.boostMeter.transform.Find("Background/Fill").gameObject.GetComponent<Image>();
-            this.meterBackgroundOuter = this.boostMeter.transform.Find("BackgroundOuter").gameObject.GetComponent<Image>();
-            this.meterFillOuter = this.boostMeter.transform.Find("BackgroundOuter/FillOuter").gameObject.GetComponent<Image>();
-            this.meterBackgroundBackup = this.boostMeter.transform.Find("BackgroundBackup").gameObject.GetComponent<RawImage>();
+            this.meterBackground = transform.Find("Background").gameObject.GetComponent<Image>();
+            this.meterFill = transform.Find("Background/Fill").gameObject.GetComponent<Image>();
+            this.meterBackgroundOuter = transform.Find("BackgroundOuter").gameObject.GetComponent<Image>();
+            this.meterFillOuter = transform.Find("BackgroundOuter/FillOuter").gameObject.GetComponent<Image>();
+            this.meterBackgroundBackup = transform.Find("BackgroundBackup").gameObject.GetComponent<RawImage>();
             this.meterBackgroundBackupRect = meterBackgroundBackup.GetComponent<RectTransform>();
-            this.meterFillBackup = this.boostMeter.transform.Find("BackgroundBackup/FillBackup").gameObject.GetComponent<RawImage>();
+            this.meterFillBackup = transform.Find("BackgroundBackup/FillBackup").gameObject.GetComponent<RawImage>();
             this.meterFillBackupRect = meterFillBackup.GetComponent<RectTransform>();
-            this.infiniteBackground = this.boostMeter.transform.Find("InfiniteBackground").gameObject.GetComponent<Image>();
-            this.infiniteFill = this.boostMeter.transform.Find("InfiniteBackground/InfiniteFill").gameObject.GetComponent<Image>();
+            this.infiniteBackground = transform.Find("InfiniteBackground").gameObject.GetComponent<Image>();
+            this.infiniteFill = transform.Find("InfiniteBackground/InfiniteFill").gameObject.GetComponent<Image>();
+
+            fadeTimer = 1f;
         }
         public virtual void Update()
         {
-            if (!this.hud.targetBodyObject)
-            {
-                this.boostMeter.gameObject.SetActive(false);
-                return;
-            }
-            if (this.hud.targetBodyObject != lastBodyObject)
-            {
-                if (body && body.skillLocator && body.skillLocator.utility)
-                {
-                    body.skillLocator.utility.onSkillChanged -= OnSkillChanged;
-                }
-                boostLogic = this.hud.targetBodyObject.GetComponent<BoostLogic>();
-                body = this.hud.targetBodyObject.GetComponent<CharacterBody>();
-                if (body && body.skillLocator && body.skillLocator.utility)
-                {
-                    body.skillLocator.utility.onSkillChanged += OnSkillChanged;
-                    BoostSkill();
-                }
-            }
-            lastBodyObject = this.hud.targetBodyObject;
             if (boostLogic && boostLogic.boostExists)
             {
-                if (this.boostMeter)
+                if (!this.boostHudActive)
                 {
-                    if (!this.boostHudActive)
-                    {
-                        this.boostHudActive = true;
-                        PrepareBoostMeter();
-                    }
-                    BoostMeterVisuals();
-                    return;
+                    this.boostHudActive = true;
+                    PrepareBoostMeter();
                 }
+                BoostMeterVisuals();
+                return;
             }
-            else if (this.boostMeter)
+            else
             {
-                this.boostMeter.gameObject.SetActive(false);
+                gameObject.SetActive(false);
             }
         }
 
         public virtual void BoostMeterVisuals()
         {
-            this.boostMeter.gameObject.SetActive(true);
+            gameObject.SetActive(true);
             UpdateMeterBackground();
             UpdateMeterFill();
             UpdateMeterFading();
@@ -131,7 +103,7 @@ namespace HedgehogUtils.Boost
             {
                 meterFill.fillAmount = 1;
                 fadeTimer += Time.fixedDeltaTime;
-                Color fill = Color.Lerp(boostSkillDef.boostHUDColor, boostSkillDef.boostHUDColor.AlphaMultiplied(0), fadeTimer);
+                Color fill = Color.Lerp(boostLogic.boostSkillDef.boostHUDColor, boostLogic.boostSkillDef.boostHUDColor.AlphaMultiplied(0), fadeTimer);
                 Color background = Color.Lerp(backgroundDefaultColor, new Color(0, 0, 0, 0), fadeTimer);
                 if (boostLogic.boostRegen < boostLogic.boostMeterDrain && !boostLogic.alwaysMaxBoost)
                 {
@@ -159,20 +131,20 @@ namespace HedgehogUtils.Boost
                 if (boostLogic.boostRegen < boostLogic.boostMeterDrain && !boostLogic.alwaysMaxBoost)
                 {
                     meterBackground.gameObject.SetActive(true);
-                    meterFill.color = boostLogic.boostAvailable ? boostSkillDef.boostHUDColor : fillUnavailableColor;
+                    meterFill.color = boostLogic.boostAvailable ? boostLogic.boostSkillDef.boostHUDColor : fillUnavailableColor;
                     meterBackground.color = backgroundDefaultColor;
                     infiniteBackground.gameObject.SetActive(false);
                 }
                 else
                 {
                     infiniteBackground.gameObject.SetActive(true);
-                    infiniteFill.color = boostSkillDef.boostHUDColor;
+                    infiniteFill.color = boostLogic.boostSkillDef.boostHUDColor;
                     infiniteBackground.color = backgroundDefaultColor;
                     meterBackground.gameObject.SetActive(false);
                 }
-                meterFillOuter.color = boostLogic.boostAvailable ? boostSkillDef.boostHUDColor : fillUnavailableColor;
+                meterFillOuter.color = boostLogic.boostAvailable ? boostLogic.boostSkillDef.boostHUDColor : fillUnavailableColor;
                 meterBackgroundOuter.color = backgroundDefaultColor;
-                meterFillBackup.color = boostLogic.boostAvailable ? boostSkillDef.boostHUDColor : fillUnavailableColor;
+                meterFillBackup.color = boostLogic.boostAvailable ? boostLogic.boostSkillDef.boostHUDColor : fillUnavailableColor;
                 meterBackgroundBackup.color = backgroundDefaultColor;
             }
         }
@@ -216,18 +188,6 @@ namespace HedgehogUtils.Boost
                 meterBackgroundBackup.uvRect = new Rect(meterBackgroundBackup.uvRect.x, meterBackgroundBackup.uvRect.y, backupBackgroundNum, meterBackgroundBackup.uvRect.height);
                 meterBackgroundBackup.gameObject.SetActive(true);
                 meterBackgroundBackupRect.localScale = new Vector3(0.3f * backupBackgroundNum, 0.3f, 0.3f);
-            }
-        }
-        public void OnSkillChanged(GenericSkill skill)
-        {
-            BoostSkill();
-        }
-
-        private void BoostSkill()
-        {
-            if (typeof(SkillDefs.IBoostSkill).IsAssignableFrom(body.skillLocator.utility.skillDef.GetType()))
-            {
-                boostSkillDef = body.skillLocator.utility.skillDef as SkillDefs.IBoostSkill;
             }
         }
     }

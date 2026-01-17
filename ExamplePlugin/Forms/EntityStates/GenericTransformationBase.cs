@@ -14,6 +14,10 @@ namespace HedgehogUtils.Forms.EntityStates
         {
             get;
         }
+        protected abstract float transformationDurationPercent
+        {
+            get;
+        }
         protected string animationLayerName { get { return "FullBody, Override"; } }
         protected string animationName { get { return "HedgehogUtilsTransform"; } }
         protected string animationPlaybackRateParam { get { return "Roll.playbackRate"; } }
@@ -49,7 +53,7 @@ namespace HedgehogUtils.Forms.EntityStates
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (fixedAge >= this.duration / 2 && !effectFired && this.formComponent)
+            if (fixedAge >= this.duration * transformationDurationPercent && !effectFired && this.formComponent)
             {
                 Transform();
             }
