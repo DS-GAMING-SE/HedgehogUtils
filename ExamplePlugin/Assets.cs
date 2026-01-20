@@ -14,6 +14,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.Rendering.PostProcessing;
 using HedgehogUtils.Miscellaneous;
 using HedgehogUtils.Boost;
+using System.Linq;
 
 namespace HedgehogUtils
 {
@@ -274,6 +275,8 @@ namespace HedgehogUtils
         public static NetworkSoundEventDef chaosSnapSoundEventDef;
         public static NetworkSoundEventDef chaosSnapLargeSoundEventDef;
         #endregion
+        public static GameObject lockOnIndicator;
+        public static Material lockOnUIRemap;
         public static void Miscellaneous()
         {
             rainbowGlowMaterial = new Material(Addressables.LoadAssetAsync<Material>("RoR2/DLC2/Elites/EliteBead/matEliteBeadSpikeGrowthRing.mat").WaitForCompletion());
@@ -298,7 +301,53 @@ namespace HedgehogUtils
             chaosSnapSoundEventDef = CreateNetworkSoundEventDef("Play_hedgehogutils_teleport");
             chaosSnapLargeSoundEventDef = CreateNetworkSoundEventDef("Play_hedgehogutils_teleport_large");
 
+            lockOnIndicator = mainAssetBundle.LoadAsset<GameObject>("LockOnIndicator");
+            var lockOnIndicatorComponent = lockOnIndicator.AddComponent<LockOnIndicator>();
+            AsyncOperationHandle<Sprite> asyncTexCursorRevolver = Addressables.LoadAssetAsync<Sprite>("RoR2/Base/UI/texCursorRevolver.png");
+            asyncTexCursorRevolver.Completed += delegate (AsyncOperationHandle<Sprite> x)
+            {
+                var mainSprite = lockOnIndicator.transform.GetChild(0).GetComponent<SpriteRenderer>();
+                mainSprite.sprite = x.Result;
+                lockOnIndicatorComponent.main = mainSprite;
+            };
+            AsyncOperationHandle<Sprite> asyncTexCrosshair2 = Addressables.LoadAssetAsync<Sprite>("RoR2/Base/UI/texCrosshair2.png");
+            asyncTexCrosshair2.Completed += delegate (AsyncOperationHandle<Sprite> x)
+            {
+                var darkenSprite = lockOnIndicator.transform.GetChild(1).GetComponent<SpriteRenderer>();
+                darkenSprite.sprite = x.Result;
+                lockOnIndicatorComponent.darken = darkenSprite;
+            };
+            var lockOnNibHolder = lockOnIndicator.transform.GetChild(3);
+            AsyncOperationHandle<Sprite> asyncTexCrosshairNibBar = Addressables.LoadAssetAsync<Sprite>("RoR2/Base/UI/texCrosshairNibBar.png");
+            asyncTexCrosshairNibBar.Completed += delegate (AsyncOperationHandle<Sprite> x)
+            {
+                lockOnIndicatorComponent.nibTop = LockOnNibs(lockOnNibHolder.GetChild(0), x.Result);
+                lockOnIndicatorComponent.nibLeft = LockOnNibs(lockOnNibHolder.GetChild(1), x.Result);
+                lockOnIndicatorComponent.nibBottom = LockOnNibs(lockOnNibHolder.GetChild(2), x.Result);
+                lockOnIndicatorComponent.nibRight = LockOnNibs(lockOnNibHolder.GetChild(3), x.Result);
+                lockOnIndicatorComponent.scaleCurves = lockOnIndicator.GetComponentsInChildren<ObjectScaleCurve>();
+            };
+
+            var lockOnStartScaleCurve = lockOnIndicator.transform.GetChild(2).gameObject.AddComponent<ObjectScaleCurve>();
+            lockOnStartScaleCurve.timeMax = 0.2f;
+            lockOnStartScaleCurve.useOverallCurveOnly = true;
+            lockOnStartScaleCurve.overallCurve = AnimationCurve.Linear(0f, 3f, 1f, 0f);
+            lockOnIndicatorComponent.start = lockOnStartScaleCurve.GetComponent<SpriteRenderer>();
+
             //matDustExhaust for wind stuff
+        }
+        private static SpriteRenderer LockOnNibs(Transform nibHolder, Sprite sprite)
+        {
+            var scaleCurve = nibHolder.gameObject.AddComponent<ObjectScaleCurve>();
+            scaleCurve.timeMax = 0.2f;
+            scaleCurve.useOverallCurveOnly = false;
+            scaleCurve.curveX = AnimationCurve.Constant(0f, 1f, 1f);
+            scaleCurve.curveY = AnimationCurve.EaseInOut(0, 6f, 1f, 1f);
+            scaleCurve.curveZ = AnimationCurve.Constant(0f, 1f, 1f);
+            scaleCurve.overallCurve = AnimationCurve.Constant(0f, 1f, 1f);
+            var spriteRenderer = nibHolder.GetChild(0).GetComponent<SpriteRenderer>();
+            spriteRenderer.sprite = sprite;
+            return spriteRenderer;
         }
 
         public static GameObject CreateChaosSnapEffect(string assetBundlePrefabName, bool teleportIn)

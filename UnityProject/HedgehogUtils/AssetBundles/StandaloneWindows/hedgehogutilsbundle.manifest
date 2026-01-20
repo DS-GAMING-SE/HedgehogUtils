@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 843550598
+CRC: 360200753
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 0833185cbb5ac331364864b3a7aaae35
+    Hash: b91acce2c46149d9efb30fe442074270
   TypeTreeHash:
     serializedVersion: 2
-    Hash: d7815b418e4f73d84f8136e6014204d6
+    Hash: 921b4dd4bc2fa1b1e55b2e84583b6c63
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -53,6 +53,8 @@ ClassTypes:
   Script: {instanceID: 0}
 - Class: 205
   Script: {instanceID: 0}
+- Class: 212
+  Script: {instanceID: 0}
 - Class: 213
   Script: {instanceID: 0}
 - Class: 222
@@ -81,10 +83,10 @@ Assets:
 - Assets/AssetBundle/BoostMeter/texBoostMeter.png
 - Assets/AssetBundle/BoostMeter/texBoostMeter2.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matFistSwing.mat
-- Assets/AssetBundle/VFX/Materials/Boost/matPowerBoostFlash.mat
-- Assets/AssetBundle/VFX/Materials/Super Form/matTrail1.mat
-- Assets/AssetBundle/VFX/Textures/texGradient.png
 - Assets/AssetBundle/Emeralds/Materials/matYellow.mat
+- Assets/AssetBundle/VFX/Materials/Boost/matPowerBoostFlash.mat
+- Assets/AssetBundle/VFX/Textures/texGradient.png
+- Assets/AssetBundle/VFX/Materials/Super Form/matTrail1.mat
 - Assets/AssetBundle/VFX/Prefabs/Boost/SonicPowerBoostAura.prefab
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicChaosEmeraldSwirl.prefab
 - Assets/AssetBundle/VFX/Materials/Super Form/matAnime.mat
@@ -117,6 +119,7 @@ Assets:
 - Assets/AssetBundle/Emeralds/Prefabs/GrayEmerald.prefab
 - Assets/AssetBundle/VFX/Materials/Super Form/matSpark.mat
 - Assets/AssetBundle/Emeralds/Icons/texEmeraldInteractableIcon.png
+- Assets/AssetBundle/VFX/Meshes/RollMesh.fbx
 - Assets/AssetBundle/VFX/Materials/Super Form/matSwingShadow.mat
 - Assets/AssetBundle/Emeralds/Emerald.fbx
 - Assets/AssetBundle/Emeralds/Icons/texBgEmerald.png
@@ -139,6 +142,7 @@ Assets:
 - Assets/AssetBundle/Emeralds/Materials/matPurple.mat
 - Assets/AssetBundle/VFX/Textures/texRainbowLensFlare 1.png
 - Assets/AssetBundle/Emeralds/Animations/animRing.controller
+- Assets/AssetBundle/UI/LockOn/LockOnIndicator.prefab
 - Assets/AssetBundle/VFX/Meshes/Boost.fbx
 - Assets/AssetBundle/Emeralds/Icons/texSuperBuffIcon.png
 - Assets/AssetBundle/Emeralds/Materials/matGreen.mat
