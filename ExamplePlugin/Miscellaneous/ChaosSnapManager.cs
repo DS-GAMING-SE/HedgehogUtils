@@ -16,11 +16,9 @@ namespace HedgehogUtils.Miscellaneous
     {
         public static ChaosSnapManager instance;
         public static GameObject prefab;
-        public static Material tempOverlayMaterial;
 
         public static void Initialize()
         {
-            tempOverlayMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/Huntress/matHuntressFlashBright.mat").WaitForCompletion();
             prefab = PrefabAPI.CreateEmptyPrefab("HedgehogUtilsChaosSnapManager");
             prefab.AddComponent<ChaosSnapManager>();
         }

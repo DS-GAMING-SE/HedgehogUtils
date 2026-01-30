@@ -51,7 +51,7 @@ namespace HedgehogUtils.Forms.SuperForm
             Log.Message("Starting Emerald Interactable Init", Config.Logs.All);
             prefabBase = Assets.mainAssetBundle.LoadAsset<GameObject>("ChaosEmeraldInteractable");
 
-            Assets.MaterialSwap(prefabBase, "RoR2/Base/Common/VFX/matInverseDistortion.mat", "RingParent/PurchaseParticle/Distortion");
+            Assets.MaterialSwap(prefabBase, RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matInverseDistortion_mat, "RingParent/PurchaseParticle/Distortion");
             Assets.ReplaceRainbow(prefabBase.transform.Find("RingParent/PurchaseParticle/Rainbow"));
             prefabBase.AddComponent<NetworkIdentity>();
 

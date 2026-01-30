@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace HedgehogUtils.Voicelines
 {
-    public class VoicelineComponent : MonoBehaviour, ILifeBehavior
+    public abstract class VoicelineComponent : MonoBehaviour, ILifeBehavior
     {
         public string soundBankFilePath;
         protected uint soundBankID;
@@ -22,33 +22,16 @@ namespace HedgehogUtils.Voicelines
 
         public uint currentVoicelineID;
         public VoicelinePriority currentVoicelinePriority;
+        public bool isVoicelinePlaying { get; private set; }
 
         public List<VoicelineComponent> nearbyVoices = new List<VoicelineComponent>();
+        public virtual void SubscribeEvents()
+        {
 
-        public virtual NetworkedVoiceline StageStart(Stage stage)
-        {
-            Chat.AddMessage("Stage start");
-            return default;
         }
-        public virtual NetworkedVoiceline BossDefeated(BodyIndex bossBodyIndex)
+        public virtual void UnsubscribeEvents()
         {
-            Chat.AddMessage("Boss Defeated");
-            return default;
-        }
-        public virtual NetworkedVoiceline BossStart(BodyIndex bossBodyIndex)
-        {
-            Chat.AddMessage("Boss Start");
-            return default;
-        }
-        public virtual NetworkedVoiceline FinalBossStart(FinalBoss boss)
-        {
-            Chat.AddMessage($"{boss.ToString()} Start");
-            return default;
-        }
-        public virtual NetworkedVoiceline FinalBossDefeated(FinalBoss boss)
-        {
-            Chat.AddMessage($"{boss.ToString()} Defeated");
-            return default;
+
         }
         public virtual void OnDeathStart()
         {
@@ -56,7 +39,6 @@ namespace HedgehogUtils.Voicelines
         }
         public void PlayVoiceline(string soundString, VoicelinePriority priority)
         {
-            Chat.AddMessage("Voiceline");
             if (string.IsNullOrEmpty(soundString)) return;
             if (priority > currentVoicelinePriority)
             {
@@ -64,6 +46,7 @@ namespace HedgehogUtils.Voicelines
             }
             currentVoicelineID = AkSoundEngine.PostEvent(soundString, gameObject, (uint)AkCallbackType.AK_EndOfEvent, OnVoicelineEnd, null);
             currentVoicelinePriority = priority;
+            isVoicelinePlaying = true;
         }
         public void PlayVoiceline(NetworkSoundEventIndex soundIndex, VoicelinePriority priority)
         {
@@ -74,6 +57,7 @@ namespace HedgehogUtils.Voicelines
             AkSoundEngine.StopPlayingID(currentVoicelineID);
             currentVoicelineID = 0;
             currentVoicelinePriority = 0;
+            isVoicelinePlaying = false;
         }
         private void OnVoicelineEnd(object in_cookie, AkCallbackType in_type, object in_info)
         {
@@ -81,46 +65,45 @@ namespace HedgehogUtils.Voicelines
             {
                 currentVoicelineID = 0;
                 currentVoicelinePriority = 0;
+                isVoicelinePlaying = false;
             }
         }
 
-        public void Awake()
+        private void Awake()
         {
             characterBody = GetComponent<CharacterBody>();
         }
-        public void Start()
-        {
-            if (!TryEnableVoicelines())
-            {
-                enabled = false;
-            }
-        }
-        public virtual bool TryEnableVoicelines()
+        public virtual bool ShouldEnableVoicelines()
         {
             if (characterBody && characterBody.skillLocator && characterBody.isPlayerControlled)
             {
                 if (!voicelinesSkill) voicelinesSkill = characterBody.skillLocator.FindSkill(voicelinesSkillName);
-                if (!voicelinesSkill || voicelinesSkill.skillDef == voicelinesEnableSkillDef)
-                {
-                    EnableVoicelines();
-                    return true;
-                }
+                return (!voicelinesSkill || voicelinesSkill.skillDef == voicelinesEnableSkillDef);
             }
             return false;
         }
-        public void EnableVoicelines()
+        private void EnableVoicelines()
         {
             InstanceTracker.Add<VoicelineComponent>(this);
             if (!string.IsNullOrEmpty(soundBankFilePath)) soundBankID = SoundAPI.SoundBanks.Add(soundBankFilePath);
+            SubscribeEvents();
         }
-        public void OnEnable()
+        private void OnEnable()
         {
-            TryEnableVoicelines();
+            if (ShouldEnableVoicelines())
+            {
+                EnableVoicelines();
+            }
+            else
+            {
+                enabled = false;
+            }
         }
-        public void OnDisable()
+        private void OnDisable()
         {
             InstanceTracker.Remove<VoicelineComponent>(this);
             if (!string.IsNullOrEmpty(soundBankFilePath)) SoundAPI.SoundBanks.Remove(soundBankID);
+            UnsubscribeEvents();
         }
     }
 }

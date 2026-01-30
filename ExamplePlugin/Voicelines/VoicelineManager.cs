@@ -19,6 +19,16 @@ namespace HedgehogUtils.Voicelines
         public static VoicelineManager instance;
         public static GameObject prefab;
 
+        public delegate void StageEventHandler(Stage stage, List<NetworkedVoiceline> networkedVoicelines);
+        public delegate void BossEventHandler(BodyIndex boss, List<NetworkedVoiceline> networkedVoicelines);
+        public delegate void FinalBossEventHandler(FinalBoss finalBoss, List<NetworkedVoiceline> networkedVoicelines);
+
+        public static event StageEventHandler OnStageStart;
+        public static event BossEventHandler OnBossStart;
+        public static event BossEventHandler OnBossDefeated;
+        public static event FinalBossEventHandler OnFinalBossStart;
+        public static event FinalBossEventHandler OnFinalBossDefeated;
+
         [Tooltip("Normally, if multiple voiceline characters are responding to the same event, their responses will happen one after another. If they are this far away or greater, they won't be.")]
         public const float nearbyMaxDistance = 60f;
 
@@ -64,12 +74,27 @@ namespace HedgehogUtils.Voicelines
             if (Stage.instance && !Stage.instance.usePod)
             {
                 List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
-                List<VoicelineComponent> voices = InstanceTracker.GetInstancesList<VoicelineComponent>();
+                if (OnStageStart != null)
+                {
+                    foreach (StageEventHandler @event in OnStageStart.GetInvocationList().Cast<StageEventHandler>())
+                    {
+                        try
+                        {
+                            @event(Stage.instance, voicelinesToSend);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error(
+                                $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
+                        }
+                    }
+                }
+                /*List<VoicelineComponent> voices = InstanceTracker.GetInstancesList<VoicelineComponent>();
                 foreach (var voice in voices)
                 {
                     NetworkedVoiceline voiceline = voice.StageStart(Stage.instance);
                     if (voiceline.IsValid()) voicelinesToSend.Add(voiceline);
-                }
+                }*/
                 StartCoroutine(StaggerVoicelines(voicelinesToSend));
             }
         }
@@ -79,11 +104,47 @@ namespace HedgehogUtils.Voicelines
             BodyIndex bodyIndex = GetBossBodyIndex(boss);
             FinalBoss finalBoss = GetFinalBoss(bodyIndex);
             List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
-            foreach (var voice in voices)
+            if (finalBoss == FinalBoss.None)
+            {
+                if (OnBossStart != null)
+                {
+                    foreach (BossEventHandler @event in OnBossStart.GetInvocationList().Cast<BossEventHandler>())
+                    {
+                        try
+                        {
+                            @event(bodyIndex, voicelinesToSend);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error(
+                                $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (OnFinalBossStart != null)
+                {
+                    foreach (FinalBossEventHandler @event in OnFinalBossStart.GetInvocationList().Cast<FinalBossEventHandler>())
+                    {
+                        try
+                        {
+                            @event(finalBoss, voicelinesToSend);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error(
+                                $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
+                        }
+                    }
+                }
+            }
+            /*foreach (var voice in voices)
             {
                 NetworkedVoiceline voiceline = finalBoss == FinalBoss.None ? voice.BossStart(bodyIndex) : voice.FinalBossStart(finalBoss);
                 if (voiceline.IsValid()) voicelinesToSend.Add(voiceline);
-            }
+            }*/
             StartCoroutine(StaggerVoicelines(voicelinesToSend, 2.5f));
         }
         private void BossDefeatedVoicelines(BossGroup boss)
@@ -92,11 +153,47 @@ namespace HedgehogUtils.Voicelines
             BodyIndex bodyIndex = GetBossBodyIndex(boss);
             FinalBoss finalBoss = GetFinalBoss(bodyIndex);
             List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
-            foreach (var voice in voices)
+            if (finalBoss == FinalBoss.None)
+            {
+                if (OnBossDefeated != null)
+                {
+                    foreach (BossEventHandler @event in OnBossDefeated.GetInvocationList().Cast<BossEventHandler>())
+                    {
+                        try
+                        {
+                            @event(bodyIndex, voicelinesToSend);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error(
+                                $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (OnFinalBossDefeated != null)
+                {
+                    foreach (FinalBossEventHandler @event in OnFinalBossDefeated.GetInvocationList().Cast<FinalBossEventHandler>())
+                    {
+                        try
+                        {
+                            @event(finalBoss, voicelinesToSend);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error(
+                                $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
+                        }
+                    }
+                }
+            }
+            /*foreach (var voice in voices)
             {
                 NetworkedVoiceline voiceline = finalBoss == FinalBoss.None ? voice.BossDefeated(bodyIndex) : voice.FinalBossDefeated(finalBoss);
                 if (voiceline.IsValid()) voicelinesToSend.Add(voiceline);
-            }
+            }*/
             StartCoroutine(StaggerVoicelines(voicelinesToSend, 1f));
         }
         public IEnumerator RefreshNearby()
@@ -172,7 +269,6 @@ namespace HedgehogUtils.Voicelines
                 BodyCatalog.FindBodyIndex("ScavLunar4Body")];
             arraign1EnemiesReturnsBodyIndex = BodyCatalog.FindBodyIndex("ArraignP1Body");
             arraign2EnemiesReturnsBodyIndex = BodyCatalog.FindBodyIndex("ArraignP2Body");
-            BodyCatalog.GetBodyPrefab(BodyCatalog.FindBodyIndex("SonicTheHedgehog")).AddComponent<VoicelineComponent>();
             //BodyCatalog.FindBodyIndex("ProvidenceP1Body")};
         }
         public static BodyIndex GetBossBodyIndex(BossGroup boss)

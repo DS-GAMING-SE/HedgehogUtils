@@ -15,6 +15,7 @@ using UnityEngine.Rendering.PostProcessing;
 using HedgehogUtils.Miscellaneous;
 using HedgehogUtils.Boost;
 using System.Linq;
+using RoR2BepInExPack;
 
 namespace HedgehogUtils
 {
@@ -80,7 +81,7 @@ namespace HedgehogUtils
 
         public static void BoostAndLaunch()
         {
-            powerBoostFlashEffect = MaterialSwap(Assets.LoadEffect("SonicPowerBoostFlash", true), "RoR2/Base/Common/VFX/matDistortionFaded.mat", "Distortion");
+            powerBoostFlashEffect = MaterialSwap(Assets.LoadEffect("SonicPowerBoostFlash", true), RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matDistortionFaded_mat, "Distortion");
             powerBoostAuraEffect = Assets.LoadAsyncedEffect("SonicPowerBoostAura");
 
             boostHUD = Assets.mainAssetBundle.LoadAsset<GameObject>("BoostMeter");
@@ -103,14 +104,14 @@ namespace HedgehogUtils
                 new Color(0.3f, 0f, 0f));
             #endregion
 
-            AsyncOperationHandle<GameObject> asyncHit = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ArmorReductionOnHit/PulverizedEffect.prefab");
+            AsyncOperationHandle<GameObject> asyncHit = Addressables.LoadAssetAsync<GameObject>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_ArmorReductionOnHit.PulverizedEffect_prefab);
             asyncHit.Completed += delegate (AsyncOperationHandle<GameObject> x)
             {
                 launchHitEffect = CreateLaunchHitEffect(x.Result, "HedgehogUtilsLaunchHitEffect", new Color(1f, 0.8f, 0.4f), new Color(0.8f, 0.8f, 0.8f));
                 launchCritHitEffect = CreateLaunchHitEffect(x.Result, "HedgehogUtilsLaunchCritHitEffect", new Color(1f, 0.1f, 0.2f), new Color(0.9f, 0.7f, 0.7f));
             };
 
-            AsyncOperationHandle<GameObject> asyncWallCollision = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/SurvivorPod/PodGroundImpact.prefab");
+            AsyncOperationHandle<GameObject> asyncWallCollision = Addressables.LoadAssetAsync<GameObject>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_SurvivorPod.PodGroundImpact_prefab);
             asyncWallCollision.Completed += delegate (AsyncOperationHandle<GameObject> x)
             {
                 // Launch Wall Large
@@ -236,7 +237,7 @@ namespace HedgehogUtils
             EffectComponent warningEffect = superFormWarning.GetComponent<EffectComponent>();
             warningEffect.parentToReferencedTransform = true;
 
-            AsyncOperationHandle<Material> asyncOutlineMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/LunarGolem/matLunarGolemShield.mat");
+            AsyncOperationHandle<Material> asyncOutlineMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_LunarGolem.matLunarGolemShield_mat);
             asyncOutlineMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
             {
                 superFormOverlay = new Material(x.Result);
@@ -244,7 +245,7 @@ namespace HedgehogUtils
                 superFormOverlay.SetColor("_EmissionColor", new Color(1, 0.8f, 0.4f, 1));
                 superFormOverlay.SetFloat("_OffsetAmount", 0.01f);
             };
-            AsyncOperationHandle<Material> asyncGlowingMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/Huntress/matHuntressFlashBright.mat");
+            AsyncOperationHandle<Material> asyncGlowingMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Huntress.matHuntressFlashBright_mat);
             asyncGlowingMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
             {
                 superFormGlowingMaterial = new Material(x.Result);
@@ -257,13 +258,13 @@ namespace HedgehogUtils
 
             superFormPPVolume = mainAssetBundle.LoadAsset<GameObject>("SonicSuperPostProcess");
             PostProcessVolume postProcess = superFormPPVolume.GetComponent<PostProcessVolume>();
-            postProcess.sharedProfile = Addressables.LoadAssetAsync<PostProcessProfile>("RoR2/Base/title/PostProcessing/ppLocalGrandparent.asset").WaitForCompletion();
+            postProcess.sharedProfile = Addressables.LoadAssetAsync<PostProcessProfile>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_title_PostProcessing.ppLocalGrandparent_asset).WaitForCompletion();
         }
         public static void ReplaceRainbow(Transform particle, bool subtle = false)
         {
             ParticleSystemRenderer rainbowAura = particle.GetComponent<ParticleSystemRenderer>();
             rainbowAura.sharedMaterial = subtle ? rainbowGlowSubtleMaterial : rainbowGlowMaterial;
-            rainbowAura.mesh = Addressables.LoadAssetAsync<Mesh>("RoR2/Base/Common/VFX/mdlVFXDonut1.fbx").WaitForCompletion();
+            rainbowAura.mesh = Addressables.LoadAssetAsync<Mesh>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.mdlVFXDonut1_fbx_donut1Mesh_).WaitForCompletion();
         }
 
         public static Material ringMaterial;
@@ -279,13 +280,13 @@ namespace HedgehogUtils
         public static Material lockOnUIRemap;
         public static void Miscellaneous()
         {
-            rainbowGlowMaterial = new Material(Addressables.LoadAssetAsync<Material>("RoR2/DLC2/Elites/EliteBead/matEliteBeadSpikeGrowthRing.mat").WaitForCompletion());
+            rainbowGlowMaterial = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Elites_EliteBead.matEliteBeadSpikeGrowthRing_mat).WaitForCompletion());
             rainbowGlowMaterial.SetTexture("_RemapTex", mainAssetBundle.LoadAsset<Texture>("texRampRainbow"));
             rainbowGlowMaterial.SetFloat("_Boost", 10f);
             rainbowGlowSubtleMaterial = new Material(rainbowGlowMaterial);
             rainbowGlowSubtleMaterial.SetFloat("_Boost", 1.5f);
 
-            AsyncOperationHandle<Material> asyncRingMaterial = Addressables.LoadAssetAsync<Material>("RoR2/DLC2/Elites/EliteAurelionite/matEliteAurelioniteAffixOverlay.mat");
+            AsyncOperationHandle<Material> asyncRingMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Elites_EliteAurelionite.matEliteAurelioniteAffixOverlay_mat);
             asyncRingMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
             {
                 ringMaterial = new Material(x.Result);
@@ -293,8 +294,8 @@ namespace HedgehogUtils
                 ringMaterial.SetColor("_Color", new Color(0.9f, 0.8f, 0.1f, 1));
             };
 
-            chaosSnapMaterial = new Material(Addressables.LoadAssetAsync<Material>("RoR2/Base/Huntress/matHuntressSwipe.mat").WaitForCompletion());
-            chaosSnapMaterial.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>("RoR2/Base/Common/ColorRamps/texRampLightning2.png").WaitForCompletion());
+            chaosSnapMaterial = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Huntress.matHuntressSwipe_mat).WaitForCompletion());
+            chaosSnapMaterial.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampLightning2_png).WaitForCompletion());
             chaosSnapInEffect = CreateChaosSnapEffect("ChaosSnapInVFX", true);
             chaosSnapOutEffect = CreateChaosSnapEffect("ChaosSnapOutVFX", false);
 
@@ -303,14 +304,14 @@ namespace HedgehogUtils
 
             lockOnIndicator = mainAssetBundle.LoadAsset<GameObject>("LockOnIndicator");
             var lockOnIndicatorComponent = lockOnIndicator.AddComponent<LockOnIndicator>();
-            AsyncOperationHandle<Sprite> asyncTexCursorRevolver = Addressables.LoadAssetAsync<Sprite>("RoR2/Base/UI/texCursorRevolver.png");
+            AsyncOperationHandle<Sprite> asyncTexCursorRevolver = Addressables.LoadAssetAsync<Sprite>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.texCursorRevolver_png_texCursorRevolver_);
             asyncTexCursorRevolver.Completed += delegate (AsyncOperationHandle<Sprite> x)
             {
                 var mainSprite = lockOnIndicator.transform.GetChild(0).GetComponent<SpriteRenderer>();
                 mainSprite.sprite = x.Result;
                 lockOnIndicatorComponent.main = mainSprite;
             };
-            AsyncOperationHandle<Sprite> asyncTexCrosshair2 = Addressables.LoadAssetAsync<Sprite>("RoR2/Base/UI/texCrosshair2.png");
+            AsyncOperationHandle<Sprite> asyncTexCrosshair2 = Addressables.LoadAssetAsync<Sprite>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.texCrosshair2_png_texCrosshair2_);
             asyncTexCrosshair2.Completed += delegate (AsyncOperationHandle<Sprite> x)
             {
                 var darkenSprite = lockOnIndicator.transform.GetChild(1).GetComponent<SpriteRenderer>();
@@ -318,7 +319,7 @@ namespace HedgehogUtils
                 lockOnIndicatorComponent.darken = darkenSprite;
             };
             var lockOnNibHolder = lockOnIndicator.transform.GetChild(3);
-            AsyncOperationHandle<Sprite> asyncTexCrosshairNibBar = Addressables.LoadAssetAsync<Sprite>("RoR2/Base/UI/texCrosshairNibBar.png");
+            AsyncOperationHandle<Sprite> asyncTexCrosshairNibBar = Addressables.LoadAssetAsync<Sprite>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.texCrosshairNibBar_png_texCrosshairNibBar_);
             asyncTexCrosshairNibBar.Completed += delegate (AsyncOperationHandle<Sprite> x)
             {
                 lockOnIndicatorComponent.nibTop = LockOnNibs(lockOnNibHolder.GetChild(0), x.Result);
@@ -374,14 +375,16 @@ namespace HedgehogUtils
             lightCurve.timeMax = 0.5f;
             // Material swapping
             teleportLineRenderer.sharedMaterial = chaosSnapMaterial;
-            distortionRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/Common/VFX/matInverseDistortion.mat").WaitForCompletion();
-            flashRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/Common/VFX/matGenericFlash.mat").WaitForCompletion();
+            distortionRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matInverseDistortion_mat).WaitForCompletion();
+            flashRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matGenericFlash_mat).WaitForCompletion();
 
             EffectComponent effectComponent = effect.AddComponent<EffectComponent>();
             effectComponent.applyScale = true;
             effectComponent.applyScaleFirst = true;
             effectComponent.positionAtReferencedTransform = false;
-            effect.AddComponent<ChaosSnapVFX>().reverse = teleportIn;
+            ChaosSnapVFX chaosSnapVFXComponent = effect.AddComponent<ChaosSnapVFX>();
+            chaosSnapVFXComponent.reverse = teleportIn;
+            chaosSnapVFXComponent.temporaryOverlayMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Huntress.matHuntressFlashBright_mat).WaitForCompletion();
 
             AddNewEffectDef(effect);
 

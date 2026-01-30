@@ -15,6 +15,8 @@ namespace HedgehogUtils.Miscellaneous
         public LightIntensityCurve lightIntensityCurve;
         public bool reverse;
 
+        public Material temporaryOverlayMaterial;
+
         private void Awake()
         {
             this.effectComponent = base.GetComponent<EffectComponent>();
@@ -55,13 +57,13 @@ namespace HedgehogUtils.Miscellaneous
 
         public void Flash(CharacterModel characterModel, float duration, bool reverse)
         {
-            if (characterModel)
+            if (characterModel && temporaryOverlayMaterial)
             {
                 TemporaryOverlayInstance flashOverlay = TemporaryOverlayManager.AddOverlay(characterModel.gameObject); // Flash
                 flashOverlay.duration = duration;
                 flashOverlay.animateShaderAlpha = true;
                 flashOverlay.alphaCurve = reverse ? AnimationCurve.EaseInOut(0f, 0f, 1f, 1f) : AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
-                flashOverlay.originalMaterial = ChaosSnapManager.tempOverlayMaterial;
+                flashOverlay.originalMaterial = temporaryOverlayMaterial;
                 flashOverlay.destroyComponentOnEnd = true;
                 flashOverlay.inspectorCharacterModel = characterModel;
             }

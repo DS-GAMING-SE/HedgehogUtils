@@ -22,7 +22,6 @@ namespace HedgehogUtils.Forms.EntityStates
         protected CharacterModel characterModel;
 
         private TemporaryOverlayInstance flashOverlay;
-        private static Material flashMaterial;
 
         public override void OnEnter()
         {
@@ -103,22 +102,24 @@ namespace HedgehogUtils.Forms.EntityStates
             }
         }
 
-        protected void Flash(float duration)
+        protected void Flash(float duration, Material material)
         {
             if (characterModel)
             {
-                if (!flashMaterial)
-                {
-                    flashMaterial = Addressables.LoadAssetAsync<Material>("RoR2/Base/Huntress/matHuntressFlashBright.mat").WaitForCompletion();
-                }
-
                 flashOverlay = TemporaryOverlayManager.AddOverlay(characterModel.gameObject); // Flash
                 flashOverlay.duration = duration;
                 flashOverlay.animateShaderAlpha = true;
                 flashOverlay.alphaCurve = AnimationCurve.EaseInOut(0f, 0.7f, 1f, 0f);
-                flashOverlay.originalMaterial = flashMaterial;
+                flashOverlay.originalMaterial = material;
                 flashOverlay.destroyComponentOnEnd = true;
                 flashOverlay.inspectorCharacterModel = characterModel;
+            }
+        }
+        protected void Flash(float duration)
+        {
+            if (characterModel)
+            {
+                Flash(duration, Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Huntress.matHuntressFlashBright_mat).WaitForCompletion());
             }
         }
 
