@@ -42,10 +42,6 @@ namespace HedgehogUtils.Forms.SuperForm
             // The first string input on this method, the name of the itemDef, is an internal name and CANNOT have spaces or other special characters
             // THIS was the reason the mastery skin wasn't working. THIS was the reason RunReports were breaking
 
-            /* Addressables.
-             * You'd need to build your assetbundle using addressables
-             * instead of AssetBundleBrowser */
-
             //"88448356f06897a4e930138476d4dd77"
             yellowEmerald = AddNewItem("ChaosEmeraldYellow", "YELLOW_EMERALD", true, emeraldTier,
                 Assets.mainAssetBundle.LoadAsset<Sprite>("texYellowEmeraldIcon"),

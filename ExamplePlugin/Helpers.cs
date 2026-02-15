@@ -89,6 +89,19 @@ namespace HedgehogUtils
 
             }
         }
+        public static bool IsDoingSomething(CharacterMotor characterMotor, InputBankTest inputBank, bool allowGrounded, bool allowFlying, bool allowAirborne, bool allowMoving)
+        {
+            return (!characterMotor ||
+                (!allowAirborne && !characterMotor.isGrounded && (!allowFlying || !characterMotor.isFlying)) ||
+                (!allowGrounded && characterMotor.isGrounded) ||
+                ((!inputBank) ||
+                (!allowMoving && inputBank.moveVector != Vector3.zeroVector) ||
+                inputBank.skill1.down ||
+                inputBank.skill2.down ||
+                inputBank.skill3.down ||
+                inputBank.skill4.down ||
+                inputBank.jump.down));
+        }
 
         public static T CopySkillDef<T>(SkillDef originDef) where T : SkillDef
         {
@@ -117,6 +130,13 @@ namespace HedgehogUtils
             skillDef.stockToConsume = originDef.stockToConsume;
 
             skillDef.keywordTokens = originDef.keywordTokens;
+
+            skillDef.suppressSkillActivation = originDef.suppressSkillActivation;
+            skillDef.hideCooldown = originDef.hideCooldown;
+            skillDef.hideStockCount = originDef.hideStockCount;
+            skillDef.autoHandleLuminousShot = originDef.autoHandleLuminousShot;
+            skillDef.triggeredByPressRelease = originDef.triggeredByPressRelease;
+            skillDef.isCooldownBlockedUntilManuallyReset = originDef.isCooldownBlockedUntilManuallyReset;
 
             return skillDef;
         }

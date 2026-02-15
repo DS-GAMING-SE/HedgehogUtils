@@ -335,7 +335,8 @@ namespace HedgehogUtils
             lockOnStartScaleCurve.overallCurve = AnimationCurve.Linear(0f, 3f, 1f, 0f);
             lockOnIndicatorComponent.start = lockOnStartScaleCurve.GetComponent<SpriteRenderer>();
 
-            //matDustExhaust for wind stuff
+            //RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matDustExhaust_mat for wind stuff
+            //RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Halcyonite.matHaIcyoniteIdleGlow1_mat for new super aura
         }
         private static SpriteRenderer LockOnNibs(Transform nibHolder, Sprite sprite)
         {
