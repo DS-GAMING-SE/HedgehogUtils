@@ -13,16 +13,22 @@ namespace HedgehogUtils.Emotes
         public override void OnEnter()
         {
             base.OnEnter();
+            PlayEmoteAnimation();
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
+            if (base.isAuthority && fixedAge > animationDuration || ShouldInterrupt())
+            {
+                this.outer.SetNextStateToMain();
+            }
         }
+        public abstract void PlayEmoteAnimation();
 
-        public virtual void OnInterrupt()
+        public virtual bool ShouldInterrupt()
         {
-            this.outer.SetNextStateToMain();
+            return Helpers.IsDoingSomething(characterMotor, inputBank, true, true, false, false);
         }
     }
 }

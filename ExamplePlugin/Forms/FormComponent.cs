@@ -45,11 +45,11 @@ namespace HedgehogUtils.Forms
         public ItemTracker[] formToItemTracker = Array.Empty<ItemTracker>();
 
         protected bool initialized;
-        
+
         private void Start()
         {
             body = base.GetComponent<CharacterBody>();
-            if (!body.isPlayerControlled && !(BodyCatalog.GetBodyName(body.bodyIndex).Contains("Turret")))
+            if (!body || (!body.isPlayerControlled && !(BodyCatalog.GetBodyName(body.bodyIndex).Contains("Turret"))))
             {
                 this.enabled = false;
                 return;
@@ -62,6 +62,16 @@ namespace HedgehogUtils.Forms
             if (!body) { return; }
             Init();
         }
+        private void OnDestroy()
+        {
+            if (body && body.skillLocator)
+            {
+                foreach (var item in body.skillLocator.AllSkills)
+                {
+                    item.onSkillChanged -= UpdateRequireFormSkillDefs;
+                }
+            }
+        }
 
         private void Init()
         {
@@ -70,6 +80,13 @@ namespace HedgehogUtils.Forms
             model = body.modelLocator.modelTransform.GetComponent<CharacterModel>();
             modelAnimator = model.transform.GetComponent<Animator>();
             superSonicState = EntityStateMachine.FindByCustomName(base.gameObject, "HedgehogUtilsForms");
+            if (body.skillLocator)
+            {
+                foreach (var item in body.skillLocator.AllSkills)
+                {
+                    item.onSkillChanged += UpdateRequireFormSkillDefs;
+                }
+            }
 
             CreateUnsyncItemTrackers();
             Array.Resize(ref numberOfTimesTransformed, FormCatalog.formsCatalog.Length);
@@ -180,6 +197,7 @@ namespace HedgehogUtils.Forms
         {
             FormDef previousForm = activeForm;
             this.activeForm = form;
+            UpdateAllRequireFormSkillDefs();
             OnFormChanged?.Invoke(previousForm, activeForm);
             if (!form) { return; }
             ModelSkinController skin = model.GetComponentInChildren<ModelSkinController>();
@@ -206,8 +224,31 @@ namespace HedgehogUtils.Forms
             }
             FormDef previousForm = activeForm;
             this.activeForm = null;
+            UpdateAllRequireFormSkillDefs();
             OnFormChanged?.Invoke(previousForm, activeForm);
             ResetModel();
+        }
+        private void UpdateAllRequireFormSkillDefs()
+        {
+            if (body.skillLocator)
+            {
+                foreach (var item in body.skillLocator.allSkills)
+                {
+                    UpdateRequireFormSkillDefs(item);
+                }
+            }
+        }
+
+        private void UpdateRequireFormSkillDefs(GenericSkill genericSkill)
+        {
+            if (genericSkill.currentSkillOverride != -1 && genericSkill.skillDef && genericSkill.skillDef is SkillDefs.IRequiresFormSkillDef formDef)
+            {
+                if (activeForm != formDef.requiredForm)
+                {
+                    GenericSkill.SkillOverride skillOverride = genericSkill.skillOverrides[genericSkill.currentSkillOverride];
+                    genericSkill.UnsetSkillOverride(skillOverride.source, skillOverride.skillDef, skillOverride.priority);
+                }
+            }
         }
 
         public int GetNumberOfTimesTransformed(FormDef form)

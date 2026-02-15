@@ -23,7 +23,7 @@ namespace HedgehogUtils.Emotes
             
             if (base.isAuthority)
             {
-                if (base.characterBody && base.characterBody.inputBank.moveVector == Vector3.zero && base.characterMotor.isGrounded && !base.characterBody.inputBank.jump.down)
+                if (!Helpers.IsDoingSomething(characterMotor, inputBank, true, true, false, false))
                 {
                     emoteTimer -= Time.fixedDeltaTime;
                     if (emoteTimer < 0)
@@ -39,9 +39,6 @@ namespace HedgehogUtils.Emotes
                 }
             }
         }
-        public virtual void SetNextStateToIdleExtra()
-        {
-            
-        }
+        public abstract void SetNextStateToIdleExtra();
     }
 }

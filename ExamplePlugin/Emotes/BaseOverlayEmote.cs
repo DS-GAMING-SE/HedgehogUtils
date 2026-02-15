@@ -10,9 +10,6 @@ namespace HedgehogUtils.Emotes
     public abstract class BaseOverlayEmote : BaseState
     {
         public abstract float animationDuration { get; }
-        public abstract bool allowAirborne { get; }
-        public abstract bool allowGrounded { get; }
-        public abstract bool allowMoving { get; }
         private EntityStateMachine bodyState;
         public override void OnEnter()
         {
@@ -39,16 +36,7 @@ namespace HedgehogUtils.Emotes
 
         public virtual bool ShouldInterrupt()
         {
-            return (!characterMotor || 
-                (!allowAirborne && !characterMotor.isGrounded) ||
-                (!allowGrounded && characterMotor.isGrounded) && 
-                ((!inputBank) ||
-                (!allowMoving && inputBank.moveVector != Vector3.zeroVector) ||
-                inputBank.skill1.down ||
-                inputBank.skill2.down ||
-                inputBank.skill3.down ||
-                inputBank.skill4.down ||
-                inputBank.jump.down));
+            return Helpers.IsDoingSomething(characterMotor, inputBank, false, false, true, true);
         }
     }
 }

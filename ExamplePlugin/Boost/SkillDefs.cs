@@ -1,5 +1,6 @@
 ﻿using EntityStates;
 using HedgehogUtils.Boost.EntityStates;
+using HedgehogUtils.Forms;
 using JetBrains.Annotations;
 using RoR2;
 using RoR2.Skills;
@@ -77,7 +78,7 @@ namespace HedgehogUtils.Boost
 
             public override bool IsReady([NotNull] GenericSkill skillSlot)
             {
-                return base.IsReady(skillSlot) && (!(skillSlot.skillInstanceData is InstanceData) || ((InstanceData)skillSlot.skillInstanceData).boostLogic.boostAvailable);
+                return base.IsReady(skillSlot) && (skillSlot.skillInstanceData is not InstanceData data || data.boostLogic.boostAvailable);
             }
             // Idk why I made these static methods for making entity states that are both exactly the same.
             // Probably a result of me changing things a bunch internally until the methods were no longer needed, but I didn't notice
@@ -120,32 +121,9 @@ namespace HedgehogUtils.Boost
             }
         }
 
-        public class RequiresFormBoostSkillDef : Forms.SkillDefs.RequiresFormSkillDef, IBoostSkill
+        public class RequiresFormBoostSkillDef : BoostSkillDef, IBoostSkill, Forms.SkillDefs.IRequiresFormSkillDef
         {
-            public SerializableEntityStateType boostIdleState { get; set; }
-            public SerializableEntityStateType brakeState { get; set; }
-            public Color boostHUDColor { get; set; }
-
-            public override BaseSkillInstanceData OnAssigned([NotNull] GenericSkill skillSlot)
-            {
-                InstanceData oldData = (InstanceData)base.OnAssigned(skillSlot);
-                return new BoostInstanceData { boostLogic = skillSlot.GetComponent<BoostLogic>(), formComponent = oldData.formComponent };
-            }
-
-            public override EntityState InstantiateNextState([NotNull] GenericSkill skillSlot)
-            {
-                if (!skillSlot.characterBody || !skillSlot.characterBody.characterMotor) { return base.InstantiateNextState(skillSlot); }
-                return BoostSkillDef.DetermineNextBoostState(skillSlot, activationState, boostIdleState);
-            }
-            public override bool IsReady([NotNull] GenericSkill skillSlot)
-            {
-                return base.IsReady(skillSlot) && (!(skillSlot.skillInstanceData is BoostInstanceData) || ((BoostInstanceData)skillSlot.skillInstanceData).boostLogic.boostAvailable);
-            }
-
-            protected class BoostInstanceData : InstanceData
-            {
-                public BoostLogic boostLogic;
-            }
+            public FormDef requiredForm { get; set; }
         }
     }
 }

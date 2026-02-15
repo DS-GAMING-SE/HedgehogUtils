@@ -1,14 +1,19 @@
 # Changelog
 
-## v?
+## v2.0.0
  - (Voicelines) Added a new system for handling voicelines
  
  - (Visuals) The super form transformation now has a subtle glow around your character
  
+ - (Internal) **Breaks modded super skills** *as if anyone actually develops with this mod other than me* Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
  - (Internal) TransformationBase now has a reference to CharacterModel
  - (Internal) The point at which GenericTransformationBase triggers the transformation is no longer hardcoded, and can now be changed via the abstract transformationDurationPercent
  - (Internal) Removed unnecessary On.RoR2.UI.HUD.Awake hook used for creating the boost meter. The boost meter hud is now handled through RoR2's Hud Overlay system
  - (Internal) Removed unnecessary On.RoR2.SceneDirector.Start hook used for spawning technical objects at the start of the stage. This is now done via the Stage.onServerStageBegin event
+ 
+### Known Issues
+ - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
+ - Some enemies become invisible in their death animations after being killed by a launch
 
 ## v1.1.6
  - (Bug Fix) Fixed harmless *"ItemDef 'ChaosEmerald' has an item index of 'None'. Attempting to fix..."* error that appeared in the logs when opening the game
@@ -20,10 +25,6 @@
  - (Internal) There is a new entity state in HedgehogUtils.Miscellaneous that handles death states for characters like Sonic. It will play the animation named "Death" in the "FullBody, Override" layer. The character's model will gradually fade away and be destroyed as the animation is about to end. The state automatically uses the duration of the death animation, so you should be able to use the state directly on whatever character with whatever death animation and it should work
 
  - (Internal) GenericTransformationBase transforming animations now play on the FullBody, Override layer by default. There are now properties for changing the animation's state, layer, and playback rate parameter
- 
-### Known Issues
- - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
- - Some enemies become invisible in their death animations after being killed by a launch
 
 ## v1.1.5
  - (Bug Fix) Fixed corpses being able to be hit by players after being launched in multiplayer
