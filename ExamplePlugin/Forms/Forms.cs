@@ -53,7 +53,7 @@ namespace HedgehogUtils.Forms
             form.defaultKeyBind = defaultKeyBind;
 
             // Creating handler prefab
-            GameObject handlerPrefab = PrefabAPI.InstantiateClone(Assets.mainAssetBundle.LoadAsset<GameObject>("SuperSonicHandler"), form.name + " " + form.handlerComponent.Name);
+            GameObject handlerPrefab = PrefabAPI.CreateEmptyPrefab(form.name + " " + form.handlerComponent.Name);
             FormHandler handlerObjectComponent = (FormHandler)handlerPrefab.AddComponent(handlerComponent);
             handlerObjectComponent.form = form;
             if (form.requiresItems)

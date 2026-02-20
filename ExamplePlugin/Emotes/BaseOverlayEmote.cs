@@ -36,7 +36,7 @@ namespace HedgehogUtils.Emotes
 
         public virtual bool ShouldInterrupt()
         {
-            return Helpers.IsDoingSomething(characterMotor, inputBank, false, false, true, true);
+            return Helpers.IsDoingSomething(characterMotor, inputBank, true, true, false, false);
         }
     }
 }

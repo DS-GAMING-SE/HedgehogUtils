@@ -1,11 +1,12 @@
 # Changelog
 
 ## v2.0.0
+*This update has a lot of breaking changes, which would matter if there was literally anyone else developing with this mod*
  - (Voicelines) Added a new system for handling voicelines
  
  - (Visuals) The super form transformation now has a subtle glow around your character
  
- - (Internal) **Breaks modded super skills** *as if anyone actually develops with this mod other than me* Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
+ - (Internal) Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
  - (Internal) TransformationBase now has a reference to CharacterModel
  - (Internal) The point at which GenericTransformationBase triggers the transformation is no longer hardcoded, and can now be changed via the abstract transformationDurationPercent
  - (Internal) Removed unnecessary On.RoR2.UI.HUD.Awake hook used for creating the boost meter. The boost meter hud is now handled through RoR2's Hud Overlay system

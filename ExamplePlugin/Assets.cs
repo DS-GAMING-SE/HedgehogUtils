@@ -16,6 +16,8 @@ using HedgehogUtils.Miscellaneous;
 using HedgehogUtils.Boost;
 using System.Linq;
 using RoR2BepInExPack;
+using EntityStates;
+using RoR2.ContentManagement;
 
 namespace HedgehogUtils
 {
@@ -69,14 +71,14 @@ namespace HedgehogUtils
         #endregion
 
         #region Launch
-        internal static GameObject launchAuraEffect;
-        internal static GameObject launchCritAuraEffect;
+        public static GameObject launchAuraEffect;
+        public static GameObject launchCritAuraEffect;
 
-        internal static GameObject launchHitEffect;
-        internal static GameObject launchCritHitEffect;
+        public static GameObject launchHitEffect;
+        public static GameObject launchCritHitEffect;
 
-        internal static GameObject launchWallCollisionEffect;
-        internal static GameObject launchWallCollisionLargeEffect;
+        public static GameObject launchWallCollisionEffect;
+        public static GameObject launchWallCollisionLargeEffect;
         #endregion
 
         public static void BoostAndLaunch()
@@ -278,6 +280,8 @@ namespace HedgehogUtils
         #endregion
         public static GameObject lockOnIndicator;
         public static Material lockOnUIRemap;
+
+        public static GameObject podlessPodPrefabBase;
         public static void Miscellaneous()
         {
             rainbowGlowMaterial = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Elites_EliteBead.matEliteBeadSpikeGrowthRing_mat).WaitForCompletion());
@@ -335,8 +339,45 @@ namespace HedgehogUtils
             lockOnStartScaleCurve.overallCurve = AnimationCurve.Linear(0f, 3f, 1f, 0f);
             lockOnIndicatorComponent.start = lockOnStartScaleCurve.GetComponent<SpriteRenderer>();
 
+            CreatePodlessPod();
+
             //RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matDustExhaust_mat for wind stuff
             //RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Halcyonite.matHaIcyoniteIdleGlow1_mat for new super aura
+        }
+        private static void CreatePodlessPod()
+        {
+            podlessPodPrefabBase = mainAssetBundle.LoadAsset<GameObject>("PodlessPod");
+            EntityStateMachine stateMachine = podlessPodPrefabBase.AddComponent<EntityStateMachine>();
+            stateMachine.customName = "Main";
+            stateMachine.initialStateType = new SerializableEntityStateType(typeof(Idle));
+            stateMachine.mainStateType = new SerializableEntityStateType(typeof(Idle));
+            NetworkStateMachine network = podlessPodPrefabBase.AddComponent<NetworkStateMachine>();
+            network.stateMachines = [stateMachine];
+            network.networkIdentity = podlessPodPrefabBase.AddComponent<NetworkIdentity>();
+            GameObject seatObject = podlessPodPrefabBase.transform.GetChild(1).gameObject;
+            VehicleSeat vehicleSeat = podlessPodPrefabBase.AddComponent<VehicleSeat>();
+            vehicleSeat.hidePassenger = false;
+            vehicleSeat.passengerState = new SerializableEntityStateType(typeof(GenericCharacterPod));
+            vehicleSeat.seatPosition = seatObject.transform;
+            vehicleSeat.handleExitTeleport = false;
+            vehicleSeat.exitVelocityFraction = 0f;
+            vehicleSeat.isSurvivorPod = true;
+            vehicleSeat.shouldProximityHighlight = false;
+            SurvivorPodController podController = podlessPodPrefabBase.AddComponent<SurvivorPodController>();
+            //camera following target is baked into the falling animation of base game pod. Since this pod itself has no animator, probably automate the camera somehow?
+            podController.cameraBone = podlessPodPrefabBase.transform.GetChild(0);
+            AssetAsyncReferenceManager<BuffDef>.LoadAsset(new AssetReferenceT<BuffDef>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common.bdHiddenInvincibility_asset)).Completed += delegate (AsyncOperationHandle<BuffDef> x)
+            {
+                BuffPassengerWhileSeated buffPassenger = podlessPodPrefabBase.AddComponent<BuffPassengerWhileSeated>();
+                buffPassenger.vehicleSeat = vehicleSeat;
+                buffPassenger.buff = x.Result;
+            };
+            AssetAsyncReferenceManager<BuffDef>.LoadAsset(new AssetReferenceT<BuffDef>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Buffs.bdUntargetable_asset)).Completed += delegate (AsyncOperationHandle<BuffDef> x)
+            {
+                BuffPassengerWhileSeated buffPassenger = podlessPodPrefabBase.AddComponent<BuffPassengerWhileSeated>();
+                buffPassenger.vehicleSeat = vehicleSeat;
+                buffPassenger.buff = x.Result;
+            };
         }
         private static SpriteRenderer LockOnNibs(Transform nibHolder, Sprite sprite)
         {

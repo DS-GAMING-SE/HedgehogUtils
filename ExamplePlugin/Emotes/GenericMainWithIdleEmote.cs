@@ -9,12 +9,12 @@ namespace HedgehogUtils.Emotes
 {
     public abstract class GenericMainWithIdleEmote : GenericCharacterMain
     {
-        public float timeUntilEmote = 5f;
+        public float timeBetweenEmotes = 5f;
         public float emoteTimer { get; private set; }
         public override void OnEnter()
         {
             base.OnEnter();
-            emoteTimer = timeUntilEmote;
+            emoteTimer = timeBetweenEmotes;
         }
 
         public override void FixedUpdate()
@@ -23,22 +23,27 @@ namespace HedgehogUtils.Emotes
             
             if (base.isAuthority)
             {
-                if (!Helpers.IsDoingSomething(characterMotor, inputBank, true, true, false, false))
+                if (!ShouldInterrupt())
                 {
                     emoteTimer -= Time.fixedDeltaTime;
                     if (emoteTimer < 0)
                     {
                         SetNextStateToIdleExtra();
-                        emoteTimer = timeUntilEmote;
+                        emoteTimer = timeBetweenEmotes;
                         return;
                     }
                 }
                 else
                 {
-                    emoteTimer = timeUntilEmote;
+                    emoteTimer = timeBetweenEmotes;
                 }
             }
         }
         public abstract void SetNextStateToIdleExtra();
+
+        public virtual bool ShouldInterrupt()
+        {
+            return Helpers.IsDoingSomething(characterMotor, inputBank, true, true, false, false);
+        }
     }
 }

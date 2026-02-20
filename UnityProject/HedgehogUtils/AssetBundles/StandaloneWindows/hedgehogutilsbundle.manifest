@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 360200753
+CRC: 3193215541
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: b91acce2c46149d9efb30fe442074270
+    Hash: 17a329e19627af45c1cf659841767c6b
   TypeTreeHash:
     serializedVersion: 2
     Hash: 921b4dd4bc2fa1b1e55b2e84583b6c63
@@ -71,6 +71,7 @@ Assets:
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperTransformation.prefab
 - Assets/AssetBundle/Emeralds/Materials/matCyan.mat
 - Assets/AssetBundle/VFX/Materials/Boost/matPowerBoost.mat
+- Assets/AssetBundle/VFX/Textures/texSparkleBlue.png
 - Assets/AssetBundle/VFX/Textures/texFlash.png
 - Assets/AssetBundle/VFX/Textures/texSparkleGold.png
 - Assets/AssetBundle/Emeralds/Icons/texGrayEmeraldIcon.png
@@ -80,11 +81,11 @@ Assets:
 - Assets/AssetBundle/Emeralds/Icons/texRedEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/texSpark.png
 - Assets/AssetBundle/Emeralds/Prefabs/CyanEmerald.prefab
-- Assets/AssetBundle/BoostMeter/texBoostMeter.png
-- Assets/AssetBundle/BoostMeter/texBoostMeter2.png
-- Assets/AssetBundle/VFX/Materials/Super Form/matFistSwing.mat
 - Assets/AssetBundle/Emeralds/Materials/matYellow.mat
+- Assets/AssetBundle/UI/BoostMeter/texBoostMeter.png
+- Assets/AssetBundle/UI/BoostMeter/texBoostMeter2.png
 - Assets/AssetBundle/VFX/Materials/Boost/matPowerBoostFlash.mat
+- Assets/AssetBundle/VFX/Materials/Super Form/matFistSwing.mat
 - Assets/AssetBundle/VFX/Textures/texGradient.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matTrail1.mat
 - Assets/AssetBundle/VFX/Prefabs/Boost/SonicPowerBoostAura.prefab
@@ -108,14 +109,13 @@ Assets:
 - Assets/AssetBundle/Emeralds/Icons/texBlueEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/texAnimeShape.png
 - Assets/AssetBundle/VFX/Textures/texSlash.png
-- Assets/AssetBundle/BoostMeter/texBoostMeterInfinite.png
 - Assets/AssetBundle/Emeralds/Icons/texArtifactChaosEmeraldEnabled.png
-- Assets/AssetBundle/PrefabBase/SuperSonicHandler.prefab
 - Assets/AssetBundle/PrefabBase/ChaosEmeraldInteractable.prefab
-- Assets/AssetBundle/BoostMeter/texBoostMeterSmall.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matRainbowLensFlare.mat
-- Assets/AssetBundle/Emeralds/Materials/matGray.mat
+- Assets/AssetBundle/UI/BoostMeter/texBoostMeterInfinite.png
+- Assets/AssetBundle/UI/BoostMeter/texBoostMeterSmall.png
 - Assets/AssetBundle/VFX/Meshes/SwordSwingMesh.fbx
+- Assets/AssetBundle/Emeralds/Materials/matGray.mat
 - Assets/AssetBundle/Emeralds/Prefabs/GrayEmerald.prefab
 - Assets/AssetBundle/VFX/Materials/Super Form/matSpark.mat
 - Assets/AssetBundle/Emeralds/Icons/texEmeraldInteractableIcon.png
@@ -125,7 +125,7 @@ Assets:
 - Assets/AssetBundle/Emeralds/Icons/texBgEmerald.png
 - Assets/AssetBundle/Emeralds/Materials/matBlue.mat
 - Assets/AssetBundle/Emeralds/Icons/texGreenEmeraldIcon.png
-- Assets/AssetBundle/VFX/Textures/texSparkleBlue.png
+- Assets/AssetBundle/PrefabBase/PodlessPod.prefab
 - Assets/AssetBundle/VFX/Materials/Super Form/matRingFlash.mat
 - Assets/AssetBundle/VFX/Textures/texRampRainbow.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matSparkleBlue.mat
@@ -136,10 +136,10 @@ Assets:
 - Assets/AssetBundle/VFX/Textures/texTrail1.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matSlash.mat
 - Assets/AssetBundle/VFX/Textures/texSwingEffect.png
-- Assets/AssetBundle/BoostMeter/BoostMeter.prefab
+- Assets/AssetBundle/Emeralds/Materials/matPurple.mat
 - Assets/AssetBundle/Emeralds/Icons/texCyanEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/FlameRoundGreyParticleSheet.tif
-- Assets/AssetBundle/Emeralds/Materials/matPurple.mat
+- Assets/AssetBundle/UI/BoostMeter/BoostMeter.prefab
 - Assets/AssetBundle/VFX/Textures/texRainbowLensFlare 1.png
 - Assets/AssetBundle/Emeralds/Animations/animRing.controller
 - Assets/AssetBundle/UI/LockOn/LockOnIndicator.prefab
