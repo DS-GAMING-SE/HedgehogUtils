@@ -1,10 +1,12 @@
 # Changelog
 
 ## v2.0.0
-*This update has a lot of breaking changes, which would matter if there was literally anyone else developing with this mod*
+*This update has a lot of breaking changes, which would matter if there was literally anyone else developing with this mod other than me*
  - (Voicelines) Added a new system for handling voicelines
  
  - (Visuals) The super form transformation now has a subtle glow around your character
+ 
+ - (Bug Fix) Transformations can no longer be activated while in UI (such as typing in chat) or while you're not in your main body state (usually doing some action where you can't use other skills)
  
  - (Internal) Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
  - (Internal) TransformationBase now has a reference to CharacterModel

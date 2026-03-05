@@ -91,8 +91,8 @@ namespace HedgehogUtils.Forms.SuperForm
             var pickupDisplayTransform = prefabBase.transform.Find("PickupDisplay");
             var pickupDisplay = pickupDisplayTransform.gameObject.AddComponent<PickupDisplay>();
 
-            ring.GetComponent<MeshRenderer>().material = Assets.ringMaterial;
-            ring2.GetComponent<MeshRenderer>().material = Assets.ringMaterial;
+            ring.GetComponent<MeshRenderer>().sharedMaterial = Assets.ringMaterial;
+            ring2.GetComponent<MeshRenderer>().sharedMaterial = Assets.ringMaterial;
             
             prefabBase.AddComponent<ChaosEmeraldInteractable>();
 
