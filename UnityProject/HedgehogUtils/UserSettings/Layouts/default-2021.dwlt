@@ -97,7 +97,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 121}
   m_MaxSize: {x: 4000, y: 4021}
   vertical: 0
-  controlID: 109
+  controlID: 102
 --- !u!114 &5
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -122,7 +122,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 200}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 99
+  controlID: 70
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -298,7 +298,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 200}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 68
+  controlID: 71
 --- !u!114 &13
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -323,7 +323,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 69
+  controlID: 72
 --- !u!114 &14
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -649,23 +649,23 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/AssetBundle/PrefabBase
+    - Assets/AssetBundle/VFX/Materials/Super Form
     m_Globs: []
     m_OriginalText: 
     m_FilterByTypeIntersection: 0
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/AssetBundle/PrefabBase
+  - Assets/AssetBundle/VFX/Materials/Super Form
   m_LastFoldersGridSize: -1
   m_LastProjectPath: D:\Sonic ROR2 Mod\HedgehogUtils\UnityProject\HedgehogUtils
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 37}
-    m_SelectedIDs: be610000
-    m_LastClickedID: 25022
-    m_ExpandedIDs: 00000000a4610000a6610000a8610000aa610000c0610000c261000000ca9a3b
+    scrollPos: {x: 0, y: 65}
+    m_SelectedIDs: ce640000
+    m_LastClickedID: 25806
+    m_ExpandedIDs: 00000000a4610000a6610000a8610000aa610000c0610000c461000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -823,9 +823,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: d0eeffff
-      m_LastClickedID: -4400
-      m_ExpandedIDs: aef4ffff4e650000
+      m_SelectedIDs: 806b0000
+      m_LastClickedID: 27520
+      m_ExpandedIDs: 18bcffff7a6b0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -1068,7 +1068,7 @@ MonoBehaviour:
       containerId: overlay-container--right
       floating: 0
       collapsed: 0
-      displayed: 0
+      displayed: 1
       snapOffset: {x: -231, y: -197}
       snapOffsetDelta: {x: 0, y: 0}
       snapCorner: 3
@@ -1178,16 +1178,16 @@ MonoBehaviour:
   m_WindowGUID: b9c5047e26748f646b9858e88cccc183
   m_Gizmos: 0
   m_OverrideSceneCullingMask: 0
-  m_SceneIsLit: 0
+  m_SceneIsLit: 1
   m_SceneLighting: 1
   m_2DMode: 0
   m_isRotationLocked: 0
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 9.194744, y: 1.7997422, z: 15.084568}
+    m_Target: {x: -0.609915, y: 0.28248525, z: 0.9312294}
     speed: 2
-    m_Value: {x: 9.194744, y: 1.7997422, z: 15.084568}
+    m_Value: {x: 0, y: 0, z: 0}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1204,7 +1204,7 @@ MonoBehaviour:
     showImageEffects: 1
     showParticleSystems: 1
     showVisualEffectGraphs: 1
-    m_FxEnabled: 0
+    m_FxEnabled: 1
   m_Grid:
     xGrid:
       m_Fade:
@@ -1234,13 +1234,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: 0.13116619, y: 0.27138907, z: -0.037362173, w: 0.9527609}
+    m_Target: {x: -0.013486511, y: 0.5967893, z: -0.010032542, w: -0.8022238}
     speed: 2
-    m_Value: {x: 0.13116582, y: 0.2713883, z: -0.037362065, w: 0.95275813}
+    m_Value: {x: -0.08717229, y: 0.89959055, z: -0.21045254, w: -0.3726226}
   m_Size:
-    m_Target: 15.529694
+    m_Target: 1.7800148
     speed: 2
-    m_Value: 15.529694
+    m_Value: 48.72201
   m_Ortho:
     m_Target: 0
     speed: 2

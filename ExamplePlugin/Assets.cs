@@ -196,6 +196,7 @@ namespace HedgehogUtils
         }
 
         #region Super Form
+        public static Material superAuraMaterial;
         public static Material superFormGlowingMaterial;
         public static Material superFormOverlay;
         public static Material rainbowGlowMaterial;
@@ -229,9 +230,33 @@ namespace HedgehogUtils
             ReplaceRainbow(superFormTransformationEffect.transform.Find("Rainbow"));
             transformationEmeraldSwirl = Assets.LoadEffect("SonicChaosEmeraldSwirl");
 
-            superFormAura = Assets.LoadAsyncedEffect("SonicSuperAura");
+            superFormAura = Assets.LoadAsyncedEffect("SuperFormAura");
 
             ReplaceRainbow(superFormAura.transform.Find("Rainbow"), true);
+            AsyncOperationHandle<Material> asyncSuperAuraMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Parry.matParryWave_mat);
+            asyncSuperAuraMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
+            {
+                superAuraMaterial = new Material(x.Result);
+                superFormAura.GetComponent<ParticleSystemRenderer>().sharedMaterial = superAuraMaterial;
+                superAuraMaterial.SetFloat("_AlphaBoost", 1.2f);
+                superAuraMaterial.SetFloat("_DepthOffset", -3f);
+                superAuraMaterial.SetTextureScale("_Cloud1Tex", new Vector2(0.7f, 0.7f));
+                AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common.texCloudWaterFoam2_psd)).Completed += delegate (AsyncOperationHandle<Texture> y)
+                {
+                    superAuraMaterial.SetTexture("_Cloud2Tex", y.Result);
+                    superAuraMaterial.SetTextureScale("_Cloud2Tex", new Vector2(0.7f, 0.7f));
+                };
+                AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampTritoneSmoothed_png)).Completed += delegate (AsyncOperationHandle<Texture> y)
+                {
+                    superAuraMaterial.SetTexture("_RemapTex", y.Result);
+                };
+                superAuraMaterial.SetVector("_CutoffScroll", new Vector4(0, -3, 1, -5));
+                superAuraMaterial.EnableKeyword("VERTEXCOLOR");
+            };
+            AssetAsyncReferenceManager<Material>.LoadAsset(new AssetReferenceT<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matTracerLessBright_mat)).Completed += delegate (AsyncOperationHandle<Material> x)
+            {
+                superFormAura.transform.Find("Sparks").GetComponent<ParticleSystemRenderer>().sharedMaterial = x.Result;
+            };
 
             superFormWarning = Assets.LoadEffect("SonicSuperWarning");
             superFormWarning.AddComponent<Miscellaneous.DestroyOnExitForm>();
@@ -261,6 +286,39 @@ namespace HedgehogUtils
             superFormPPVolume = mainAssetBundle.LoadAsset<GameObject>("SonicSuperPostProcess");
             PostProcessVolume postProcess = superFormPPVolume.GetComponent<PostProcessVolume>();
             postProcess.sharedProfile = Addressables.LoadAssetAsync<PostProcessProfile>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_title_PostProcessing.ppLocalGrandparent_asset).WaitForCompletion();
+        }
+
+        public static GameObject CreateSuperAura(string name, Color color)
+        {
+            GameObject newAura = PrefabAPI.InstantiateClone(superFormAura, name);
+            var mainModule = newAura.GetComponent<ParticleSystem>().main;
+            mainModule.startColor = color;
+            UpdateAuraColors(newAura, color);
+            return newAura;
+        }
+        private static void UpdateAuraColors(GameObject aura, Color color)
+        {
+            aura.transform.Find("Point Light").GetComponent<Light>().color = color;
+            var glowMainModule = aura.transform.Find("DistanceGlow").GetComponent<ParticleSystem>().main;
+            glowMainModule.startColor = color;
+            var sparkMainModule = aura.transform.Find("Sparks").GetComponent<ParticleSystem>().main;
+            sparkMainModule.startColor = color;
+        }
+        public static GameObject CreateSuperAura(string name, Color color, Texture remapTexture, bool recolorAura = false)
+        {
+            return CreateSuperAura(name, color, remapTexture, out _, recolorAura);
+        }
+        public static GameObject CreateSuperAura(string name, Color color, Texture remapTexture, out Material material, bool recolorAura)
+        {
+            GameObject newAura = PrefabAPI.InstantiateClone(superFormAura, name);
+            var mainModule = newAura.GetComponent<ParticleSystem>().main;
+            mainModule.startColor = Color.white;
+            var renderer = newAura.GetComponent<ParticleSystemRenderer>();
+            material = new Material(renderer.sharedMaterial);
+            material.SetTexture("_RemapTex", remapTexture);
+            renderer.sharedMaterial = material;
+            UpdateAuraColors(newAura, color);
+            return newAura;
         }
         public static void ReplaceRainbow(Transform particle, bool subtle = false)
         {
@@ -342,7 +400,6 @@ namespace HedgehogUtils
             CreatePodlessPod();
 
             //RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matDustExhaust_mat for wind stuff
-            //RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Halcyonite.matHaIcyoniteIdleGlow1_mat for new super aura
         }
         private static void CreatePodlessPod()
         {
@@ -472,10 +529,10 @@ namespace HedgehogUtils
             main2.startSize = new ParticleSystem.MinMaxCurve(main2.startSize.constant * size);
 
             ParticleSystemRenderer renderer = newFlash.transform.Find("BlueCone").GetComponent<ParticleSystemRenderer>();
-            renderer.material = CreateNewBoostMaterial(alpha, color1, color2, color3);
+            renderer.sharedMaterial = CreateNewBoostMaterial(alpha, color1, color2, color3);
 
             ParticleSystemRenderer renderer2 = newFlash.transform.Find("BlueCone/BlueCone2").GetComponent<ParticleSystemRenderer>();
-            renderer2.material = CreateNewBoostMaterial(alpha, color1, color2, color3);
+            renderer2.sharedMaterial = CreateNewBoostMaterial(alpha, color1, color2, color3);
 
             ParticleSystem.MainModule color = newFlash.transform.Find("BlueCone/StartFlash").GetComponent<ParticleSystem>().main;
             if (lightColor == Color.black)
@@ -504,7 +561,7 @@ namespace HedgehogUtils
         {
             GameObject newAura = PrefabAPI.InstantiateClone(powerBoostAuraEffect, name);
             newAura.transform.Find("Aura").localScale *= size;
-            newAura.transform.Find("Aura").GetComponent<MeshRenderer>().material = CreateNewBoostMaterial(alpha, color1, color2, color3);
+            newAura.transform.Find("Aura").GetComponent<MeshRenderer>().sharedMaterial = CreateNewBoostMaterial(alpha, color1, color2, color3);
             if (lightColor == Color.black)
             {
                 newAura.transform.Find("Point Light").GetComponent<Light>().enabled = false;

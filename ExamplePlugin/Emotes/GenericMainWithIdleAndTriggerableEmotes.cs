@@ -18,7 +18,7 @@ namespace HedgehogUtils.Emotes
         {
             if (base.isAuthority && Input.GetKeyDown(keybind.Value))
             {
-                FindLocalUser();
+                if (localUser == null) localUser = Helpers.FindLocalUser(base.characterBody);
 
                 if (localUser != null && !localUser.isUIFocused)
                 {
@@ -28,22 +28,6 @@ namespace HedgehogUtils.Emotes
             return false;
         }
 
-        private void FindLocalUser()
-        {
-            if (localUser == null)
-            {
-                if (base.characterBody)
-                {
-                    foreach (LocalUser lu in LocalUserManager.readOnlyLocalUsersList)
-                    {
-                        if (lu.cachedBody == base.characterBody)
-                        {
-                            this.localUser = lu;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
+        
     }
 }

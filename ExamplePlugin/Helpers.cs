@@ -1,6 +1,7 @@
 ﻿using EntityStates;
 using RoR2;
 using RoR2.Skills;
+using RoR2.UI;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -101,6 +102,21 @@ namespace HedgehogUtils
                 inputBank.skill3.down ||
                 inputBank.skill4.down ||
                 inputBank.jump.down));
+        }
+
+        public static LocalUser FindLocalUser(CharacterBody characterBody)
+        {
+            if (characterBody)
+            {
+                foreach (LocalUser lu in LocalUserManager.readOnlyLocalUsersList)
+                {
+                    if (lu.cachedBody == characterBody)
+                    {
+                        return lu;
+                    }
+                }
+            }
+            return null;
         }
 
         public static T CopySkillDef<T>(SkillDef originDef) where T : SkillDef

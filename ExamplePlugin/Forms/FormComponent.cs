@@ -35,8 +35,10 @@ namespace HedgehogUtils.Forms
         public Mesh defaultMesh;
 
         public CharacterBody body;
+        private EntityStateMachine bodyState;
         private CharacterModel model;
         private Animator modelAnimator;
+        private LocalUser localUser;
 
         [Tooltip("Use the form's formIndex as the index of the array.")]
         public int[] numberOfTimesTransformed = Array.Empty<int>();
@@ -87,6 +89,7 @@ namespace HedgehogUtils.Forms
                     item.onSkillChanged += UpdateRequireFormSkillDefs;
                 }
             }
+            bodyState = EntityStateMachine.FindByCustomName(base.gameObject, "Body");
 
             CreateUnsyncItemTrackers();
             Array.Resize(ref numberOfTimesTransformed, FormCatalog.formsCatalog.Length);
@@ -118,18 +121,17 @@ namespace HedgehogUtils.Forms
         {
             if (body.hasAuthority && body.isPlayerControlled)
             {
+                if (localUser == null) localUser = Helpers.FindLocalUser(body);
                 DecideTargetForm();
             }
         }
 
-        // Doing it like Input.GetKeyDown(form.keybind.Value.MainKey) will fix hte problem of not being able to transform when pressing any other buttons
-        // but will also break people using multiple keybinds at the same time to transform. Does anyone actually do that?
         public void DecideTargetForm()
         {
             targetedForm = null;
             foreach (FormDef form in FormCatalog.formsCatalog)
             {
-                if (!form.keybind.Value.Equals(BepInEx.Configuration.KeyboardShortcut.Empty) && Input.GetKeyDown(form.keybind.Value.MainKey))
+                if (!form.keybind.Value.Equals(BepInEx.Configuration.KeyboardShortcut.Empty) && Input.GetKeyDown(form.keybind.Value.MainKey) && !localUser.isUIFocused && bodyState.state is GenericCharacterMain)
                 {
                     targetedForm = form;
                     
@@ -145,15 +147,19 @@ namespace HedgehogUtils.Forms
                 }
             }
         }
-
         public void Transform()
         {
-            EntityStateMachine bodyState = EntityStateMachine.FindByCustomName(base.gameObject, "Body");
-            if (!Forms.formToHandler.TryGetValue(targetedForm, out FormHandler handler)) { return; }
+            Transform(targetedForm);
+        }
+
+        public void Transform(FormDef form)
+        {
+            if (!bodyState) { return; }
+            if (!Forms.formToHandler.TryGetValue(form, out FormHandler handler)) { return; }
             bool transformSuccess;
-            if (targetedForm.transformState.stateType != null && bodyState)
+            if (form.transformState.stateType != null)
             {
-                TransformationBase transformState = (TransformationBase)EntityStateCatalog.InstantiateState(targetedForm.transformState.stateType);
+                TransformationBase transformState = (TransformationBase)EntityStateCatalog.InstantiateState(form.transformState.stateType);
                 transformState.fromTeamSuper = handler.teamSuper;
 
                 transformSuccess = bodyState.SetInterruptState(transformState, InterruptPriority.Frozen);
@@ -161,12 +167,12 @@ namespace HedgehogUtils.Forms
             else
             {
                 transformSuccess = true;
-                SetNextForm(targetedForm);
+                SetNextForm(form);
             }
 
             if (transformSuccess)
             {
-                numberOfTimesTransformed[(int)targetedForm.formIndex] += 1;
+                numberOfTimesTransformed[(int)form.formIndex] += 1;
                 if (NetworkServer.active)
                 {
                     //FormHandler.instance.OnTransform();
@@ -174,7 +180,7 @@ namespace HedgehogUtils.Forms
                 }
                 else
                 {
-                    new NetworkTransformation(GetComponent<NetworkIdentity>().netId, targetedForm.formIndex).Send(NetworkDestination.Server);
+                    new NetworkTransformation(GetComponent<NetworkIdentity>().netId, form.formIndex).Send(NetworkDestination.Server);
                 }
             }
         }
