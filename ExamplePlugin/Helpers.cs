@@ -1,10 +1,12 @@
 ﻿using EntityStates;
 using RoR2;
+using RoR2.ContentManagement;
 using RoR2.Skills;
 using RoR2.UI;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Networking;
 
 namespace HedgehogUtils
@@ -96,7 +98,7 @@ namespace HedgehogUtils
                 (!allowAirborne && !characterMotor.isGrounded && (!allowFlying || !characterMotor.isFlying)) ||
                 (!allowGrounded && characterMotor.isGrounded) ||
                 ((!inputBank) ||
-                (!allowMoving && inputBank.moveVector != Vector3.zeroVector) ||
+                (!allowMoving && inputBank.moveVector.sqrMagnitude >= Mathf.Epsilon) ||
                 inputBank.skill1.down ||
                 inputBank.skill2.down ||
                 inputBank.skill3.down ||
@@ -176,6 +178,49 @@ namespace HedgehogUtils
             boostDef.brakeState = brakeState;
             boostDef.boostHUDColor = originDef.boostHUDColor;
             return boostDef;
+        }
+        public static Material MetalFresnel(this Material mat, Texture mask = null)
+        {
+            return FresnelEmission(mat, AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Drone_Tech.texDroneTechRamp_png)).WaitForCompletion(), mask);
+        }
+        public static Material GoldFresnel(this Material mat, Texture mask = null)
+        {
+            return FresnelEmission(mat, AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampDroneFire_png)).WaitForCompletion(), mask);
+        }
+        public static Material FresnelEmission(this Material mat, Texture ramp, Texture mask)
+        {
+            mat.SetTexture("_FresnelRamp", ramp);
+            if (mask) mat.SetTexture("_FresnelMask", mask);
+            mat.EnableKeyword("FRESNEL_EMISSION");
+            return mat;
+        }
+        public static Material SpecularIgnoreAlpha(this Material mat)
+        {
+            mat.EnableKeyword("FORCE_SPEC");
+            return mat;
+        }
+        public static Material CreateGlassMaterial()
+        {
+            Material glass = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Shaders.HGCloudRemap_shader).WaitForCompletion());
+            glass.SetInt("_Cull", 2);
+            glass.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampDefault_png).WaitForCompletion());
+            glass.EnableKeyword("FRESNEL");
+            glass.SetFloat("_FresnelPower", 0.15f);
+            return glass;
+        }
+        public static Material CreateGlassMaterial(Color color)
+        {
+            Material glass = CreateGlassMaterial();
+            color *= 0.5f;
+            glass.SetColor("_TintColor", color);
+            return glass;
+        }
+        public static Material CreateGlassMaterial(Texture texture)
+        {
+            Material glass = CreateGlassMaterial();
+            glass.SetColor("_TintColor", new Color(0.5f, 0.5f, 0.5f));
+            glass.SetTexture("_MainTex", texture);
+            return glass;
         }
     }
 }

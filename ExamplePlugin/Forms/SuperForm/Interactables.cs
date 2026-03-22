@@ -127,7 +127,6 @@ namespace HedgehogUtils.Forms.SuperForm
             drifter.indicatorOffset = prefabBase.transform.Find("RingParent");
             drifter.maxDurability = 20;
             drifter.orientToFloor = false;
-            drifter.breakoutState = new SerializableEntityStateType(typeof(InteractablePurchased));
             drifter.damageTypeOverride = DamageTypeCombo.Generic | DamageType.Stun1s;
             drifter.damageTypeOverride.AddModdedDamageType(DamageTypes.chaosSnapRandom);
 
@@ -205,7 +204,7 @@ namespace HedgehogUtils.Forms.SuperForm
         public void OnPurchase(CostTypeDef.PayCostContext context, CostTypeDef.PayCostResults results)
         {
             purchaseInteraction.SetAvailable(false);
-            specialObjectAttributes.grabbable = false;
+            specialObjectAttributes.enabled = false;
             this.stateMachine.SetNextState(new InteractablePurchased());
         }
 
