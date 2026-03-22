@@ -338,8 +338,6 @@ namespace HedgehogUtils
         #endregion
         public static GameObject lockOnIndicator;
         public static Material lockOnUIRemap;
-
-        public static GameObject podlessPodPrefabBase;
         public static void Miscellaneous()
         {
             rainbowGlowMaterial = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Elites_EliteBead.matEliteBeadSpikeGrowthRing_mat).WaitForCompletion());
@@ -397,11 +395,9 @@ namespace HedgehogUtils
             lockOnStartScaleCurve.overallCurve = AnimationCurve.Linear(0f, 3f, 1f, 0f);
             lockOnIndicatorComponent.start = lockOnStartScaleCurve.GetComponent<SpriteRenderer>();
 
-            CreatePodlessPod();
-
             //RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matDustExhaust_mat for wind stuff
         }
-        private static void CreatePodlessPod()
+        /*private static void CreatePodlessPod()
         {
             podlessPodPrefabBase = mainAssetBundle.LoadAsset<GameObject>("PodlessPod");
             EntityStateMachine stateMachine = podlessPodPrefabBase.AddComponent<EntityStateMachine>();
@@ -435,7 +431,7 @@ namespace HedgehogUtils
                 buffPassenger.vehicleSeat = vehicleSeat;
                 buffPassenger.buff = x.Result;
             };
-        }
+        }*/
         private static SpriteRenderer LockOnNibs(Transform nibHolder, Sprite sprite)
         {
             var scaleCurve = nibHolder.gameObject.AddComponent<ObjectScaleCurve>();
