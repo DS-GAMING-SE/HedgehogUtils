@@ -19,6 +19,8 @@ namespace HedgehogUtils.Voicelines
         public static VoicelineManager instance;
         public static GameObject prefab;
 
+        private bool lunarScavengerStarted = false;
+
         public delegate void StageEventHandler(Stage stage, List<NetworkedVoiceline> networkedVoicelines);
         public delegate void BossEventHandler(BodyIndex boss, List<NetworkedVoiceline> networkedVoicelines);
         public delegate void FinalBossEventHandler(FinalBoss finalBoss, List<NetworkedVoiceline> networkedVoicelines);
@@ -65,7 +67,11 @@ namespace HedgehogUtils.Voicelines
             SingletonHelper.Assign<VoicelineManager>(ref instance, this);
             BossGroup.onBossGroupStartServer += BossStartVoicelines;
             BossGroup.onBossGroupDefeatedServer += BossDefeatedVoicelines;
-
+            EntityStates.SolusHeart.PhasePreFightCutscene.MissionPreFightCutscene.onCutsceneFinished += SolusHeartStartVoicelines;
+            EntityStates.ScavMonster.ExitSit.OnExitSit += LunarScavengerStartVoicelines;
+        }
+        public void Start()
+        {
             StartCoroutine(StageStartVoicelines());
         }
         private IEnumerator StageStartVoicelines()
@@ -89,111 +95,131 @@ namespace HedgehogUtils.Voicelines
                         }
                     }
                 }
-                /*List<VoicelineComponent> voices = InstanceTracker.GetInstancesList<VoicelineComponent>();
-                foreach (var voice in voices)
-                {
-                    NetworkedVoiceline voiceline = voice.StageStart(Stage.instance);
-                    if (voiceline.IsValid()) voicelinesToSend.Add(voiceline);
-                }*/
                 StartCoroutine(StaggerVoicelines(voicelinesToSend));
             }
         }
         private void BossStartVoicelines(BossGroup boss)
         {
-            List<VoicelineComponent> voices = InstanceTracker.GetInstancesList<VoicelineComponent>();
             BodyIndex bodyIndex = GetBossBodyIndex(boss);
+            if (bodyIndex == BodyIndex.None) return;
             FinalBoss finalBoss = GetFinalBoss(bodyIndex);
-            List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
+            if (finalBoss == FinalBoss.SolusHeart || finalBoss == FinalBoss.LunarScavenger) return;
             if (finalBoss == FinalBoss.None)
             {
-                if (OnBossStart != null)
-                {
-                    foreach (BossEventHandler @event in OnBossStart.GetInvocationList().Cast<BossEventHandler>())
-                    {
-                        try
-                        {
-                            @event(bodyIndex, voicelinesToSend);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Error(
-                                $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
-                        }
-                    }
-                }
+                SendBossStartEvent(bodyIndex);
             }
             else
             {
-                if (OnFinalBossStart != null)
+                SendFinalBossStartEvent(finalBoss);
+            }
+        }
+        private void SolusHeartStartVoicelines(SolusWebMissionController solus)
+        {
+            SendFinalBossStartEvent(FinalBoss.SolusHeart);
+        }
+        private void LunarScavengerStartVoicelines(CharacterBody body)
+        {
+            // Base game uses this to start warbonds on twisted scav except they forget to check if it's specifically twisted scav, so it activates..
+            // .. war bonds everytime a scav stands up even if it isn't the boss. Silly base game bugs
+            if (lunarScavengerIndices.Contains(body.bodyIndex) && !lunarScavengerStarted)
+            {
+                SendFinalBossStartEvent(FinalBoss.LunarScavenger);
+                lunarScavengerStarted = true;
+            }
+        }
+        public void SendBossStartEvent(BodyIndex bodyIndex)
+        {
+            List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
+            if (OnBossStart != null)
+            {
+                foreach (BossEventHandler @event in OnBossStart.GetInvocationList().Cast<BossEventHandler>())
                 {
-                    foreach (FinalBossEventHandler @event in OnFinalBossStart.GetInvocationList().Cast<FinalBossEventHandler>())
+                    try
                     {
-                        try
-                        {
-                            @event(finalBoss, voicelinesToSend);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Error(
-                                $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
-                        }
+                        @event(bodyIndex, voicelinesToSend);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(
+                            $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
                     }
                 }
             }
-            /*foreach (var voice in voices)
+            StartCoroutine(StaggerVoicelines(voicelinesToSend, 2.5f));
+        }
+        public void SendFinalBossStartEvent(FinalBoss finalBoss)
+        {
+            List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
+            if (OnFinalBossStart != null)
             {
-                NetworkedVoiceline voiceline = finalBoss == FinalBoss.None ? voice.BossStart(bodyIndex) : voice.FinalBossStart(finalBoss);
-                if (voiceline.IsValid()) voicelinesToSend.Add(voiceline);
-            }*/
+                foreach (FinalBossEventHandler @event in OnFinalBossStart.GetInvocationList().Cast<FinalBossEventHandler>())
+                {
+                    try
+                    {
+                        @event(finalBoss, voicelinesToSend);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(
+                            $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
+                    }
+                }
+            }
             StartCoroutine(StaggerVoicelines(voicelinesToSend, 2.5f));
         }
         private void BossDefeatedVoicelines(BossGroup boss)
         {
-            List<VoicelineComponent> voices = InstanceTracker.GetInstancesList<VoicelineComponent>();
-            BodyIndex bodyIndex = GetBossBodyIndex(boss);
+            BodyIndex bodyIndex = GetBossMemoryBodyIndex(boss);
+            if (bodyIndex == BodyIndex.None) return;
             FinalBoss finalBoss = GetFinalBoss(bodyIndex);
-            List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
+            if (finalBoss == FinalBoss.SolusHeart) return;
             if (finalBoss == FinalBoss.None)
             {
-                if (OnBossDefeated != null)
-                {
-                    foreach (BossEventHandler @event in OnBossDefeated.GetInvocationList().Cast<BossEventHandler>())
-                    {
-                        try
-                        {
-                            @event(bodyIndex, voicelinesToSend);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Error(
-                                $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
-                        }
-                    }
-                }
+                SendBossDefeatedEvent(bodyIndex);
             }
             else
             {
-                if (OnFinalBossDefeated != null)
+                SendFinalBossDefeatedEvent(finalBoss);
+            }
+        }
+        public void SendBossDefeatedEvent(BodyIndex bodyIndex)
+        {
+            List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
+            if (OnBossDefeated != null)
+            {
+                foreach (BossEventHandler @event in OnBossDefeated.GetInvocationList().Cast<BossEventHandler>())
                 {
-                    foreach (FinalBossEventHandler @event in OnFinalBossDefeated.GetInvocationList().Cast<FinalBossEventHandler>())
+                    try
                     {
-                        try
-                        {
-                            @event(finalBoss, voicelinesToSend);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Error(
-                                $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
-                        }
+                        @event(bodyIndex, voicelinesToSend);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(
+                            $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
                     }
                 }
             }
-            /*foreach (var voice in voices)
+            StartCoroutine(StaggerVoicelines(voicelinesToSend, 1f));
+        }
+        public void SendFinalBossDefeatedEvent(FinalBoss finalBoss)
+        {
+            List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
+            if (OnFinalBossDefeated != null)
             {
-                NetworkedVoiceline voiceline = finalBoss == FinalBoss.None ? voice.BossDefeated(bodyIndex) : voice.FinalBossDefeated(finalBoss);
-                if (voiceline.IsValid()) voicelinesToSend.Add(voiceline);
-            }*/
+                foreach (FinalBossEventHandler @event in OnFinalBossDefeated.GetInvocationList().Cast<FinalBossEventHandler>())
+                {
+                    try
+                    {
+                        @event(finalBoss, voicelinesToSend);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(
+                            $"Exception thrown by : {@event.Method.DeclaringType.Name}.{@event.Method.Name}:\n{e}");
+                    }
+                }
+            }
             StartCoroutine(StaggerVoicelines(voicelinesToSend, 1f));
         }
         public IEnumerator RefreshNearby()
@@ -245,6 +271,8 @@ namespace HedgehogUtils.Voicelines
         {
             BossGroup.onBossGroupStartServer -= BossStartVoicelines;
             BossGroup.onBossGroupDefeatedServer -= BossDefeatedVoicelines;
+            EntityStates.SolusHeart.PhasePreFightCutscene.MissionPreFightCutscene.onCutsceneFinished -= SolusHeartStartVoicelines;
+            EntityStates.ScavMonster.ExitSit.OnExitSit -= LunarScavengerStartVoicelines;
             SingletonHelper.Unassign<VoicelineManager>(ref instance, this);
         }
 
@@ -273,12 +301,31 @@ namespace HedgehogUtils.Voicelines
         }
         public static BodyIndex GetBossBodyIndex(BossGroup boss)
         {
-            if (boss.bossMemories.Length > 0)
+            if (boss.combatSquad.readOnlyMembersList.Count > 0)
             {
-                BossGroup.BossMemory bossMemory = boss.bossMemories.First();
-                if (bossMemory.cachedBody)
+                CharacterMaster master = boss.combatSquad.readOnlyMembersList.FirstOrDefault();
+                if (master)
                 {
-                    return bossMemory.cachedBody.bodyIndex;
+                    CharacterBody body = master.GetBody();
+                    if (body)
+                    {
+                        return body.bodyIndex;
+                    }
+                    else
+                    {
+                        return master.backupBodyIndex;
+                    }
+                }
+            }
+            return BodyIndex.None;
+        }
+        public static BodyIndex GetBossMemoryBodyIndex(BossGroup boss)
+        {
+            if (boss.bossMemoryCount > 0)
+            {
+                if (boss.bossMemories[0].cachedBody)
+                {
+                    return boss.bossMemories[0].cachedBody.bodyIndex;
                 }
             }
             return BodyIndex.None;
@@ -286,15 +333,7 @@ namespace HedgehogUtils.Voicelines
 
         public static FinalBoss GetFinalBoss(BossGroup boss)
         {
-            if (boss.bossMemories.Length > 0)
-            {
-                BossGroup.BossMemory bossMemory = boss.bossMemories.First();
-                if (bossMemory.cachedBody)
-                {
-                    return GetFinalBoss(bossMemory.cachedBody.bodyIndex);
-                }
-            }
-            return FinalBoss.None;
+            return GetFinalBoss(GetBossBodyIndex(boss));
         }
 
         public static FinalBoss GetFinalBoss(BodyIndex index)

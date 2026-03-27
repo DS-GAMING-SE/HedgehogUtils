@@ -36,6 +36,7 @@ namespace HedgehogUtils.Voicelines
         public virtual void OnDeathStart()
         {
             StopCurrentVoiceline();
+            UnsubscribeEvents();
         }
         public void PlayVoiceline(string soundString, VoicelinePriority priority)
         {
@@ -88,7 +89,7 @@ namespace HedgehogUtils.Voicelines
             if (!string.IsNullOrEmpty(soundBankFilePath)) soundBankID = SoundAPI.SoundBanks.Add(soundBankFilePath);
             SubscribeEvents();
         }
-        private void OnEnable()
+        private void Start()
         {
             if (ShouldEnableVoicelines())
             {
