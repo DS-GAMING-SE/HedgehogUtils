@@ -14,6 +14,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 using HarmonyLib;
+using HedgehogUtils.Voicelines;
 
 namespace HedgehogUtils
 {
@@ -39,7 +40,7 @@ namespace HedgehogUtils
             On.RoR2.GenericSkill.CanApplyAmmoPack += CanApplyAmmoPackToBoost;
             On.RoR2.GenericSkill.ApplyAmmoPack += ApplyAmmoPackToBoost;
 
-            //On.EntityStates.SolusHeart.SolusWebMissionPhaseBaseState.OnEnter += For Solus Heart phase advance voicelines?
+            On.EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start.OnEnter += SolusHeartDefeatedVoiceline;
         }
         private static void DontDieWhileLaunched(On.RoR2.CharacterDeathBehavior.orig_OnDeath orig, CharacterDeathBehavior self)
         {
@@ -295,6 +296,15 @@ namespace HedgehogUtils
                 {
                     boost.AddBoost(BoostLogic.boostRegenPerBandolier);
                 }
+            }
+        }
+
+        private static void SolusHeartDefeatedVoiceline(On.EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start.orig_OnEnter orig, EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start self)
+        {
+            orig(self);
+            if (VoicelineManager.instance && NetworkServer.active)
+            {
+                VoicelineManager.instance.SendFinalBossDefeatedEvent(FinalBoss.SolusHeart);
             }
         }
     }
