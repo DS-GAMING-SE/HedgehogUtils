@@ -11,13 +11,14 @@ using System.Linq;
 using System.Collections.Generic;
 using System;
 using HedgehogUtils.Forms.EntityStates;
-using UnityEngine.UIElements;
+using RoR2.ContentManagement;
+using HG;
 
 namespace HedgehogUtils.Forms
 {
     public class FormComponent : NetworkBehaviour
     {
-        public EntityStateMachine superSonicState;
+        public EntityStateMachine formStateMachine;
 
         [Tooltip("The form you have selected. Not necessarily the form you are currently in, but the one that you're focused on. Attempting to transform will transform you into this form.")]
         public FormDef targetedForm;
@@ -28,11 +29,12 @@ namespace HedgehogUtils.Forms
         [Tooltip("The first FormDef is the form you were PREVIOUSLY in\nThe second FormDef is the one you're in now.")]
         public event Action<FormDef, FormDef> OnFormChanged;
 
-        public Material formMaterial;
-        public Material defaultMaterial;
+        public string skinNameToken;
 
-        public Mesh formMesh;
-        public Mesh defaultMesh;
+        private CharacterModel.RendererInfo[] defaultRendererInfos;
+        private Mesh[] defaultMeshes;
+        private CharacterModel.RendererInfo[] formRendererInfos;
+        private Mesh[] formMeshes;
 
         public CharacterBody body;
         private EntityStateMachine bodyState;
@@ -47,10 +49,12 @@ namespace HedgehogUtils.Forms
         public ItemTracker[] formToItemTracker = Array.Empty<ItemTracker>();
 
         protected bool initialized;
+        protected bool initStart;
 
         private void Start()
         {
             body = base.GetComponent<CharacterBody>();
+            initStart = true;
             if (!body || (!body.isPlayerControlled && !(BodyCatalog.GetBodyName(body.bodyIndex).Contains("Turret"))))
             {
                 this.enabled = false;
@@ -61,7 +65,7 @@ namespace HedgehogUtils.Forms
         
         private void OnEnable()
         {
-            if (!body) { return; }
+            if (!body || !initStart) { return; }
             Init();
         }
         private void OnDestroy()
@@ -81,7 +85,7 @@ namespace HedgehogUtils.Forms
 
             model = body.modelLocator.modelTransform.GetComponent<CharacterModel>();
             modelAnimator = model.transform.GetComponent<Animator>();
-            superSonicState = EntityStateMachine.FindByCustomName(base.gameObject, "HedgehogUtilsForms");
+            formStateMachine = EntityStateMachine.FindByCustomName(base.gameObject, "HedgehogUtilsForms");
             if (body.skillLocator)
             {
                 foreach (var item in body.skillLocator.AllSkills)
@@ -90,26 +94,48 @@ namespace HedgehogUtils.Forms
                 }
             }
             bodyState = EntityStateMachine.FindByCustomName(base.gameObject, "Body");
+            skinNameToken = GetSkinNameToken();
+            defaultMeshes = new Mesh[model.baseRendererInfos.Length];
+            formMeshes = new Mesh[model.baseRendererInfos.Length];
 
-            CreateUnsyncItemTrackers();
+            PrepareForms();
             Array.Resize(ref numberOfTimesTransformed, FormCatalog.formsCatalog.Length);
 
             initialized = true;
         }
 
-        public void CreateUnsyncItemTrackers()
+        private void PrepareForms()
         {
             Array.Resize(ref formToItemTracker, FormCatalog.formsCatalog.Length);
             foreach (FormDef form in FormCatalog.formsCatalog)
             {
+                if (!form.enabled) continue;
                 if (Forms.formToHandler.TryGetValue(form, out FormHandler handler) && form.requiresItems)
                 {
                     CreateTrackerForForm(form);
                 }
+
+                if (skinNameToken != null && form.renderDictionary.TryGetValue(skinNameToken, out RenderReplacements renderReplacements))
+                {
+                    if (renderReplacements.rendererInfo != null)
+                    {
+                        for (int i = 0; i < renderReplacements.rendererInfo.Length; i++)
+                        {
+                            if (renderReplacements.meshAddress != null && renderReplacements.meshAddress[i] != null && renderReplacements.meshAddress[i].RuntimeKeyIsValid())
+                            { 
+                                AssetAsyncReferenceManager<Mesh>.LoadAsset(renderReplacements.meshAddress[i], AsyncReferenceHandleUnloadType.OnSceneUnload); 
+                            }
+                            if (renderReplacements.rendererInfo[i].defaultMaterialAddress != null && renderReplacements.rendererInfo[i].defaultMaterialAddress.RuntimeKeyIsValid())
+                            {
+                                AssetAsyncReferenceManager<Material>.LoadAsset(renderReplacements.rendererInfo[i].defaultMaterialAddress, AsyncReferenceHandleUnloadType.OnSceneUnload);
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        public virtual void CreateTrackerForForm(FormDef form)
+        private void CreateTrackerForForm(FormDef form)
         {
             ItemTracker itemTracker = body.gameObject.AddComponent<ItemTracker>();
             itemTracker.form = form;
@@ -117,7 +143,7 @@ namespace HedgehogUtils.Forms
             formToItemTracker[(int)form.formIndex] = itemTracker;
         }
 
-        public void FixedUpdate()
+        private void FixedUpdate()
         {
             if (body.hasAuthority && body.isPlayerControlled)
             {
@@ -126,7 +152,7 @@ namespace HedgehogUtils.Forms
             }
         }
 
-        public void DecideTargetForm()
+        private void DecideTargetForm()
         {
             targetedForm = null;
             foreach (FormDef form in FormCatalog.formsCatalog)
@@ -136,7 +162,7 @@ namespace HedgehogUtils.Forms
                     targetedForm = form;
                     
                     if (targetedForm != activeForm && Forms.formToHandler.TryGetValue(targetedForm, out FormHandler handler) &&
-                        superSonicState && (superSonicState.state is not FormStateBase || ((FormStateBase)(superSonicState.state)).CanBeOverridden()))
+                        formStateMachine && (formStateMachine.state is not FormStateBase || ((FormStateBase)(formStateMachine.state)).CanBeOverridden()))
                     {
                         if (handler.CanTransform(this))
                         {
@@ -175,7 +201,6 @@ namespace HedgehogUtils.Forms
                 numberOfTimesTransformed[(int)form.formIndex] += 1;
                 if (NetworkServer.active)
                 {
-                    //FormHandler.instance.OnTransform();
                     handler.OnTransform(this);
                 }
                 else
@@ -191,31 +216,25 @@ namespace HedgehogUtils.Forms
             {
                 FormStateBase formState = (FormStateBase)EntityStateCatalog.InstantiateState(form.formState.stateType);
                 formState.form = form;
-                this.superSonicState.SetNextState(formState);
+                this.formStateMachine.SetNextState(formState);
             }
             else
             {
-                this.superSonicState.SetNextStateToMain();
+                this.formStateMachine.SetNextStateToMain();
             }
         }
 
-        public void OnTransform(FormDef form)
+        internal void OnTransform(FormDef form)
         {
             FormDef previousForm = activeForm;
             this.activeForm = form;
             UpdateAllRequireFormSkillDefs();
             OnFormChanged?.Invoke(previousForm, activeForm);
             if (!form) { return; }
-            ModelSkinController skin = model.GetComponentInChildren<ModelSkinController>();
-            if (!skin) { return; }
-            if (skin.skins.Length > body.skinIndex) // heretic causing errors without this check
-            {
-                GetSuperModel(skin.skins[body.skinIndex].nameToken);
-                SuperModel();
-            }
+            SuperModel(skinNameToken);
         }
 
-        public void TransformEnd()
+        internal void TransformEnd()
         {
             if (body.HasBuff(activeForm.buff))
             {
@@ -256,83 +275,117 @@ namespace HedgehogUtils.Forms
                 }
             }
         }
+        public string GetSkinNameToken()
+        {
+            ModelSkinController skin = model.GetComponent<ModelSkinController>();
+            if (skin && skin.skins.Length > body.skinIndex) // heretic causing errors without this check
+            {
+                return skin.skins[body.skinIndex].nameToken;
+            }
+            return null;
+        }
 
         public int GetNumberOfTimesTransformed(FormDef form)
         {
             return numberOfTimesTransformed[(int)form.formIndex];
         }
 
-        // Thank you DxsSucuk
-        public void SuperModel()
+        private void SuperModel(string skinNameToken)
         {
-            defaultMaterial = model.baseRendererInfos[0].defaultMaterial; // Textures
-            if (formMaterial)
+            if (!GetSuperModel(skinNameToken)) return;
+
+            defaultRendererInfos = ArrayUtils.Clone(model.baseRendererInfos);
+            for (int i = 0; i < model.baseRendererInfos.Length; i++)
             {
-                model.baseRendererInfos[0].defaultMaterial = formMaterial;
+                formRendererInfos[i].renderer = defaultRendererInfos[i].renderer; // sets renderers to your current character instead of the prefab
             }
+            model.baseRendererInfos = formRendererInfos;
             
+
+            ApplyMeshes(model.baseRendererInfos, formMeshes, true);
+
             if (modelAnimator && activeForm.superAnimations) // Animations
             {
                 modelAnimator.SetFloat("isSuperFloat", 1f);
             }
 
-            if (formMesh) // Model
-            {
-                defaultMesh = model.mainSkinnedMeshRenderer.sharedMesh;
-                model.mainSkinnedMeshRenderer.sharedMesh = formMesh;
-            }
-
-            model.materialsDirty = true;
+            model.forceUpdate = true;
         }
 
         public void ResetModel()
         {
-            model.baseRendererInfos[0].defaultMaterial = defaultMaterial; // Textures
-
+            model.baseRendererInfos = defaultRendererInfos;
             if (modelAnimator) // Animations
             {
                 modelAnimator.SetFloat("isSuperFloat", 0f);
             }
-
-            if (formMesh) // Model
-            {
-                model.mainSkinnedMeshRenderer.sharedMesh = defaultMesh;
-            }
+            ApplyMeshes(model.baseRendererInfos, defaultMeshes, false);
 
             model.materialsDirty = true;
         }
 
-        public virtual void GetSuperModel(string skinName)
+        private void ApplyMeshes(CharacterModel.RendererInfo[] renderer, Mesh[] mesh, bool setPreviousToDefault)
         {
-            if (activeForm.renderDictionary == null) 
+            if (renderer == null || mesh == null) return;
+            for (int i = 0; i < renderer.Length; i++)
             {
-                if (defaultMesh)
+                if (!renderer[i].renderer || !mesh[i]) continue;
+                if (renderer[i].renderer is MeshRenderer)
                 {
-                    formMesh = defaultMesh;
-                }
-                if (defaultMaterial)
+                    MeshFilter filter = renderer[i].renderer.GetComponent<MeshFilter>();
+                    if (setPreviousToDefault) defaultMeshes[i] = filter.mesh;
+                    filter.mesh = mesh[i];
+
+            }
+                else
                 {
-                    formMaterial = defaultMaterial;
+                    SkinnedMeshRenderer skinnedMeshRenderer = renderer[i].renderer as SkinnedMeshRenderer;
+                    if (skinnedMeshRenderer != null)
+                    {
+                        if (setPreviousToDefault) defaultMeshes[i] = skinnedMeshRenderer.sharedMesh;
+                        skinnedMeshRenderer.sharedMesh = mesh[i];
+                    }
                 }
-                return; 
+            }
+        }
+
+        private bool GetSuperModel(string skinName)
+        {
+            if (activeForm.renderDictionary == null || string.IsNullOrEmpty(skinName)) 
+            {
+                return false; 
             }
 
-            if (activeForm.renderDictionary.TryGetValue(skinName, out RenderReplacements replacements))
+            if (activeForm.renderDictionary.TryGetValue(skinName, out RenderReplacements renderReplacements))
             {
-                formMesh = replacements.mesh;
-                formMaterial = replacements.material;
-            }
-            else
-            {
-                if (defaultMesh)
+                formRendererInfos = ArrayUtils.Clone(renderReplacements.rendererInfo);
+                formMeshes = new Mesh[model.baseRendererInfos.Length];
+                for (int i = 0; i < model.baseRendererInfos.Length; i++)
                 {
-                    formMesh = defaultMesh;
+                    // memop my beloved
+                    if (renderReplacements.meshAddress != null && renderReplacements.meshAddress[i] != null && renderReplacements.meshAddress[i].RuntimeKeyIsValid())
+                    {
+                        if (AssetAsyncReferenceManager<Mesh>.handles.TryGetValue(renderReplacements.meshAddress[i].RuntimeKey.ToString(), out AssetAsyncReferenceManager<Mesh>.AsyncHandleItem handle))
+                        {
+                            if (!handle.loadHandle.Result)
+                            {
+                                handle.loadHandle.WaitForCompletion();
+                            }
+                            formMeshes[i] = handle.loadHandle.Result;
+                        }
+                        else
+                        {
+                            formMeshes[i] = renderReplacements.meshAddress[i].LoadAssetAsync<Mesh>().WaitForCompletion();
+                        }
+                    }
+                    else if (renderReplacements.mesh != null)
+                    {
+                        formMeshes[i] = renderReplacements.mesh[i];
+                    }
                 }
-                if (defaultMaterial)
-                {
-                    formMaterial = defaultMaterial;
-                }
+                return true;
             }
+            return false;
         }
     }
 
