@@ -30,7 +30,7 @@ namespace HedgehogUtils.Forms.EntityStates
             base.OnEnter();
             if (base.isAuthority)
             {
-                this.formComponent.superSonicState.SetNextStateToMain(); // detransform
+                this.formComponent.formStateMachine.SetNextStateToMain(); // detransform
             }
             if (duration > 0)
             {

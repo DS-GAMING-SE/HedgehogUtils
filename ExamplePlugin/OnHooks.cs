@@ -218,29 +218,21 @@ namespace HedgehogUtils
             NetworkServer.Spawn(GameObject.Instantiate<GameObject>(ChaosSnapManager.prefab));
             #region Form Handlers
             SceneDef scene = stage.sceneDef;
-            /*if (sceneName == "intro")
-            {
-                return;
-            }
-
-            if (sceneName == "title")
-            {
-                // TODO:: create prefab of super sonic floating in the air silly style.
-                Vector3 vector = new Vector3(38, 23, 36);
-            }*/
 
             foreach (FormDef form in FormCatalog.formsCatalog)
             {
-                bool formAvailable = form.enabled(form);
+                bool formAvailable = form.setIsEnabledFunc(form);
 
                 if (!Forms.Forms.formToHandlerObject.ContainsKey(form) && formAvailable)
                 {
                     Log.Message("Spawning new handler object for form " + form.ToString());
                     NetworkServer.Spawn(GameObject.Instantiate<GameObject>(Forms.Forms.formToHandlerPrefab.GetValueSafe(form)));
+                    form.enabled = true;
                 }
                 else
                 {
                     Log.Message("Did NOT spawn handler object for form " + form.ToString());
+                    form.enabled = false;
                     continue;
                 }
 

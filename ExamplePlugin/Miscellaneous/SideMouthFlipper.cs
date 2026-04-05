@@ -21,6 +21,7 @@ namespace HedgehogUtils.Miscellaneous
             {
                 Log.Error("SideMouthFlipper mouth transform does not exist");
                 this.enabled = false;
+                return;
             }
             mouthDefaultScaleX = mouth.transform.localScale.x;
         }

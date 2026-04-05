@@ -84,7 +84,7 @@ namespace HedgehogUtils.Forms.EntityStates
             {
                 if (formComponent)
                 {
-                    formComponent.superSonicState.SetNextState(new BaseState());
+                    formComponent.formStateMachine.SetNextState(new BaseState());
                 }
                 return;
             }

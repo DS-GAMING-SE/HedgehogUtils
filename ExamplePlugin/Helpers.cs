@@ -179,19 +179,20 @@ namespace HedgehogUtils
             boostDef.boostHUDColor = originDef.boostHUDColor;
             return boostDef;
         }
-        public static Material MetalFresnel(this Material mat, Texture mask = null)
+        public static Material MetalFresnel(this Material mat, Texture mask = null, float power = 1f)
         {
-            return FresnelEmission(mat, AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Drone_Tech.texDroneTechRamp_png)).WaitForCompletion(), mask);
+            return FresnelEmission(mat, AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Drone_Tech.texDroneTechRamp_png)).WaitForCompletion(), mask, power);
         }
-        public static Material GoldFresnel(this Material mat, Texture mask = null)
+        public static Material GoldFresnel(this Material mat, Texture mask = null, float power = 1f)
         {
-            return FresnelEmission(mat, AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampDroneFire_png)).WaitForCompletion(), mask);
+            return FresnelEmission(mat, AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampDroneFire_png)).WaitForCompletion(), mask, power);
         }
-        public static Material FresnelEmission(this Material mat, Texture ramp, Texture mask)
+        public static Material FresnelEmission(this Material mat, Texture ramp, Texture mask, float power = 1f)
         {
             mat.SetTexture("_FresnelRamp", ramp);
             if (mask) mat.SetTexture("_FresnelMask", mask);
             mat.EnableKeyword("FRESNEL_EMISSION");
+            mat.SetFloat("_FresnelPower", power);
             return mat;
         }
         public static Material SpecularIgnoreAlpha(this Material mat)

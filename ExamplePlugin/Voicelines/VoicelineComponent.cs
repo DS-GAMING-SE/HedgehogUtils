@@ -45,6 +45,10 @@ namespace HedgehogUtils.Voicelines
             {
                 AkSoundEngine.StopPlayingID(currentVoicelineID);
             }
+            else
+            {
+                return;
+            }
             currentVoicelineID = AkSoundEngine.PostEvent(soundString, gameObject, (uint)AkCallbackType.AK_EndOfEvent, OnVoicelineEnd, null);
             currentVoicelinePriority = priority;
             isVoicelinePlaying = true;

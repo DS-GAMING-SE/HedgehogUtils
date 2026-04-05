@@ -14,6 +14,8 @@ using RiskOfOptions.Options;
 using RiskOfOptions;
 using HedgehogUtils.Internal;
 using HedgehogUtils.Forms.SuperForm;
+using UnityEngine.Serialization;
+using UnityEngine.AddressableAssets;
 
 [assembly: HG.Reflection.SearchableAttribute.OptIn]
 namespace HedgehogUtils.Forms
@@ -95,14 +97,13 @@ namespace HedgehogUtils.Forms
             return false;
         }
 
-        // This takes a RenderReplacements struct, aka just a mesh and material that you'll change into when Super and using the given skin. Mesh or material can be null if you don't want them to change
         public static void AddSkinForForm(string skinToken, RenderReplacements render, ref FormDef form)
         {
             form.renderDictionary.Add(skinToken, render);
         }
 
         [SystemInitializer(typeof(BodyCatalog), typeof(FormCatalog))]
-        public static void FormComponentsForEveryone()
+        private static void FormComponentsForEveryone()
         {
             foreach (GameObject body in BodyCatalog.allBodyPrefabs)
             {
@@ -163,37 +164,48 @@ namespace HedgehogUtils.Forms
         [Tooltip("If you will use Super Sonic's animations or stay with default animations.\nSuper Sonic's animations include hovering in his idles, hovering when moving on the ground, replacing his \"falling\" animations with flying, and some animations made under the assumption that his quills are pointed up.")]
         public bool superAnimations;
 
-        [Tooltip("The entity state used by the \"SonicForms\" entity state machine while transformed. Should be a subclass of SonicFormBase")]
+        [Tooltip("The entity state used by the \"HedgehogUtilsForms\" entity state machine while transformed. Should be a subclass of FormStateBase")]
         public SerializableEntityStateType formState;
 
         [Tooltip("The entity state used by the \"Body\" entity state machine for the transformation animation that will transition you into the form. Should be a subclass of TransformationBase. If the EntityState is null, the transformation will be instant")]
         public SerializableEntityStateType transformState;
 
-        [Tooltip("Stores the material and mesh changes that will be applied when transforming based on what skin you're using.\nKey is the string token of the skin. RenderReplacements is a struct containing a material and mesh.\nPutting null for material or mesh will make them not change when transforming.")]
+        [Tooltip("Stores the material and mesh changes that will be applied when transforming based on what skin you're using.\nKey is the string token of the skin. Render Replacements is a struct containing the RendererInfos and mesh for each renderer on your character. All arrays in the RenderReplacements struct, as well as the defaultRendererInfos of the character, must be the same length. An array can be left null if unneeded.")]
         public Dictionary<string, RenderReplacements> renderDictionary;
 
         [Tooltip("The component that will track information about your form, such as whether all necessary items have been collected. This component will be put on a gameObject that will be created at the beginning of every stage and will stay for the duration of the stage.\nIf you're unsure what to put here, use typeof(FormHandler).\nYou can create a subclass of FormHandler and put it here if you want to add code, such as an extra requirement for transforming.")]
         public Type handlerComponent;
 
-        [Tooltip("Contains information on what characters are allowed to transform.\nIf whitelist, any body name listed under bodyNames will be allowed. If not whitelist, any body name not listed under bodyNames will be allowed.\nBody name refers to the name that survivors and enemies use internally. If you're unsure about what body name means, look into RoR2 BodyCatalog related stuff")]
+        [Tooltip("Contains information on what characters are allowed to transform.\nIf whitelist, any body name listed under bodyNames will be allowed. If not whitelist, any body name not listed under bodyNames will be allowed.\nBody name refers to the name that survivors and enemies use internally. If you're unsure about what body name means, look into RoR2 BodyCatalog related stuff.\nBodyList can be null.")]
         public AllowedBodyList allowedBodyList;
 
         [Tooltip("The default keybind players press to transform into the form. Don't get too attached to this, it's likely these keybinds will need to be changed if forms happen to overlap. If two forms overlap the same key and both can be transformed into, the first form alphabetically by name token will be selected. \nIf set to Keybind.None, there will be no keybind for activating the form. You can make your own way of transforming into the form.")]
         public KeyCode defaultKeyBind;
 
-        [Tooltip("A function that decides whether the FormHandler of this form will be created at the beginning of the stage, thus making the form usable. Use this for any enabling or disabling of forms via config, artifacts, or any other arbitrary reason that would keep it disabled for an entire stage or run.\nBy default this just checks if any survivor is playing a character than can use the form.")]
-        public Func<FormDef, bool> enabled = (self) => { return AnySelectedSurvivorCanUseForm(self); }; 
+        [Tooltip("If it is possible for the form to be activated this stage. This value is set by setIsEnabledFunc at the beginning of every stage.")]
+        public bool enabled { get; internal set; }
+        
+        [Tooltip("A function that decides whether the FormHandler of this form will be created at the beginning of the stage, thus making the form usable. Use this for any enabling or disabling of forms via config, artifacts, or any other arbitrary reason that would keep it disabled for an entire stage or run.\nBy default this checks if any survivor is playing a character than can use the form, based on the allowedBodyList.")]
+        [FormerlySerializedAs("enabled")]
+        public Func<FormDef, bool> setIsEnabledFunc = (self) => { return AnySelectedSurvivorCanUseForm(self); }; 
 
         public static bool AnySelectedSurvivorCanUseForm(FormDef form)
         {
-            foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
+            if (form.allowedBodyList.bodyNames != null)
             {
-                if (form.allowedBodyList.BodyIsAllowed(BodyCatalog.FindBodyIndex(player.master.bodyPrefab)))
+                foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
                 {
-                    return true;
+                    if (form.allowedBodyList.BodyIsAllowed(BodyCatalog.FindBodyIndex(player.master.bodyPrefab)))
+                    {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
+            else
+            {
+                return !form.allowedBodyList.whitelist;
+            }
         }
 
         public FormIndex formIndex 
@@ -258,7 +270,11 @@ namespace HedgehogUtils.Forms
 
         public bool BodyIsAllowed(string bodyName)
         {
-            return !(whitelist ^ bodyNames.Contains(bodyName));
+            if (bodyNames == null || string.IsNullOrEmpty(bodyName)) return !whitelist;
+            else
+            {
+                return !(whitelist ^ bodyNames.Contains(bodyName));
+            }
         }
 
         public bool BodyIsAllowed(BodyIndex bodyIndex)
@@ -269,8 +285,9 @@ namespace HedgehogUtils.Forms
 
     public struct RenderReplacements
     {
-        public Material material;
-        public Mesh mesh;
+        public CharacterModel.RendererInfo[] rendererInfo;
+        public Mesh[] mesh;
+        public AssetReferenceT<Mesh>[] meshAddress;
     }
 
     // Handles neededItem sharing and who has permission to transform

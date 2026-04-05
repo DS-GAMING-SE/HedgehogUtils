@@ -12,7 +12,9 @@
  
  - (Bug Fix) Fixed the Chaos Emerald interactable breaking if you purchase it and pick it up with Drifter at the same time
  
- - (Internal) Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
+ - (Internal) **Breaking**. The RenderReplacements system for making custom super form models has been completely redone. It now supports characters with multiple renderers, multiple meshes, and it works with memop asset references. A RenderReplacement now has three arrays for CharacterModel.RendererInfo, Meshes, and AssetReferenceT<Mesh>s
+ - (Internal) **Breaking** FormDef.enabled functionality has been moved to FormDef.setIsEnabledFunc. FormDef.enabled is now a simple and efficient method for checking if the form is enabled or not, which is decided by setIsEnabledFunc at the beginning of the stage
+ - (Internal) **Breaking**. Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
  - (Internal) TransformationBase now has a reference to CharacterModel
  - (Internal) The point at which GenericTransformationBase triggers the transformation is no longer hardcoded, and can now be changed via the abstract transformationDurationPercent
  - (Internal) Removed unnecessary On.RoR2.UI.HUD.Awake hook used for creating the boost meter. The boost meter hud is now handled through RoR2's Hud Overlay system
