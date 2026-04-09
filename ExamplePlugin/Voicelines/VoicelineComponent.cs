@@ -1,4 +1,5 @@
-﻿using R2API;
+﻿using HG;
+using R2API;
 using RoR2;
 using RoR2.Audio;
 using RoR2.Skills;
@@ -27,7 +28,14 @@ namespace HedgehogUtils.Voicelines
         public List<VoicelineComponent> nearbyVoices = new List<VoicelineComponent>();
         public virtual void SubscribeEvents()
         {
-
+            /* Common events to use for voicelines
+             * 
+             * VoicelineManager events for stage entering and bosses stuff
+             * CharacterBody.onJump for jumping
+             * GlobalEventManager.OnClientDamageNotified for taking damage
+             * FormComponent.OnFormChanged for transforming
+             * If using the StageRanking mod, StageRankingPanel.OnStageRankingPanelEnd for reacting to your rank
+            */
         }
         public virtual void UnsubscribeEvents()
         {
@@ -41,13 +49,16 @@ namespace HedgehogUtils.Voicelines
         public void PlayVoiceline(string soundString, VoicelinePriority priority)
         {
             if (string.IsNullOrEmpty(soundString)) return;
-            if (priority > currentVoicelinePriority)
+            if (isVoicelinePlaying)
             {
-                AkSoundEngine.StopPlayingID(currentVoicelineID);
-            }
-            else
-            {
-                return;
+                if (priority > currentVoicelinePriority)
+                {
+                    AkSoundEngine.StopPlayingID(currentVoicelineID);
+                }
+                else
+                {
+                    return;
+                }
             }
             currentVoicelineID = AkSoundEngine.PostEvent(soundString, gameObject, (uint)AkCallbackType.AK_EndOfEvent, OnVoicelineEnd, null);
             currentVoicelinePriority = priority;
@@ -109,6 +120,15 @@ namespace HedgehogUtils.Voicelines
             InstanceTracker.Remove<VoicelineComponent>(this);
             if (!string.IsNullOrEmpty(soundBankFilePath)) SoundAPI.SoundBanks.Remove(soundBankID);
             UnsubscribeEvents();
+        }
+        public static bool TryPlayVoiceline(GameObject gameObject, string soundString, VoicelinePriority priority)
+        {
+            if (gameObject.TryGetComponent<VoicelineComponent>(out var voiceline) && voiceline.enabled)
+            {
+                voiceline.PlayVoiceline(soundString, priority);
+                return true;
+            }
+            return false;
         }
     }
 }
