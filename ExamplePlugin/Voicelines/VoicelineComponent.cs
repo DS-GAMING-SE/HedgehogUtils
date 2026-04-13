@@ -11,41 +11,14 @@ using UnityEngine;
 
 namespace HedgehogUtils.Voicelines
 {
-    public abstract class VoicelineComponent : MonoBehaviour, ILifeBehavior
+    public abstract class SimpleVoicelineComponent : MonoBehaviour
     {
         public string soundBankFilePath;
         protected uint soundBankID;
 
-        public CharacterBody characterBody;
-        public GenericSkill voicelinesSkill;
-        public string voicelinesSkillName = "Voicelines";
-        public SkillDef voicelinesEnableSkillDef;
-
         public uint currentVoicelineID;
         public VoicelinePriority currentVoicelinePriority;
         public bool isVoicelinePlaying { get; private set; }
-
-        public List<VoicelineComponent> nearbyVoices = new List<VoicelineComponent>();
-        public virtual void SubscribeEvents()
-        {
-            /* Common events to use for voicelines
-             * 
-             * VoicelineManager events for stage entering and bosses stuff
-             * CharacterBody.onJump for jumping
-             * GlobalEventManager.OnClientDamageNotified for taking damage
-             * FormComponent.OnFormChanged for transforming
-             * If using the StageRanking mod, StageRankingPanel.OnStageRankingPanelEnd for reacting to your rank
-            */
-        }
-        public virtual void UnsubscribeEvents()
-        {
-
-        }
-        public virtual void OnDeathStart()
-        {
-            StopCurrentVoiceline();
-            UnsubscribeEvents();
-        }
         public void PlayVoiceline(string soundString, VoicelinePriority priority)
         {
             if (string.IsNullOrEmpty(soundString)) return;
@@ -84,6 +57,54 @@ namespace HedgehogUtils.Voicelines
                 isVoicelinePlaying = false;
             }
         }
+        protected virtual void OnEnable()
+        {
+            if (!string.IsNullOrEmpty(soundBankFilePath)) soundBankID = SoundAPI.SoundBanks.Add(soundBankFilePath);
+        }
+        protected virtual void OnDisable()
+        {
+            if (!string.IsNullOrEmpty(soundBankFilePath)) SoundAPI.SoundBanks.Remove(soundBankID);
+        }
+
+        public static bool TryPlayVoiceline(GameObject gameObject, string soundString, VoicelinePriority priority)
+        {
+            if (gameObject.TryGetComponent<SimpleVoicelineComponent>(out var voiceline) && voiceline.enabled)
+            {
+                voiceline.PlayVoiceline(soundString, priority);
+                return true;
+            }
+            return false;
+        }
+    }
+    
+    public abstract class VoicelineComponent : SimpleVoicelineComponent, ILifeBehavior
+    {
+        public CharacterBody characterBody;
+        public GenericSkill voicelinesSkill;
+        public string voicelinesSkillName = "Voicelines";
+        public SkillDef voicelinesEnableSkillDef;
+
+        public List<VoicelineComponent> nearbyVoices = new List<VoicelineComponent>();
+        public virtual void SubscribeEvents()
+        {
+            /* Common events to use for voicelines
+             * 
+             * VoicelineManager events for stage entering and bosses stuff
+             * CharacterBody.onJump for jumping
+             * GlobalEventManager.OnClientDamageNotified for taking damage
+             * FormComponent.OnFormChanged for transforming
+             * If StageRanking mod, StageRankingPanel.OnStageRankingPanelEnd for reacting to your rank (With Util.HasEffectiveAuthority so lines aren't synced, no multiplayer overlapping lines)
+            */
+        }
+        public virtual void UnsubscribeEvents()
+        {
+
+        }
+        public virtual void OnDeathStart()
+        {
+            StopCurrentVoiceline();
+            UnsubscribeEvents();
+        }
 
         private void Awake()
         {
@@ -115,20 +136,15 @@ namespace HedgehogUtils.Voicelines
                 enabled = false;
             }
         }
-        private void OnDisable()
+        protected override void OnEnable()
+        {
+
+        }
+        protected override void OnDisable()
         {
             InstanceTracker.Remove<VoicelineComponent>(this);
-            if (!string.IsNullOrEmpty(soundBankFilePath)) SoundAPI.SoundBanks.Remove(soundBankID);
+            base.OnDisable();
             UnsubscribeEvents();
-        }
-        public static bool TryPlayVoiceline(GameObject gameObject, string soundString, VoicelinePriority priority)
-        {
-            if (gameObject.TryGetComponent<VoicelineComponent>(out var voiceline) && voiceline.enabled)
-            {
-                voiceline.PlayVoiceline(soundString, priority);
-                return true;
-            }
-            return false;
         }
     }
 }

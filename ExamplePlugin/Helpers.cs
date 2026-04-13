@@ -202,11 +202,14 @@ namespace HedgehogUtils
         }
         public static Material CreateGlassMaterial()
         {
-            Material glass = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Shaders.HGCloudRemap_shader).WaitForCompletion());
+            Material glass = new Material(Addressables.LoadAssetAsync<Shader>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Shaders.HGCloudRemap_shader).WaitForCompletion());
             glass.SetInt("_Cull", 2);
             glass.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampDefault_png).WaitForCompletion());
             glass.EnableKeyword("FRESNEL");
-            glass.SetFloat("_FresnelPower", 0.15f);
+            glass.SetFloat("_FresnelPower", 0.5f);
+            glass.SetFloat("_SrcBlend", 3f);
+            glass.SetFloat("_AlphaBoost", 6f);
+            glass.SetFloat("_DepthOffset", -10f);
             return glass;
         }
         public static Material CreateGlassMaterial(Color color)

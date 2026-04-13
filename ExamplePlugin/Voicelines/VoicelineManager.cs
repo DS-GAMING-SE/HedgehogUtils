@@ -242,7 +242,7 @@ namespace HedgehogUtils.Voicelines
         {
             if (startDelay > 0) yield return new WaitForSeconds(startDelay);
 
-            RefreshNearby();
+            yield return RefreshNearby();
             if (voicelines.Count > 0)
             {
                 List<VoicelineComponent> skippedVoices = new List<VoicelineComponent>();
@@ -254,7 +254,8 @@ namespace HedgehogUtils.Voicelines
                         if (voicelines[i].IsValid())
                         {
                             if (skippedVoices.Contains(voicelines[i].voicelineComponent)) { continue; }
-                            if (voicelines[i].voicelineComponent.nearbyVoices.Count > 0) skippedVoices.Concat(voicelines[i].voicelineComponent.nearbyVoices);
+                            VoicelineComponent voicelineComponent = voicelines[i].voicelineComponent as VoicelineComponent;
+                            if (voicelineComponent && voicelineComponent.nearbyVoices.Count > 0) skippedVoices.Concat(voicelineComponent.nearbyVoices);
 
                             Log.Message("HedgehogUtils Staggered Voiceline sent", Config.Logs.All);
                             new NetworkVoiceline(voicelines[i]).Send(NetworkDestination.Clients);
@@ -403,24 +404,6 @@ namespace HedgehogUtils.Voicelines
         LunarScavenger,
         Arraign1,
         Arraign2
-    }
-    public struct NetworkedVoiceline
-    {
-        public VoicelineComponent voicelineComponent;
-        public NetworkSoundEventIndex soundIndex;
-        public VoicelinePriority priority;
-
-        public NetworkedVoiceline(VoicelineComponent voicelineComponent, NetworkSoundEventIndex networkSoundEventIndex, VoicelinePriority voicelinePriority)
-        {
-            this.voicelineComponent = voicelineComponent;
-            this.soundIndex = networkSoundEventIndex;
-            this.priority = voicelinePriority;
-        }
-
-        public bool IsValid()
-        {
-            return soundIndex != NetworkSoundEventIndex.Invalid && voicelineComponent;
-        }
     }
     public enum VoicelinePriority : byte
     {
