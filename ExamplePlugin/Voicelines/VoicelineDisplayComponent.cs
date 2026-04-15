@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UIElements.StyleSheets;
 
 namespace HedgehogUtils.Voicelines
@@ -39,7 +40,7 @@ namespace HedgehogUtils.Voicelines
         {
             csspdc = GetComponent<CharacterSelectSurvivorPreviewDisplayController>();
             UnityEngine.Events.UnityEvent voicelineEvent = new UnityEngine.Events.UnityEvent();
-            voicelineEvent.AddListener(() => PlayRandomVoiceline());
+            voicelineEvent.AddListener(PlayRandomVoiceline);
             CharacterSelectSurvivorPreviewDisplayController.SkillChangeResponse voicelineResponse = new CharacterSelectSurvivorPreviewDisplayController.SkillChangeResponse
             {
                 triggerSkillFamily = skillFamily,
@@ -71,7 +72,7 @@ namespace HedgehogUtils.Voicelines
 
         public void PlayRandomVoiceline()
         {
-            if (!isVoicelinePlaying && Util.HasEffectiveAuthority(gameObject)) new NetworkVoiceline(this, networkSoundEventDefs.GetRandom().index, VoicelinePriority.PriorityDialogue).Send(NetworkDestination.Clients);
+            if (!isVoicelinePlaying && NetworkServer.active) new NetworkVoiceline(this, networkSoundEventDefs.GetRandom().index, VoicelinePriority.PriorityDialogue).Send(NetworkDestination.Clients);
         }
     }
 }
