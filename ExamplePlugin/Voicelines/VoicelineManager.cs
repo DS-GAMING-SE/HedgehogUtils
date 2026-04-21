@@ -1,4 +1,5 @@
-﻿using R2API;
+﻿using Newtonsoft.Json.Utilities;
+using R2API;
 using R2API.Networking;
 using R2API.Networking.Interfaces;
 using RoR2;
@@ -19,7 +20,8 @@ namespace HedgehogUtils.Voicelines
         public static VoicelineManager instance;
         public static GameObject prefab;
 
-        private bool lunarScavengerStarted = false;
+        private bool[] finalBossStartSaid = new bool[17];
+        private bool[] finalBossDefeatSaid = new bool[17];
 
         public delegate void StageEventHandler(Stage stage, List<NetworkedVoiceline> networkedVoicelines);
         public delegate void BossEventHandler(BodyIndex boss, List<NetworkedVoiceline> networkedVoicelines);
@@ -44,6 +46,7 @@ namespace HedgehogUtils.Voicelines
         public static BodyIndex falseSon2BodyIndex;
         public static BodyIndex falseSon3BodyIndex;
         public static BodyIndex solusWingBodyIndex;
+        public static BodyIndex solusWingWeakPointBodyIndex;
         public static BodyIndex solusHeartBodyIndex;
         public static BodyIndex[] lunarScavengerIndices;
         public static BodyIndex arraign1EnemiesReturnsBodyIndex;
@@ -103,7 +106,12 @@ namespace HedgehogUtils.Voicelines
             BodyIndex bodyIndex = GetBossBodyIndex(boss);
             if (bodyIndex == BodyIndex.None) return;
             FinalBoss finalBoss = GetFinalBoss(bodyIndex);
-            if (finalBoss == FinalBoss.SolusHeart || finalBoss == FinalBoss.LunarScavenger) return;
+
+            if (finalBoss == FinalBoss.SolusHeart1 ||
+                finalBoss == FinalBoss.SolusHeart2 ||
+                finalBoss == FinalBoss.SolusHeart3 ||
+                finalBoss == FinalBoss.LunarScavenger) return;
+
             if (finalBoss == FinalBoss.None)
             {
                 SendBossStartEvent(bodyIndex);
@@ -115,16 +123,15 @@ namespace HedgehogUtils.Voicelines
         }
         private void SolusHeartStartVoicelines(SolusWebMissionController solus)
         {
-            SendFinalBossStartEvent(FinalBoss.SolusHeart);
+            SendFinalBossStartEvent(FinalBoss.SolusHeart1);
         }
         private void LunarScavengerStartVoicelines(CharacterBody body)
         {
             // Base game uses this to start warbonds on twisted scav except they forget to check if it's specifically twisted scav, so it activates..
             // .. war bonds everytime a scav stands up even if it isn't the boss. Silly base game bugs
-            if (lunarScavengerIndices.Contains(body.bodyIndex) && !lunarScavengerStarted)
+            if (lunarScavengerIndices.Contains(body.bodyIndex))
             {
                 SendFinalBossStartEvent(FinalBoss.LunarScavenger);
-                lunarScavengerStarted = true;
             }
         }
         public void SendBossStartEvent(BodyIndex bodyIndex)
@@ -149,6 +156,8 @@ namespace HedgehogUtils.Voicelines
         }
         public void SendFinalBossStartEvent(FinalBoss finalBoss)
         {
+            if (finalBossStartSaid[(byte)finalBoss-1]) return;
+            finalBossStartSaid[(byte)finalBoss-1] = true;
             List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
             if (OnFinalBossStart != null)
             {
@@ -165,14 +174,43 @@ namespace HedgehogUtils.Voicelines
                     }
                 }
             }
-            StartCoroutine(StaggerVoicelines(voicelinesToSend, 2.5f));
+            float startDelay = 2.5f;
+            switch (finalBoss)
+            {
+                case FinalBoss.Mithrix1:
+                    startDelay = 3.5f;
+                    break;
+                case FinalBoss.Voidling1:
+                    startDelay = 6f;
+                    break;
+                case FinalBoss.Voidling2:
+                    startDelay = 4f;
+                    break;
+                case FinalBoss.Voidling3:
+                    startDelay = 4f;
+                    break;
+                case FinalBoss.FalseSon1:
+                    startDelay = 3.5f;
+                    break;
+                case FinalBoss.SolusHeart1:
+                    startDelay = 1.8f;
+                    break;
+                case FinalBoss.Arraign1:
+                    startDelay = 3.5f;
+                    break;
+            }
+            StartCoroutine(StaggerVoicelines(voicelinesToSend, startDelay));
         }
         private void BossDefeatedVoicelines(BossGroup boss)
         {
             BodyIndex bodyIndex = GetBossMemoryBodyIndex(boss);
             if (bodyIndex == BodyIndex.None) return;
             FinalBoss finalBoss = GetFinalBoss(bodyIndex);
-            if (finalBoss == FinalBoss.SolusHeart) return;
+
+            if (finalBoss == FinalBoss.SolusHeart1 ||
+                finalBoss == FinalBoss.SolusHeart2 ||
+                finalBoss == FinalBoss.SolusHeart3) return;
+
             if (finalBoss == FinalBoss.None)
             {
                 SendBossDefeatedEvent(bodyIndex);
@@ -204,6 +242,8 @@ namespace HedgehogUtils.Voicelines
         }
         public void SendFinalBossDefeatedEvent(FinalBoss finalBoss)
         {
+            if (finalBossDefeatSaid[(byte)finalBoss-1]) return;
+            finalBossDefeatSaid[(byte)finalBoss-1] = true;
             List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
             if (OnFinalBossDefeated != null)
             {
@@ -220,7 +260,7 @@ namespace HedgehogUtils.Voicelines
                     }
                 }
             }
-            StartCoroutine(StaggerVoicelines(voicelinesToSend, 1f));
+            StartCoroutine(StaggerVoicelines(voicelinesToSend, 1.6f));
         }
         public IEnumerator RefreshNearby()
         {
@@ -290,6 +330,7 @@ namespace HedgehogUtils.Voicelines
             falseSon2BodyIndex = BodyCatalog.FindBodyIndex("FalseSonBossBodyLunarShard");
             falseSon3BodyIndex = BodyCatalog.FindBodyIndex("FalseSonBossBodyBrokenLunarShard");
             solusWingBodyIndex = BodyCatalog.FindBodyIndex("SolusWingBody");
+            solusWingWeakPointBodyIndex = BodyCatalog.FindBodyIndex("ExhaustPortWeakpointBody");
             solusHeartBodyIndex = BodyCatalog.FindBodyIndex("SolusHeartBody");
             lunarScavengerIndices = [
                 BodyCatalog.FindBodyIndex("ScavLunar1Body"),
@@ -379,7 +420,8 @@ namespace HedgehogUtils.Voicelines
             if (index == falseSon3BodyIndex) { return FinalBoss.FalseSon3; }
 
             if (index == solusWingBodyIndex) { return FinalBoss.SolusWing; }
-            if (index == solusHeartBodyIndex) { return FinalBoss.SolusHeart; }
+            if (index == solusWingWeakPointBodyIndex) { return FinalBoss.SolusWingWeakPoint; }
+            if (index == solusHeartBodyIndex) { return FinalBoss.SolusHeart1; }
 
             if (lunarScavengerIndices.Contains(index)) { return FinalBoss.LunarScavenger; }
             if (index == arraign1EnemiesReturnsBodyIndex) { return FinalBoss.Arraign1; }
@@ -400,10 +442,14 @@ namespace HedgehogUtils.Voicelines
         FalseSon2,
         FalseSon3,
         SolusWing,
-        SolusHeart,
+        SolusWingWeakPoint,
+        SolusHeart1,
+        SolusHeart2,
+        SolusHeart3,
         LunarScavenger,
         Arraign1,
         Arraign2
+            // if you add more, remember to update said array size
     }
     public enum VoicelinePriority : byte
     {

@@ -40,7 +40,11 @@ namespace HedgehogUtils
             On.RoR2.GenericSkill.CanApplyAmmoPack += CanApplyAmmoPackToBoost;
             On.RoR2.GenericSkill.ApplyAmmoPack += ApplyAmmoPackToBoost;
 
-            On.EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start.OnEnter += SolusHeartDefeatedVoiceline;
+            On.EntityStates.SolusHeart.Phase1.Mission1.OnEnter += SolusHeart1DefeatedVoiceline;
+            On.EntityStates.SolusHeart.Phase2.Mission2.OnEnter += SolusHeart2DefeatedVoiceline;
+            On.EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start.OnEnter += SolusHeart3DefeatedVoiceline;
+            On.EntityStates.SolusHeart.SolusHeartTransformationBaseState.OnEnter += SolusHeartPhaseStartVoiceline;
+            On.RoR2.SolusWing.SolusWingWeakPointsController.onWeakpointDestroyedServer += SolusWingWeakPointDefeatedVoiceline;
         }
         private static void DontDieWhileLaunched(On.RoR2.CharacterDeathBehavior.orig_OnDeath orig, CharacterDeathBehavior self)
         {
@@ -290,13 +294,52 @@ namespace HedgehogUtils
                 }
             }
         }
-
-        private static void SolusHeartDefeatedVoiceline(On.EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start.orig_OnEnter orig, EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start self)
+        private static void SolusHeart1DefeatedVoiceline(On.EntityStates.SolusHeart.Phase1.Mission1.orig_OnEnter orig, EntityStates.SolusHeart.Phase1.Mission1 self)
         {
             orig(self);
             if (VoicelineManager.instance && NetworkServer.active)
             {
-                VoicelineManager.instance.SendFinalBossDefeatedEvent(FinalBoss.SolusHeart);
+                VoicelineManager.instance.SendFinalBossDefeatedEvent(FinalBoss.SolusHeart1);
+            }
+        }
+        private static void SolusHeart2DefeatedVoiceline(On.EntityStates.SolusHeart.Phase2.Mission2.orig_OnEnter orig, EntityStates.SolusHeart.Phase2.Mission2 self)
+        {
+            orig(self);
+            if (VoicelineManager.instance && NetworkServer.active)
+            {
+                VoicelineManager.instance.SendFinalBossDefeatedEvent(FinalBoss.SolusHeart2);
+            }
+        }
+
+        private static void SolusHeart3DefeatedVoiceline(On.EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start.orig_OnEnter orig, EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start self)
+        {
+            orig(self);
+            if (VoicelineManager.instance && NetworkServer.active)
+            {
+                VoicelineManager.instance.SendFinalBossDefeatedEvent(FinalBoss.SolusHeart3);
+            }
+        }
+        private static void SolusHeartPhaseStartVoiceline(On.EntityStates.SolusHeart.SolusHeartTransformationBaseState.orig_OnEnter orig, EntityStates.SolusHeart.SolusHeartTransformationBaseState self)
+        {
+            orig(self);
+            if (VoicelineManager.instance && NetworkServer.active)
+            {
+                if (self is EntityStates.SolusHeart.Phase1.SolusHeart1)
+                {
+                    VoicelineManager.instance.SendFinalBossStartEvent(FinalBoss.SolusHeart2);
+                }
+                else if (self is EntityStates.SolusHeart.Phase2.SolusHeart2)
+                {
+                    VoicelineManager.instance.SendFinalBossStartEvent(FinalBoss.SolusHeart3);
+                }
+            }
+        }
+        private static void SolusWingWeakPointDefeatedVoiceline(On.RoR2.SolusWing.SolusWingWeakPointsController.orig_onWeakpointDestroyedServer orig, RoR2.SolusWing.SolusWingWeakPointsController self, GameObject weakpointObject, CharacterBody body)
+        {
+            orig(self, weakpointObject, body);
+            if (VoicelineManager.instance && NetworkServer.active)
+            {
+                VoicelineManager.instance.SendFinalBossDefeatedEvent(FinalBoss.SolusWingWeakPoint);
             }
         }
     }
