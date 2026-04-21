@@ -23,8 +23,8 @@ namespace HedgehogUtils
 
             LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM", "Super");
 
-            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT", Helpers.SuperFormText("<size=110%>{0} has transformed into their {1} form!</color></size>"));
-            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT_2P", Helpers.SuperFormText("<size=110%>You transformed into your {1} form!</color></size>"));
+            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT", Helpers.SuperFormText("<size=110%>{0} has transformed into their {1} form!</size>"));
+            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT_2P", Helpers.SuperFormText("<size=110%>You transformed into your {1} form!</size>"));
 
             #endregion
 
