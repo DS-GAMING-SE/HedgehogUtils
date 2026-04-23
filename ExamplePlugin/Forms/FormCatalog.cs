@@ -43,7 +43,7 @@ namespace HedgehogUtils.Forms
                 formsCatalog[length + i] = forms[i];
             }
 
-            formsCatalog = formsCatalog.OrderBy(form => form.name).ToArray();
+            formsCatalog = formsCatalog.OrderBy(form => form.cachedName).ToArray();
 
             string allForms = string.Concat(formsCatalog.Select(x => x.ToString() + "\n"));
             Log.Message("FormDef(s) added to formCatalog. formCatalog now contains:\n"+allForms);

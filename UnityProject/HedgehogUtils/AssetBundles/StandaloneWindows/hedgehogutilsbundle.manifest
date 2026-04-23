@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 1387361285
+CRC: 3627234022
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 5b32e41b320c4e4471a9c2d08fc4e60c
+    Hash: 8290cef47f706b339f0a88c63ce756ae
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 921b4dd4bc2fa1b1e55b2e84583b6c63
+    Hash: cdb44da392f208a66ac279b4a33f04ce
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -34,6 +34,8 @@ ClassTypes:
 - Class: 91
   Script: {instanceID: 0}
 - Class: 95
+  Script: {instanceID: 0}
+- Class: 96
   Script: {instanceID: 0}
 - Class: 108
   Script: {instanceID: 0}
@@ -68,9 +70,10 @@ SerializeReferenceClassIdentifiers:
   ClassName: UnityEngine.UI.MaskableGraphic/CullStateChangedEvent
 Assets:
 - Assets/AssetBundle/Emeralds/Icons/texArtifactChaosEmeraldDisabled.png
-- Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperTransformation.prefab
+- Assets/AssetBundle/Emeralds/Prefabs/ChaosEmeraldOrb.prefab
 - Assets/AssetBundle/Emeralds/Materials/matCyan.mat
 - Assets/AssetBundle/VFX/Materials/Boost/matPowerBoost.mat
+- Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperTransformation.prefab
 - Assets/AssetBundle/VFX/Textures/texFlash.png
 - Assets/AssetBundle/VFX/Textures/texSparkleGold.png
 - Assets/AssetBundle/Emeralds/Icons/texGrayEmeraldIcon.png
@@ -118,11 +121,12 @@ Assets:
 - Assets/AssetBundle/Emeralds/Icons/texEmeraldInteractableIcon.png
 - Assets/AssetBundle/VFX/Meshes/RollMesh.fbx
 - Assets/AssetBundle/VFX/Materials/Super Form/matSwingShadow.mat
+- Assets/AssetBundle/Icons/texBallBuffIcon.png
 - Assets/AssetBundle/Emeralds/Emerald.fbx
 - Assets/AssetBundle/Emeralds/Icons/texBgEmerald.png
 - Assets/AssetBundle/Emeralds/Materials/matBlue.mat
 - Assets/AssetBundle/Emeralds/Icons/texGreenEmeraldIcon.png
-- Assets/AssetBundle/PrefabBase/PodlessPod.prefab
+- Assets/AssetBundle/VFX/Textures/texSparkleBlue.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matRingFlash.mat
 - Assets/AssetBundle/VFX/Textures/texRampRainbow.png
 - Assets/AssetBundle/VFX/Materials/Super Form/matSparkleBlue.mat
@@ -136,7 +140,6 @@ Assets:
 - Assets/AssetBundle/Emeralds/Materials/matPurple.mat
 - Assets/AssetBundle/Emeralds/Icons/texCyanEmeraldIcon.png
 - Assets/AssetBundle/UI/BoostMeter/BoostMeter.prefab
-- Assets/AssetBundle/VFX/Textures/texSparkleBlue.png
 - Assets/AssetBundle/Emeralds/Animations/animRing.controller
 - Assets/AssetBundle/UI/LockOn/LockOnIndicator.prefab
 - Assets/AssetBundle/VFX/Meshes/Boost.fbx

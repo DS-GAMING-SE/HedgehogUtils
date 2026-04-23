@@ -92,7 +92,7 @@ namespace HedgehogUtils.Voicelines
              * VoicelineManager events for stage entering and bosses stuff
              * CharacterBody.onJump for jumping
              * GlobalEventManager.OnClientDamageNotified for taking damage
-             * FormComponent.OnFormChanged for transforming
+             * GenericTransformationBase.OnGenericTransform for transforming. It's a static event, so make sure you're the one transforming. Event is global, so consider networking for random voiceline
              * If StageRanking mod, StageRankingPanel.OnStageRankingPanelEnd for reacting to your rank (With Util.HasEffectiveAuthority so lines aren't synced, no multiplayer overlapping lines)
             */
         }

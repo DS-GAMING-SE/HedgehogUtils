@@ -33,7 +33,7 @@ namespace HedgehogUtils.Forms
             Dictionary<string, RenderReplacements> renderDictionary, Type handlerComponent, AllowedBodyList allowedBodyList, KeyCode defaultKeyBind)
         {
             FormDef form = ScriptableObject.CreateInstance<FormDef>();
-            form.name = name;
+            form.cachedName = name;
             form.buff = buff;
             form.duration = duration;
             form.requiresItems = requiresItems;
@@ -55,7 +55,7 @@ namespace HedgehogUtils.Forms
             form.defaultKeyBind = defaultKeyBind;
 
             // Creating handler prefab
-            GameObject handlerPrefab = PrefabAPI.CreateEmptyPrefab(form.name + " " + form.handlerComponent.Name);
+            GameObject handlerPrefab = PrefabAPI.CreateEmptyPrefab(form.cachedName + " " + form.handlerComponent.Name);
             FormHandler handlerObjectComponent = (FormHandler)handlerPrefab.AddComponent(handlerComponent);
             handlerObjectComponent.form = form;
             if (form.requiresItems)
@@ -64,7 +64,7 @@ namespace HedgehogUtils.Forms
             }
             //PrefabAPI.RegisterNetworkPrefab(handlerPrefab);
             formToHandlerPrefab.Add(form, handlerPrefab);
-            Log.Message("FormDef "+form.name+" created. Created new "+form.handlerComponent.Name+" prefab");
+            Log.Message("FormDef "+form.cachedName+" created. Created new "+form.handlerComponent.Name+" prefab");
 
             return form;
         }
@@ -132,7 +132,9 @@ namespace HedgehogUtils.Forms
 
     public class FormDef : ScriptableObject
     {
-        //Name should be the name token for the transformation. Eg. "DS_GAMING_SUPER_FORM". The actual name of the form should be handled using LanguageAPI. See Tokens.cs for an example of how that works
+        [Tooltip("Name should be the name token for the transformation. Eg. \"DS_GAMING_SUPER_FORM\". The actual name of the form should be handled using LanguageAPI. See Tokens.cs for an example of how that works")]
+        public string cachedName { get { return _cachedName; } set { name = value; _cachedName = value; } }
+        private string _cachedName;
 
         [Tooltip("The buff given to you when you're transformed. This should be a buff unique to the form you're making.\nUse this buff for applying whatever stat increases you want.\nThis will be applied as a timed buff and will end the form when it goes away.")]
         public BuffDef buff;
@@ -219,7 +221,7 @@ namespace HedgehogUtils.Forms
 
         public override string ToString()
         {
-            return RoR2.Language.GetString(this.name, RoR2.Language.currentLanguageName);
+            return RoR2.Language.GetString(this.cachedName, RoR2.Language.currentLanguageName);
         }
 
         public ConfigEntry<KeyboardShortcut> keybind;

@@ -25,6 +25,8 @@ namespace HedgehogUtils.Forms.EntityStates
         protected bool effectFired = false;
         private int animationLayerIndex;
         private Animator animator;
+
+        public static Action<FormComponent, FormDef> OnGenericTransform;
         public override void OnEnter()
         {
             base.OnEnter();
@@ -32,6 +34,7 @@ namespace HedgehogUtils.Forms.EntityStates
             {
                 this.formComponent.formStateMachine.SetNextStateToMain(); // detransform
             }
+            OnGenericTransform?.Invoke(formComponent, form);
             if (duration > 0)
             {
                 animator = GetModelAnimator();
