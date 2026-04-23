@@ -8,6 +8,8 @@
  
  - (Visuals) Redone the aura for the super form. There are now Assets.CreateFormAura methods for creating custom auras for modded super forms
  
+ - (Visuals) Chaos Emeralds now have unique vfx for when the item is dropped
+ 
  - (Bug Fix) Transformations can no longer be activated while in UI (such as typing in chat) or while you're not in your main body state (usually doing some action where you can't use other skills)
  
  - (Bug Fix) Fixed the Chaos Emerald interactable breaking if you purchase it and pick it up with Drifter at the same time
@@ -15,10 +17,13 @@
  - (Internal) **Breaking**. The RenderReplacements system for making custom super form models has been completely redone. It now supports characters with multiple renderers, multiple meshes, and it works with memop asset references. A RenderReplacement now has three arrays for CharacterModel.RendererInfo, Meshes, and AssetReferenceT<Mesh>s
  - (Internal) **Breaking** FormDef.enabled functionality has been moved to FormDef.setIsEnabledFunc. FormDef.enabled is now a simple and efficient method for checking if the form is enabled or not, which is decided by setIsEnabledFunc at the beginning of the stage
  - (Internal) **Breaking**. Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
+ - (Internal) FormDef now has a cachedName property. This should be used instead of using the scriptable object's name directly
  - (Internal) TransformationBase now has a reference to CharacterModel
  - (Internal) The point at which GenericTransformationBase triggers the transformation is no longer hardcoded, and can now be changed via the abstract transformationDurationPercent
+ - (Internal) GenericTransformationBase now has a OnGenericTransform event for when the state starts
  - (Internal) Removed unnecessary On.RoR2.UI.HUD.Awake hook used for creating the boost meter. The boost meter hud is now handled through RoR2's Hud Overlay system
  - (Internal) Removed unnecessary On.RoR2.SceneDirector.Start hook used for spawning technical objects at the start of the stage. This is now done via the Stage.onServerStageBegin event
+ - (Internal) Removed unnecessary On.RoR2.GenericPickupController.Start hook used for playing the sound for the Chaos Emerald item landing on the ground. This is now handled by the new droplet vfx
  
 ### Known Issues
  - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile

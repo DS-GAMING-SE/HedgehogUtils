@@ -132,7 +132,7 @@ namespace HedgehogUtils.Forms
                     {
                         baseToken = HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT",
                         subjectAsNetworkUser = component.body.master.playerCharacterMasterController.networkUser,
-                        paramTokens = new string[] { RoR2.Language.GetString(form.name) }
+                        paramTokens = new string[] { RoR2.Language.GetString(form.cachedName) }
                     });
                 }
                 else
@@ -141,7 +141,7 @@ namespace HedgehogUtils.Forms
                     {
                         baseToken = HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT",
                         subjectAsCharacterBody = component.body,
-                        paramTokens = new string[] { RoR2.Language.GetString(form.name) }
+                        paramTokens = new string[] { RoR2.Language.GetString(form.cachedName) }
                     });
                 }
             }

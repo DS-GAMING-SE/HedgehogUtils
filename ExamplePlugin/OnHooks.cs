@@ -35,8 +35,6 @@ namespace HedgehogUtils
                 RoR2Application.onLoad += LookingGlassSetup;
             }
 
-            On.RoR2.GenericPickupController.Start += EmeraldDropSound;
-
             On.RoR2.GenericSkill.CanApplyAmmoPack += CanApplyAmmoPackToBoost;
             On.RoR2.GenericSkill.ApplyAmmoPack += ApplyAmmoPackToBoost;
 
@@ -179,10 +177,10 @@ namespace HedgehogUtils
                 {
                     if (component.activeForm)
                     {
-                        if (!RoR2.Language.IsTokenInvalid(component.activeForm.name + "_PREFIX"))
+                        if (!RoR2.Language.IsTokenInvalid(component.activeForm.cachedName + "_PREFIX"))
                         {
                             string text = orig(bodyObject);
-                            text = RoR2.Language.GetStringFormatted(component.activeForm.name + "_PREFIX", new object[]
+                            text = RoR2.Language.GetStringFormatted(component.activeForm.cachedName + "_PREFIX", new object[]
                             {
                             text
                             });
@@ -192,27 +190,6 @@ namespace HedgehogUtils
                 }
             }
             return orig(bodyObject);
-        }
-
-        private static void EmeraldDropSound(On.RoR2.GenericPickupController.orig_Start orig, GenericPickupController self)
-        {
-            orig(self);
-            if (self && self.pickupDisplay)
-            {
-                PickupDef pickupDef = self.pickup.pickupIndex.pickupDef;
-                if (pickupDef != null)
-                {
-                    ItemIndex itemIndex = pickupDef.itemIndex;
-                    if (itemIndex != ItemIndex.None)
-                    {
-                        ItemDef itemDef = ItemCatalog.GetItemDef(itemIndex);
-                        if (itemDef && itemDef._itemTierDef == Items.emeraldTier)
-                        {
-                            Util.PlaySound("Play_hedgehogutils_emerald_spawn", self.gameObject);
-                        }
-                    }
-                }
-            }
         }
 
         private static void StageBegin(Stage stage)

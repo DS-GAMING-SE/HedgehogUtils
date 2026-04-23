@@ -207,6 +207,7 @@ namespace HedgehogUtils
         public static GameObject superFormWarning;
         public static LoopSoundDef superLoopSoundDef;
         public static GameObject superFormPPVolume;
+        public static GameObject chaosEmeraldDropletPrefab;
         #endregion
 
         public static void SuperForm()
@@ -286,6 +287,33 @@ namespace HedgehogUtils
             superFormPPVolume = mainAssetBundle.LoadAsset<GameObject>("SonicSuperPostProcess");
             PostProcessVolume postProcess = superFormPPVolume.GetComponent<PostProcessVolume>();
             postProcess.sharedProfile = Addressables.LoadAssetAsync<PostProcessProfile>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_title_PostProcessing.ppLocalGrandparent_asset).WaitForCompletion();
+
+            chaosEmeraldDropletPrefab = mainAssetBundle.LoadAsset<GameObject>("ChaosEmeraldOrb");
+            var chaosEmeraldDropletStartSound = chaosEmeraldDropletPrefab.AddComponent<PlaySoundOnEvent>();
+            chaosEmeraldDropletStartSound.triggeringEvent = PlaySoundOnEvent.PlaySoundEvent.Start;
+            chaosEmeraldDropletStartSound.soundEvent = "Play_UI_item_spawn_tier2";
+            var chaosEmeraldDropletLandSound = chaosEmeraldDropletPrefab.AddComponent<PlaySoundOnEvent>();
+            chaosEmeraldDropletLandSound.triggeringEvent = PlaySoundOnEvent.PlaySoundEvent.Destroy;
+            chaosEmeraldDropletLandSound.soundEvent = "Play_hedgehogutils_emerald_spawn";
+            var chaosEmeraldDropletLandSound2 = chaosEmeraldDropletPrefab.AddComponent<PlaySoundOnEvent>();
+            chaosEmeraldDropletLandSound2.triggeringEvent = PlaySoundOnEvent.PlaySoundEvent.Destroy;
+            chaosEmeraldDropletLandSound2.soundEvent = "Play_UI_item_land_tier2";
+            Transform chaosEmeraldDropletVFXTransform = chaosEmeraldDropletPrefab.transform.GetChild(0);
+            Addressables.LoadAssetAsync<GameObject>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common.BossOrb_prefab).Completed += (x) =>
+            {
+                chaosEmeraldDropletVFXTransform.GetComponent<TrailRenderer>().sharedMaterial = x.Result.transform.GetChild(0).GetComponent<TrailRenderer>().sharedMaterial;
+                Material chaosEmeraldRingMat = new Material(x.Result.transform.GetChild(0).GetChild(1).GetComponent<ParticleSystemRenderer>().sharedMaterial);
+                chaosEmeraldRingMat.SetTexture("_RemapTex", mainAssetBundle.LoadAsset<Texture>("texRampRainbow"));
+                chaosEmeraldRingMat.SetFloat("_SrcBlend", 1f);
+                chaosEmeraldRingMat.SetFloat("_DstBlend", 1f);
+                chaosEmeraldRingMat.SetFloat("_AlphaBoost", 3f);
+                chaosEmeraldRingMat.SetFloat("_AlphaBias", 0.4f);
+                chaosEmeraldDropletVFXTransform.GetChild(1).GetComponent<ParticleSystemRenderer>().sharedMaterial = chaosEmeraldRingMat;
+            };
+            Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Child.matChildStarGlow_mat).Completed += (x) =>
+            {
+                chaosEmeraldDropletVFXTransform.GetChild(0).GetComponent<ParticleSystemRenderer>().sharedMaterial = x.Result;
+            };
         }
 
         public static GameObject CreateSuperAura(string name, Color color)

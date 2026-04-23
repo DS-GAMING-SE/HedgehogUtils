@@ -292,6 +292,11 @@ namespace HedgehogUtils.Forms
 
         private void SuperModel(string skinNameToken)
         {
+            if (modelAnimator && activeForm.superAnimations) // Animations
+            {
+                modelAnimator.SetFloat("isSuperFloat", 1f);
+            }
+
             if (!GetSuperModel(skinNameToken)) return;
 
             defaultRendererInfos = ArrayUtils.Clone(model.baseRendererInfos);
@@ -300,14 +305,8 @@ namespace HedgehogUtils.Forms
                 formRendererInfos[i].renderer = defaultRendererInfos[i].renderer; // sets renderers to your current character instead of the prefab
             }
             model.baseRendererInfos = formRendererInfos;
-            
 
             ApplyMeshes(model.baseRendererInfos, formMeshes, true);
-
-            if (modelAnimator && activeForm.superAnimations) // Animations
-            {
-                modelAnimator.SetFloat("isSuperFloat", 1f);
-            }
 
             model.forceUpdate = true;
         }
