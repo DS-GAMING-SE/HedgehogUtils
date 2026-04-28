@@ -72,7 +72,7 @@ namespace HedgehogUtils.Voicelines
 
         public void PlayRandomVoiceline()
         {
-            if (!isVoicelinePlaying && NetworkServer.active) new NetworkVoiceline(this, networkSoundEventDefs.GetRandom().index, VoicelinePriority.PriorityDialogue).Send(NetworkDestination.Clients);
+            if (!isVoicelinePlaying && NetworkServer.active) PlayNetworkedVoiceline(networkSoundEventDefs.GetRandom().index, VoicelinePriority.PriorityDialogue);
         }
     }
 }
