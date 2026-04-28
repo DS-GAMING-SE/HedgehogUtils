@@ -145,7 +145,7 @@ namespace HedgehogUtils.Forms
         [Tooltip("Whether or not the form requires having certain items in order to transform. The specific items needed to transform are defined in neededItems once the ItemsCatalog is done.")]
         public bool requiresItems;
 
-        [Tooltip("The item or items that are needed to transform. NeededItem struct stores a RoR2.ItemDef and a uint for how many of that item is needed. You can also just use ItemDefs here if you won't need multiple of the same item, there is an implicit cast")]
+        [Tooltip("The item or items that are needed to transform. NeededItem struct stores a RoR2.ItemIndex and an int for how many of that item is needed. You can also just use the ItemIndex here if you won't need multiple of the same item, there is an implicit cast")]
         public NeededItem[] neededItems;
 
         [Tooltip("If transformation requirements, such as needed items and max amount of times you can transform, will be shared amongst all players. Any player will be able to transform if any other player or combination of players have the needed items.")]

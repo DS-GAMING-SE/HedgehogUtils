@@ -1,5 +1,7 @@
 ﻿using HG;
 using R2API;
+using R2API.Networking;
+using R2API.Networking.Interfaces;
 using RoR2;
 using RoR2.Audio;
 using RoR2.Skills;
@@ -40,6 +42,10 @@ namespace HedgehogUtils.Voicelines
         public void PlayVoiceline(NetworkSoundEventIndex soundIndex, VoicelinePriority priority)
         {
             PlayVoiceline(NetworkSoundEventCatalog.GetEventNameFromNetworkIndex(soundIndex), priority);
+        }
+        public void PlayNetworkedVoiceline(NetworkSoundEventIndex soundIndex, VoicelinePriority priority)
+        {
+            new NetworkVoiceline(this, soundIndex, priority).Send(NetworkDestination.Clients);
         }
         public void StopCurrentVoiceline()
         {
