@@ -46,6 +46,8 @@ namespace HedgehogUtils.Launch
         protected bool collidedWithWall;
 
         protected GameObject vfxObject;
+        protected EffectManagerHelper emh;
+
         protected Renderer vfxRenderer;
         protected VehicleSeat vehicle;
         protected Rigidbody rigidbody;
@@ -98,10 +100,22 @@ namespace HedgehogUtils.Launch
 
         protected virtual void VFXAura()
         {
-            if (vfxObject) { Destroy(vfxObject); }
-            vfxObject = UnityEngine.Object.Instantiate(crit ? Assets.launchCritAuraEffect : Assets.launchAuraEffect, base.transform);
-            vfxObject.transform.localScale *= radius;
-            vfxRenderer = vfxObject.transform.Find("Aura").GetComponent<Renderer>();
+            if (vfxObject) 
+            {
+                if (emh)
+                {
+                    emh.ReturnToPoolOrDestroyInstance(ref vfxObject);
+                }
+                else
+                {
+                    Destroy(vfxObject);
+                }
+            }
+            emh = EffectManager.GetAndActivatePooledEffect(crit ? Assets.launchCritAuraEffect : Assets.launchAuraEffect, transform, true);
+            emh.UnparentOnReturnToPool = true;
+            vfxObject = emh.gameObject;
+            Assets.ResizeBoostAura(ref vfxObject, radius / 3f);
+            //vfxRenderer = vfxObject.transform.Find("Aura").GetComponent<Renderer>();
         }
 
         public void FixedUpdate()
@@ -136,10 +150,10 @@ namespace HedgehogUtils.Launch
             if (age > duration * fadeDurationPercent)
             {
                 float lerp = (age - (duration * fadeDurationPercent)) - (duration * (1 - fadeDurationPercent));
-                if (vfxRenderer)
+                /*if (vfxRenderer)
                 {
                     vfxRenderer.material.SetFloat("_AlphaBoost", Mathf.Lerp(0.2f, 0f, lerp));
-                }
+                }*/
                 finalSpeed = Mathf.Lerp(movementVector.magnitude, movementVector.magnitude / 2, lerp);
             }
 
@@ -167,6 +181,10 @@ namespace HedgehogUtils.Launch
 
         public void OnDestroy()
         {
+            if (emh)
+            {
+                emh.ReturnToPool();
+            }
             if (NetworkServer.active)
             {
                 if (body)

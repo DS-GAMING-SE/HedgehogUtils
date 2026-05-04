@@ -46,6 +46,7 @@ namespace HedgehogUtils.Boost.EntityStates
         private CameraTargetParams.CameraParamsOverrideHandle camOverrideHandle;
 
         protected GameObject aura;
+        protected EffectManagerHelper emh;
 
         protected virtual BuffDef buff
         {
@@ -231,14 +232,19 @@ namespace HedgehogUtils.Boost.EntityStates
 
             if (GetAuraPrefab())
             {
-                aura = GameObject.Instantiate<GameObject>(GetAuraPrefab(), base.FindModelChild("MainHurtbox"));
+                emh = EffectManager.GetAndActivatePooledEffect(GetAuraPrefab(), base.FindModelChild("MainHurtbox"), true);
+                aura = emh.gameObject;
             }
         }
 
         protected virtual void RemoveBoostVFX()
         {
             RemoveTemporaryOverlay();
-
+            if (emh)
+            {
+                emh.ReturnToPoolOrDestroyInstance(ref aura);
+                return;
+            }
             if (aura)
             {
                 Destroy(aura);
@@ -336,7 +342,7 @@ namespace HedgehogUtils.Boost.EntityStates
         }
         public virtual GameObject GetAuraPrefab()
         {
-            return Assets.powerBoostAuraEffect;
+            return Assets.boostAuraEffectBase;
         }
         public virtual Material GetOverlayMaterial()
         {

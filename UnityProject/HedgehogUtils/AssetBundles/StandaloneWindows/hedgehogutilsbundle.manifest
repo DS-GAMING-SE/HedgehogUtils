@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 3627234022
+CRC: 2575633493
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 8290cef47f706b339f0a88c63ce756ae
+    Hash: e2269fcb71569762e7ede22410f9e4a4
   TypeTreeHash:
     serializedVersion: 2
     Hash: cdb44da392f208a66ac279b4a33f04ce
@@ -74,6 +74,7 @@ Assets:
 - Assets/AssetBundle/Emeralds/Materials/matCyan.mat
 - Assets/AssetBundle/VFX/Materials/Boost/matPowerBoost.mat
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperTransformation.prefab
+- Assets/AssetBundle/VFX/Materials/Boost/matBoostTrail.mat
 - Assets/AssetBundle/VFX/Textures/texFlash.png
 - Assets/AssetBundle/VFX/Textures/texSparkleGold.png
 - Assets/AssetBundle/Emeralds/Icons/texGrayEmeraldIcon.png
@@ -87,7 +88,7 @@ Assets:
 - Assets/AssetBundle/UI/BoostMeter/texBoostMeter2.png
 - Assets/AssetBundle/VFX/Materials/Boost/matPowerBoostFlash.mat
 - Assets/AssetBundle/VFX/Materials/Super Form/matFistSwing.mat
-- Assets/AssetBundle/VFX/Textures/texGradient.png
+- Assets/AssetBundle/VFX/Prefabs/Boost/BoostAuraPrefab.prefab
 - Assets/AssetBundle/VFX/Materials/Super Form/matTrail1.mat
 - Assets/AssetBundle/VFX/Prefabs/Boost/SonicPowerBoostAura.prefab
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicChaosEmeraldSwirl.prefab
@@ -101,6 +102,7 @@ Assets:
 - Assets/AssetBundle/Emeralds/shaderEmerald.shadergraph
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperPostProcess.prefab
 - Assets/AssetBundle/Emeralds/Icons/texYellowEmeraldIcon.png
+- Assets/AssetBundle/VFX/Textures/texGradient.png
 - Assets/AssetBundle/Emeralds/Prefabs/GreenEmerald.prefab
 - Assets/AssetBundle/PrefabBase/LaunchProjectile.prefab
 - Assets/AssetBundle/VFX/Shaders/shaderBoost.shadergraph
