@@ -1,4 +1,5 @@
 ﻿using EntityStates;
+using HedgehogUtils.Miscellaneous;
 using RoR2;
 using RoR2.Audio;
 using System;
@@ -112,9 +113,8 @@ namespace HedgehogUtils.Launch
                 }
             }
             emh = EffectManager.GetAndActivatePooledEffect(crit ? Assets.launchCritAuraEffect : Assets.launchAuraEffect, transform, true);
-            emh.UnparentOnReturnToPool = true;
             vfxObject = emh.gameObject;
-            Assets.ResizeBoostAura(ref vfxObject, radius / 3f);
+            Assets.ResizeBoostAura(ref vfxObject, radius / 2.5f);
             //vfxRenderer = vfxObject.transform.Find("Aura").GetComponent<Renderer>();
         }
 
@@ -183,7 +183,14 @@ namespace HedgehogUtils.Launch
         {
             if (emh)
             {
-                emh.ReturnToPool();
+                if (vfxObject.TryGetComponent<FadeTrailAndLightWithDestroy>(out var fade))
+                {
+                    fade.StartDisable();
+                }
+                else
+                {
+                    emh.ReturnToPool();
+                }
             }
             if (NetworkServer.active)
             {
