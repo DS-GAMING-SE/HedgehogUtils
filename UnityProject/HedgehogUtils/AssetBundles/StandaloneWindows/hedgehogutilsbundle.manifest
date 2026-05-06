@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 2575633493
+CRC: 3778013549
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: e2269fcb71569762e7ede22410f9e4a4
+    Hash: 7eef9efd1e56117e6ac5f07c1f83afca
   TypeTreeHash:
     serializedVersion: 2
     Hash: cdb44da392f208a66ac279b4a33f04ce
@@ -75,13 +75,14 @@ Assets:
 - Assets/AssetBundle/VFX/Materials/Boost/matPowerBoost.mat
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperTransformation.prefab
 - Assets/AssetBundle/VFX/Materials/Boost/matBoostTrail.mat
-- Assets/AssetBundle/VFX/Textures/texFlash.png
+- Assets/AssetBundle/VFX/Prefabs/Boost/BoostFlashPrefab.prefab
 - Assets/AssetBundle/VFX/Textures/texSparkleGold.png
 - Assets/AssetBundle/Emeralds/Icons/texGrayEmeraldIcon.png
 - Assets/AssetBundle/Emeralds/Materials/matRing.mat
 - Assets/AssetBundle/VFX/Prefabs/Super Form/SonicSuperWarning.prefab
 - Assets/AssetBundle/Emeralds/Icons/texRedEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/texSpark.png
+- Assets/AssetBundle/VFX/Textures/texFlash.png
 - Assets/AssetBundle/Emeralds/Prefabs/CyanEmerald.prefab
 - Assets/AssetBundle/Emeralds/Materials/matYellow.mat
 - Assets/AssetBundle/UI/BoostMeter/texBoostMeter.png

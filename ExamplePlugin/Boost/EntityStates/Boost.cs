@@ -1,4 +1,5 @@
 ﻿using EntityStates;
+using HedgehogUtils.Miscellaneous;
 using R2API;
 using RoR2;
 using System;
@@ -242,6 +243,11 @@ namespace HedgehogUtils.Boost.EntityStates
             RemoveTemporaryOverlay();
             if (emh)
             {
+                if (aura.TryGetComponent<FadeTrailAndLightWithDestroy>(out var fade))
+                {
+                    fade.StartDisable();
+                    return;
+                }
                 emh.ReturnToPoolOrDestroyInstance(ref aura);
                 return;
             }
@@ -346,7 +352,7 @@ namespace HedgehogUtils.Boost.EntityStates
         }
         public virtual Material GetOverlayMaterial()
         {
-            return LegacyResourcesAPI.Load<Material>("Materials/matOnHelfire");
+            return null;
         }
 
         public virtual void PlayBoostAnimation()
