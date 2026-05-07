@@ -6,6 +6,8 @@
  
  - (Visuals) The super form transformation now has a subtle glow around your character
  
+ - (Visuals) Redone the vfx for boosting. New methods have been added to the Assets class for making your own boost vfx. The previous methods for creating boost auras have been deprecated
+ 
  - (Visuals) Redone the aura for the super form. There are now Assets.CreateFormAura methods for creating custom auras for modded super forms
  
  - (Visuals) Chaos Emeralds now have unique vfx for when the item is dropped

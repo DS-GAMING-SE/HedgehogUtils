@@ -193,17 +193,15 @@ namespace HedgehogUtils
         #region Boost
         private static GameObject CreateBoostAuraPrefabBase()
         {
-            GameObject boostAura = Assets.mainAssetBundle.LoadAsset<GameObject>("BoostAuraPrefab");
-
-            var disable = boostAura.AddComponent<DisableParticleEmissionAndDestroyOnTimer>();
-            disable.waitDuration = 0.65f;
-            disable.StartParticleEmissionOnEnable = true;
+            //GameObject boostAura = Assets.mainAssetBundle.LoadAsset<GameObject>("BoostAuraPrefab");
+            GameObject boostAura = LoadEffect("BoostAuraPrefab", "", true, 0.45f , false);
             var fadeDestroy = boostAura.AddComponent<FadeTrailAndLightWithDestroy>();
             fadeDestroy.trail = boostAura.transform.GetChild(2).GetComponent<TrailRenderer>();
             fadeDestroy.lightIntensityCurve = boostAura.transform.GetChild(1).gameObject.AddComponent<LightIntensityCurve>();
             fadeDestroy.lightIntensityCurve.light = fadeDestroy.lightIntensityCurve.GetComponent<Light>();
             fadeDestroy.lightIntensityCurve.curve = AnimationCurve.EaseInOut(0, 1f, 1f, 0f);
-            fadeDestroy.lightIntensityCurve.timeMax = 0.5f;
+            fadeDestroy.lightIntensityCurve.timeMax = 0.25f;
+            fadeDestroy.stopParticles = true;
 
             VFXAttributes boostVFX = boostAura.AddComponent<VFXAttributes>();
             boostVFX.vfxPriority = VFXPriority.Always;
@@ -216,8 +214,6 @@ namespace HedgehogUtils
             burst.mesh = dome;
             auraConstant.mesh = dome;
             auraConstantInner.mesh = dome;
-
-            disable.particleSystems = [burst.GetComponent<ParticleSystem>(), auraConstant.GetComponent<ParticleSystem>(), auraConstantInner.GetComponent<ParticleSystem>()];
 
             boostMaterialBase = AssetAsyncReferenceManager<Material>.LoadAsset(new AssetReferenceT<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matDustExhaust_mat)).WaitForCompletion();
             boostMaterialBase.SetFloat("_AlphaBoost", 2f);
@@ -232,7 +228,7 @@ namespace HedgehogUtils
         }
         private static GameObject CreateBoostFlashPrefabBase()
         {
-            GameObject boostFlash = Assets.LoadEffect("BoostFlashPrefab", true, 1f);
+            GameObject boostFlash = Assets.LoadEffect("BoostFlashPrefab", "", true, 0.55f, false);
             VFXAttributes boostVFX = boostFlash.GetComponent<VFXAttributes>();
             boostVFX.DoNotPool = false;
             boostVFX.optionalLights = [boostFlash.transform.GetChild(1).GetComponent<Light>()];
@@ -261,32 +257,48 @@ namespace HedgehogUtils
         }
         public static GameObject CreateBoostAuraEffect(string name, Texture remapTex, Color tintColor, Color lightColor, Color trailColor, float size)
         {
-            GameObject boostAura = PrefabAPI.InstantiateClone(boostAuraEffectBase, name);
-
+            return CreateBoostAuraEffect(name, CreateBoostAuraOuterMaterial(name, tintColor, remapTex), CreateBoostAuraInnerMaterial(name, tintColor, remapTex), lightColor, trailColor, size);
+        }
+        public static Material CreateBoostAuraOuterMaterial(string name, Color tintColor, Texture remapTex)
+        {
             Material constantMat = new Material(boostMaterialBase);
             constantMat.name = $"mat{name}Constant";
             constantMat.SetColor("_TintColor", tintColor);
             if (remapTex) constantMat.SetTexture("_RemapTex", remapTex);
             constantMat.SetFloat("_Boost", 1.5f);
-            constantMat.SetFloat("_AlphaBoost", 4.5f);
+            constantMat.SetFloat("_AlphaBoost", 5f);
             constantMat.SetInt("_Cull", 2);
-            constantMat.SetTextureScale("_MainTex", new Vector2(4f, 1f));
+            constantMat.SetTexture("_MainTex", mainAssetBundle.LoadAsset<Texture>("texBoostEffect"));
+            constantMat.SetTextureScale("_MainTex", new Vector2(2.5f, 1f));
             constantMat.SetTextureOffset("_MainTex", new Vector2(0, 0.15f));
             constantMat.SetVector("_CutoffScroll", new Vector4(2f, 10f, -4f, 4f));
-            boostAura.transform.GetChild(0).GetChild(1).GetComponent<ParticleSystemRenderer>().sharedMaterial = constantMat;
+            constantMat.SetFloat("_DepthOffset", -0.15f);
 
-            Material constantInnerMat = new Material(constantMat);
+            return constantMat;
+        }
+        public static Material CreateBoostAuraInnerMaterial(string name, Color tintColor, Texture remapTex)
+        {
+            Material constantInnerMat = new Material(boostMaterialBase);
             constantInnerMat.name = $"mat{name}ConstantInner";
             constantInnerMat.SetColor("_TintColor", tintColor);
+            if (remapTex) constantInnerMat.SetTexture("_RemapTex", remapTex);
             constantInnerMat.SetFloat("_Boost", 1f);
             constantInnerMat.SetFloat("_AlphaBoost", 6f);
             constantInnerMat.SetInt("_Cull", 1);
             constantInnerMat.SetTexture("_MainTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3.texCylinderGradient_Horz_png).WaitForCompletion());
-            constantInnerMat.SetTextureScale("_MainTex", new Vector2(1f, 0.5f));
-            constantInnerMat.SetTextureOffset("_MainTex", new Vector2(0, 0.18f));
-            constantInnerMat.SetTextureScale("_Cloud1Tex", new Vector2(4f, 0.3f));
+            constantInnerMat.SetTextureScale("_MainTex", new Vector2(1f, 0.45f));
+            constantInnerMat.SetTextureOffset("_MainTex", new Vector2(0, 0.15f));
+            constantInnerMat.SetTexture("_Cloud1Tex", mainAssetBundle.LoadAsset<Texture>("texCloudTriangles"));
+            constantInnerMat.SetTextureScale("_Cloud1Tex", new Vector2(3f, 0.3f));
             constantInnerMat.SetVector("_CutoffScroll", new Vector4(20f, 20f, -30f, 10f));
-            boostAura.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<ParticleSystemRenderer>().sharedMaterial = constantInnerMat;
+
+            return constantInnerMat;
+        }
+        public static GameObject CreateBoostAuraEffect(string name, Material outerMat, Material innerMat, Color lightColor, Color trailColor, float size)
+        {
+            GameObject boostAura = PrefabAPI.InstantiateClone(boostAuraEffectBase, name);
+            boostAura.transform.GetChild(0).GetChild(1).GetComponent<ParticleSystemRenderer>().sharedMaterial = outerMat;
+            boostAura.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<ParticleSystemRenderer>().sharedMaterial = innerMat;
 
             var light = boostAura.transform.GetChild(1).GetComponent<Light>();
             var trail = boostAura.transform.GetChild(2).GetComponent<TrailRenderer>();
@@ -327,10 +339,10 @@ namespace HedgehogUtils
         }
         public static GameObject CreateBoostFlashEffect(string name, Texture remapTex, Color tintColor, Color lightColor, bool distortion, float size)
         {
-            GameObject boostFlash = PrefabAPI.InstantiateClone(boostFlashEffectBase, name);
-
-            ResizeBoostFlash(ref boostFlash, size);
-
+            return CreateBoostFlashEffect(name, CreateBoostFlashMaterial(name, remapTex, tintColor), lightColor, distortion, size);
+        }
+        public static Material CreateBoostFlashMaterial(string name, Texture remapTex, Color tintColor)
+        {
             Material flashMat = new Material(boostMaterialBase);
             flashMat.name = $"mat{name}";
             flashMat.SetColor("_TintColor", tintColor);
@@ -339,10 +351,18 @@ namespace HedgehogUtils
             flashMat.SetFloat("_AlphaBoost", 5f);
             flashMat.SetTexture("_MainTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Common.texRampVerticalSmoothFalloff_png).WaitForCompletion());
             flashMat.DisableKeyword("CLOUDOFFSET");
-            flashMat.SetTexture("_Cloud1Tex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX_ParticleMasks.texGenericStarburstMask_png).WaitForCompletion());
-            flashMat.SetTextureScale("_Cloud1Tex", new Vector2(4f, 1f));
-            flashMat.SetVector("_CutoffScroll", new Vector4(-20f, 65f, 20f, 15f));
-            boostFlash.transform.GetChild(0).GetChild(0).GetComponent<ParticleSystemRenderer>().sharedMaterial = flashMat;
+            flashMat.SetTexture("_Cloud1Tex", mainAssetBundle.LoadAsset<Texture>("texBoostEffect"));
+            flashMat.SetTextureScale("_Cloud1Tex", new Vector2(2.5f, 1f));
+            flashMat.SetVector("_CutoffScroll", new Vector4(-20f, 45f, 20f, 15f));
+            return flashMat;
+        }
+        public static GameObject CreateBoostFlashEffect(string name, Material material, Color lightColor, bool distortion, float size)
+        {
+            GameObject boostFlash = PrefabAPI.InstantiateClone(boostFlashEffectBase, name);
+
+            ResizeBoostFlash(ref boostFlash, size);
+
+            boostFlash.transform.GetChild(0).GetChild(0).GetComponent<ParticleSystemRenderer>().sharedMaterial = material;
 
             boostFlash.transform.GetChild(1).GetComponent<Light>().color = lightColor;
 
@@ -363,7 +383,7 @@ namespace HedgehogUtils
         {
             Transform transform = boostFlash.transform.GetChild(0);
             transform.localScale = new Vector3(size, size, size);
-            transform.localPosition = new Vector3(0, 0.1f, -1.2f + (1f - size));
+            transform.localPosition = new Vector3(0, 0.1f, -1.6f + (1f - size));
         }
         #endregion
         private static GameObject CreateLaunchHitEffect(GameObject baseHitEffect, string name, Color ringColor, Color beamColor)
@@ -383,6 +403,7 @@ namespace HedgehogUtils
         }
 
         #region Super Form
+        public static Material superAuraMaterialBase;
         public static Material superAuraMaterial;
         public static Material superFormGlowingMaterial;
         public static Material superFormOverlay;
@@ -421,30 +442,19 @@ namespace HedgehogUtils
             superFormAura = Assets.LoadAsyncedEffect("SuperFormAura");
 
             ReplaceRainbow(superFormAura.transform.Find("Rainbow"), true);
-            AsyncOperationHandle<Material> asyncSuperAuraMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Parry.matParryWave_mat);
-            asyncSuperAuraMaterial.Completed += delegate (AsyncOperationHandle<Material> x)
-            {
-                superAuraMaterial = new Material(x.Result);
-                superFormAura.GetComponent<ParticleSystemRenderer>().sharedMaterial = superAuraMaterial;
-                superAuraMaterial.SetFloat("_AlphaBoost", 1.2f);
-                superAuraMaterial.SetFloat("_DepthOffset", -3f);
-                superAuraMaterial.SetTextureScale("_Cloud1Tex", new Vector2(0.7f, 0.7f));
-                AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common.texCloudWaterFoam2_psd)).Completed += delegate (AsyncOperationHandle<Texture> y)
-                {
-                    superAuraMaterial.SetTexture("_Cloud2Tex", y.Result);
-                    superAuraMaterial.SetTextureScale("_Cloud2Tex", new Vector2(0.7f, 0.7f));
-                };
-                AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampTritoneSmoothed_png)).Completed += delegate (AsyncOperationHandle<Texture> y)
-                {
-                    superAuraMaterial.SetTexture("_RemapTex", y.Result);
-                };
-                superAuraMaterial.SetVector("_CutoffScroll", new Vector4(0, -3, 1, -5));
-                superAuraMaterial.EnableKeyword("VERTEXCOLOR");
-            };
-            AssetAsyncReferenceManager<Material>.LoadAsset(new AssetReferenceT<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matTracerLessBright_mat)).Completed += delegate (AsyncOperationHandle<Material> x)
-            {
-                superFormAura.transform.Find("Sparks").GetComponent<ParticleSystemRenderer>().sharedMaterial = x.Result;
-            };
+            superAuraMaterialBase = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Parry.matParryWave_mat).WaitForCompletion());
+            superAuraMaterialBase.SetFloat("_AlphaBoost", 1.2f);
+            superAuraMaterialBase.SetFloat("_DepthOffset", -3f);
+            superAuraMaterialBase.SetTextureScale("_Cloud1Tex", new Vector2(0.7f, 0.7f));
+            superAuraMaterialBase.SetTexture("_Cloud2Tex", AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common.texCloudWaterFoam2_psd)).WaitForCompletion());
+            superAuraMaterialBase.SetTextureScale("_Cloud2Tex", new Vector2(0.7f, 0.7f));
+            superAuraMaterialBase.SetTexture("_RemapTex", AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampTritoneSmoothed_png)).WaitForCompletion());
+            superAuraMaterialBase.SetVector("_CutoffScroll", new Vector4(0, -3, 1, -5));
+            superAuraMaterialBase.EnableKeyword("VERTEXCOLOR");
+
+            superAuraMaterial = CreateSuperAuraMaterial("SuperFormAura", AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC1_Common_ColorRamps.texRampConstructLaser_png)).WaitForCompletion());
+            superFormAura.GetComponent<ParticleSystemRenderer>().sharedMaterial = superAuraMaterial;
+            superFormAura.transform.Find("Sparks").GetComponent<ParticleSystemRenderer>().sharedMaterial = AssetAsyncReferenceManager<Material>.LoadAsset(new AssetReferenceT<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matTracerLessBright_mat)).WaitForCompletion();
 
             superFormWarning = Assets.LoadEffect("SonicSuperWarning");
             superFormWarning.AddComponent<Miscellaneous.DestroyOnExitForm>();
@@ -502,15 +512,6 @@ namespace HedgehogUtils
                 chaosEmeraldDropletVFXTransform.GetChild(0).GetComponent<ParticleSystemRenderer>().sharedMaterial = x.Result;
             };
         }
-
-        public static GameObject CreateSuperAura(string name, Color color)
-        {
-            GameObject newAura = PrefabAPI.InstantiateClone(superFormAura, name);
-            var mainModule = newAura.GetComponent<ParticleSystem>().main;
-            mainModule.startColor = color;
-            UpdateAuraColors(newAura, color);
-            return newAura;
-        }
         private static void UpdateAuraColors(GameObject aura, Color color)
         {
             aura.transform.Find("Point Light").GetComponent<Light>().color = color;
@@ -519,19 +520,30 @@ namespace HedgehogUtils
             var sparkMainModule = aura.transform.Find("Sparks").GetComponent<ParticleSystem>().main;
             sparkMainModule.startColor = color;
         }
-        public static GameObject CreateSuperAura(string name, Color color, Texture remapTexture, bool recolorAura = false)
+        public static Material CreateSuperAuraMaterial(string name, Texture remapTexture)
         {
-            return CreateSuperAura(name, color, remapTexture, out _, recolorAura);
+            Material material = new Material(superAuraMaterialBase);
+            material.name = $"mat{name}";
+            if (remapTexture) material.SetTexture("_RemapTex", remapTexture);
+            return material;
         }
-        public static GameObject CreateSuperAura(string name, Color color, Texture remapTexture, out Material material, bool recolorAura)
+        public static GameObject CreateSuperAura(string name, Color color)
+        {
+            return CreateSuperAura(name, color, color, null);
+        }
+        public static GameObject CreateSuperAura(string name, Color color, Texture remapTexture)
+        {
+            return CreateSuperAura(name, color, Color.white, CreateSuperAuraMaterial(name, remapTexture));
+        }
+        public static GameObject CreateSuperAura(string name, Color color, Color auraTintColor, Material material)
         {
             GameObject newAura = PrefabAPI.InstantiateClone(superFormAura, name);
-            var mainModule = newAura.GetComponent<ParticleSystem>().main;
-            mainModule.startColor = Color.white;
-            var renderer = newAura.GetComponent<ParticleSystemRenderer>();
-            material = new Material(renderer.sharedMaterial);
-            material.SetTexture("_RemapTex", remapTexture);
-            renderer.sharedMaterial = material;
+            if (auraTintColor != Color.white)
+            {
+                var mainModule = newAura.GetComponent<ParticleSystem>().main;
+                mainModule.startColor = auraTintColor;
+            }
+            if (material) newAura.GetComponent<ParticleSystemRenderer>().sharedMaterial = material;
             UpdateAuraColors(newAura, color);
             return newAura;
         }
@@ -609,44 +621,7 @@ namespace HedgehogUtils
             lockOnStartScaleCurve.useOverallCurveOnly = true;
             lockOnStartScaleCurve.overallCurve = AnimationCurve.Linear(0f, 3f, 1f, 0f);
             lockOnIndicatorComponent.start = lockOnStartScaleCurve.GetComponent<SpriteRenderer>();
-
-            //RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matDustExhaust_mat for wind stuff
         }
-        /*private static void CreatePodlessPod()
-        {
-            podlessPodPrefabBase = mainAssetBundle.LoadAsset<GameObject>("PodlessPod");
-            EntityStateMachine stateMachine = podlessPodPrefabBase.AddComponent<EntityStateMachine>();
-            stateMachine.customName = "Main";
-            stateMachine.initialStateType = new SerializableEntityStateType(typeof(Idle));
-            stateMachine.mainStateType = new SerializableEntityStateType(typeof(Idle));
-            NetworkStateMachine network = podlessPodPrefabBase.AddComponent<NetworkStateMachine>();
-            network.stateMachines = [stateMachine];
-            network.networkIdentity = podlessPodPrefabBase.AddComponent<NetworkIdentity>();
-            GameObject seatObject = podlessPodPrefabBase.transform.GetChild(1).gameObject;
-            VehicleSeat vehicleSeat = podlessPodPrefabBase.AddComponent<VehicleSeat>();
-            vehicleSeat.hidePassenger = false;
-            vehicleSeat.passengerState = new SerializableEntityStateType(typeof(GenericCharacterPod));
-            vehicleSeat.seatPosition = seatObject.transform;
-            vehicleSeat.handleExitTeleport = false;
-            vehicleSeat.exitVelocityFraction = 0f;
-            vehicleSeat.isSurvivorPod = true;
-            vehicleSeat.shouldProximityHighlight = false;
-            SurvivorPodController podController = podlessPodPrefabBase.AddComponent<SurvivorPodController>();
-            //camera following target is baked into the falling animation of base game pod. Since this pod itself has no animator, probably automate the camera somehow?
-            podController.cameraBone = podlessPodPrefabBase.transform.GetChild(0);
-            AssetAsyncReferenceManager<BuffDef>.LoadAsset(new AssetReferenceT<BuffDef>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common.bdHiddenInvincibility_asset)).Completed += delegate (AsyncOperationHandle<BuffDef> x)
-            {
-                BuffPassengerWhileSeated buffPassenger = podlessPodPrefabBase.AddComponent<BuffPassengerWhileSeated>();
-                buffPassenger.vehicleSeat = vehicleSeat;
-                buffPassenger.buff = x.Result;
-            };
-            AssetAsyncReferenceManager<BuffDef>.LoadAsset(new AssetReferenceT<BuffDef>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Buffs.bdUntargetable_asset)).Completed += delegate (AsyncOperationHandle<BuffDef> x)
-            {
-                BuffPassengerWhileSeated buffPassenger = podlessPodPrefabBase.AddComponent<BuffPassengerWhileSeated>();
-                buffPassenger.vehicleSeat = vehicleSeat;
-                buffPassenger.buff = x.Result;
-            };
-        }*/
         private static SpriteRenderer LockOnNibs(Transform nibHolder, Sprite sprite)
         {
             var scaleCurve = nibHolder.gameObject.AddComponent<ObjectScaleCurve>();
@@ -837,7 +812,7 @@ namespace HedgehogUtils
             return newEffect;
         }
 
-        private static GameObject LoadEffect(string resourceName, string soundName, bool parentToTransform, float destroyOnTimer)
+        private static GameObject LoadEffect(string resourceName, string soundName, bool parentToTransform, float destroyOnTimer, bool addNewEffectDef = true)
         {
             GameObject newEffect = mainAssetBundle.LoadAsset<GameObject>(resourceName);
 
@@ -860,7 +835,7 @@ namespace HedgehogUtils
             effect.positionAtReferencedTransform = true;
             effect.soundName = soundName;
 
-            AddNewEffectDef(newEffect, soundName);
+            if (addNewEffectDef) AddNewEffectDef(newEffect, soundName);
 
             return newEffect;
         }

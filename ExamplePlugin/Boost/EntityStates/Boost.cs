@@ -233,7 +233,7 @@ namespace HedgehogUtils.Boost.EntityStates
 
             if (GetAuraPrefab())
             {
-                emh = EffectManager.GetAndActivatePooledEffect(GetAuraPrefab(), base.FindModelChild("MainHurtbox"), true);
+                emh = EffectManager.GetAndActivatePooledEffect(GetAuraPrefab(), characterBody.coreTransform, true);
                 aura = emh.gameObject;
             }
         }
