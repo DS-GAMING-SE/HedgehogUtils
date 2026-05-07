@@ -13,6 +13,7 @@ namespace HedgehogUtils.Miscellaneous
         private DisableParticleEmissionAndDestroyOnTimer disableParticleDestroy;
         public TrailRenderer trail;
         public LightIntensityCurve lightIntensityCurve;
+        public bool stopParticles;
 
         private void Awake()
         {
@@ -25,11 +26,15 @@ namespace HedgehogUtils.Miscellaneous
             if (lightIntensityCurve) lightIntensityCurve.enabled = false;
             if (trail) trail.emitting = true;
         }
+        private void OnDisable()
+        {
+            if (emh) emh.ReturnToPool();
+        }
         private void Start()
         {
+            emh = GetComponent<EffectManagerHelper>();
             if (disableParticleDestroy) // dumbass costed me hours
             {
-                emh = GetComponent<EffectManagerHelper>();
                 disableParticleDestroy.efh = emh;
             }
         }
@@ -39,6 +44,7 @@ namespace HedgehogUtils.Miscellaneous
             if (disableParticleDestroy) { disableParticleDestroy.DisableParticlesStartTimer(); }
             if (lightIntensityCurve) { lightIntensityCurve.enabled = true; }
             if (trail) { trail.emitting = false; }
+            if (stopParticles && emh) emh.StopAllParticleSystems();
         }
     }
 }

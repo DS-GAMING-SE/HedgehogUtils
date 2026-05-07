@@ -285,7 +285,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1.2
+      scalar: 1.1
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -1366,7 +1366,7 @@ ParticleSystem:
         key0: {r: 1, g: 1, b: 1, a: 0}
         key1: {r: 1, g: 1, b: 1, a: 1}
         key2: {r: 0, g: 0, b: 0, a: 0.46666667}
-        key3: {r: 0, g: 0, b: 0, a: 0.38039216}
+        key3: {r: 0, g: 0, b: 0, a: 0.25882354}
         key4: {r: 0, g: 0, b: 0, a: 0}
         key5: {r: 0, g: 0, b: 0, a: 0}
         key6: {r: 0, g: 0, b: 0, a: 0}
@@ -1381,8 +1381,8 @@ ParticleSystem:
         ctime7: 0
         atime0: 0
         atime1: 9059
-        atime2: 16577
-        atime3: 56283
+        atime2: 17540
+        atime3: 52621
         atime4: 65535
         atime5: 0
         atime6: 0
@@ -9829,8 +9829,8 @@ Light:
   m_Type: 2
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 10
-  m_Range: 6
+  m_Intensity: 12
+  m_Range: 9
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
@@ -9903,7 +9903,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7718737826267988365}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.1, z: -1.2}
+  m_LocalPosition: {x: 0, y: 0.1, z: -1.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:

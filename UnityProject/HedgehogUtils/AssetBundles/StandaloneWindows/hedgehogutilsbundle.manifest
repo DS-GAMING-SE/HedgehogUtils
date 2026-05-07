@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 3778013549
+CRC: 2012090968
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 7eef9efd1e56117e6ac5f07c1f83afca
+    Hash: 24f46ba621d19ef002bc65da31bc5ae1
   TypeTreeHash:
     serializedVersion: 2
     Hash: cdb44da392f208a66ac279b4a33f04ce
@@ -109,6 +109,7 @@ Assets:
 - Assets/AssetBundle/VFX/Shaders/shaderBoost.shadergraph
 - Assets/AssetBundle/Emeralds/Prefabs/RedEmerald.prefab
 - Assets/AssetBundle/VFX/Materials/Super Form/matFlash.mat
+- Assets/AssetBundle/VFX/Textures/texBoostEffect.png
 - Assets/AssetBundle/Emeralds/texEmerald.png
 - Assets/AssetBundle/Emeralds/Icons/texBlueEmeraldIcon.png
 - Assets/AssetBundle/VFX/Textures/texAnimeShape.png
@@ -119,6 +120,7 @@ Assets:
 - Assets/AssetBundle/UI/BoostMeter/texBoostMeterInfinite.png
 - Assets/AssetBundle/UI/BoostMeter/texBoostMeterSmall.png
 - Assets/AssetBundle/Emeralds/Materials/matGray.mat
+- Assets/AssetBundle/VFX/Textures/texCloudTriangles.png
 - Assets/AssetBundle/Emeralds/Prefabs/GrayEmerald.prefab
 - Assets/AssetBundle/VFX/Materials/Super Form/matSpark.mat
 - Assets/AssetBundle/Emeralds/Icons/texEmeraldInteractableIcon.png
