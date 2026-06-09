@@ -282,29 +282,42 @@ namespace HedgehogUtils.Voicelines
         {
             if (startDelay > 0) yield return new WaitForSeconds(startDelay);
 
-            yield return RefreshNearby();
             if (voicelines.Count > 0)
             {
-                List<VoicelineComponent> skippedVoices = new List<VoicelineComponent>();
-                while (voicelines.Count > 0)
+                yield return RefreshNearby();
+                yield return StaggerVoicelineChunk(voicelines, null, false);
+            }
+        }
+        private IEnumerator StaggerVoicelineChunk(List<NetworkedVoiceline> voicelines, VoicelineComponent waitOn, bool startDelay = true)
+        {
+            yield return new WaitUntil(() => !waitOn || !waitOn.isVoicelinePlaying);
+            if (startDelay) yield return new WaitForSeconds(0.7f);
+            
+            List<NetworkedVoiceline> skippedVoices = new List<NetworkedVoiceline>();
+            for (int i = 0; i < voicelines.Count; i++)
+            {
+                VoicelineComponent voicelineComponent = null;
+                if (voicelines[i].IsValid())
                 {
-                    skippedVoices.Clear();
-                    for (int i = 0; i < voicelines.Count; i++)
+                    if (skippedVoices.Contains(voicelines[i])) { continue; }
+                    voicelineComponent = voicelines[i].voicelineComponent as VoicelineComponent;
+                    if (voicelineComponent && voicelineComponent.nearbyVoices.Count > 0)
                     {
-                        if (voicelines[i].IsValid())
+                        for (int j = 0; j < voicelines.Count; j++)
                         {
-                            if (skippedVoices.Contains(voicelines[i].voicelineComponent)) { continue; }
-                            VoicelineComponent voicelineComponent = voicelines[i].voicelineComponent as VoicelineComponent;
-                            if (voicelineComponent && voicelineComponent.nearbyVoices.Count > 0) skippedVoices.Concat(voicelineComponent.nearbyVoices);
-
-                            Log.Message("HedgehogUtils Staggered Voiceline sent", Config.Logs.All);
-                            new NetworkVoiceline(voicelines[i]).Send(NetworkDestination.Clients);
+                            if (voicelineComponent.nearbyVoices.Contains(voicelines[j].voicelineComponent))
+                            {
+                                skippedVoices.Add(voicelines[j]);
+                            }
                         }
-                        voicelines.RemoveAt(i);
-                        i--;
                     }
-                    if (voicelines.Count > 0) yield return new WaitForSeconds(1.8f);
+
+                    Log.Message("HedgehogUtils Staggered Voiceline sent", Config.Logs.All);
+                    new NetworkVoiceline(voicelines[i]).Send(NetworkDestination.Clients);
                 }
+                if (skippedVoices.Count > 0) StartCoroutine(StaggerVoicelineChunk(skippedVoices, voicelineComponent));
+                voicelines.RemoveAt(i);
+                i--;
             }
         }
 
