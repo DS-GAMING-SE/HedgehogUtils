@@ -96,6 +96,7 @@ namespace HedgehogUtils
             VoicelineManager.Initialize();
 
             NetworkingAPI.RegisterMessageType<NetworkVoiceline>();
+            NetworkingAPI.RegisterMessageType<NetworkLobbyVoiceline>();
             #endregion
 
             OnHooks.Initialize();
