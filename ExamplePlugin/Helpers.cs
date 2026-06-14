@@ -204,26 +204,26 @@ namespace HedgehogUtils
         public static Material CreateGlassMaterial()
         {
             Material glass = new Material(Addressables.LoadAssetAsync<Shader>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Shaders.HGCloudRemap_shader).WaitForCompletion());
+            glass.name = "matHedgehogUtilsGlass";
+            glass.SetFloat("_InvFade", 0f);
             glass.SetInt("_Cull", 2);
             glass.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampDefault_png).WaitForCompletion());
             glass.EnableKeyword("FRESNEL");
             glass.SetFloat("_FresnelPower", 0.5f);
-            glass.SetFloat("_SrcBlend", 3f);
-            glass.SetFloat("_AlphaBoost", 6f);
-            glass.SetFloat("_DepthOffset", -10f);
+            glass.SetFloat("_SrcBlend", 1f);
+            glass.SetFloat("_DstBlend", 10f);
+            glass.SetFloat("_AlphaBoost", 1f);
             return glass;
         }
         public static Material CreateGlassMaterial(Color color)
         {
             Material glass = CreateGlassMaterial();
-            color *= 0.5f;
             glass.SetColor("_TintColor", color);
             return glass;
         }
         public static Material CreateGlassMaterial(Texture texture)
         {
             Material glass = CreateGlassMaterial();
-            glass.SetColor("_TintColor", new Color(0.5f, 0.5f, 0.5f));
             glass.SetTexture("_MainTex", texture);
             return glass;
         }

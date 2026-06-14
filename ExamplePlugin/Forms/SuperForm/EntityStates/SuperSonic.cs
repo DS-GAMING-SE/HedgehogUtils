@@ -48,6 +48,7 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
             if (chest)
             {
                 this.superAura = GameObject.Instantiate<GameObject>(Assets.superFormAura, chest);
+                this.superAura.transform.localScale = Vector3.one * characterBody.radius;
             }
             if (Config.SuperFormPostProcessing().Value)
             {
@@ -146,7 +147,8 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
         {
             EffectData data = new EffectData
             {
-                origin = chest.position
+                origin = chest.position,
+                scale = characterBody.radius
             };
             if (base.GetModelTransform())
             {
