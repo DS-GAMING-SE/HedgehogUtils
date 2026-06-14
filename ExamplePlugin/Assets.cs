@@ -440,6 +440,9 @@ namespace HedgehogUtils
             transformationEmeraldSwirl = Assets.LoadEffect("SonicChaosEmeraldSwirl");
 
             superFormAura = Assets.LoadAsyncedEffect("SuperFormAura");
+            var superFormAuraVfx = superFormAura.AddComponent<VFXAttributes>();
+            superFormAuraVfx.DoNotPool = false;
+            superFormAuraVfx.optionalLights = [superFormAura.transform.Find("Point Light").GetComponent<Light>()];
 
             ReplaceRainbow(superFormAura.transform.Find("Rainbow"), true);
             superAuraMaterialBase = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Parry.matParryWave_mat).WaitForCompletion());
@@ -456,11 +459,13 @@ namespace HedgehogUtils
             superFormAura.GetComponent<ParticleSystemRenderer>().sharedMaterial = superAuraMaterial;
             superFormAura.transform.Find("Sparks").GetComponent<ParticleSystemRenderer>().sharedMaterial = AssetAsyncReferenceManager<Material>.LoadAsset(new AssetReferenceT<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matTracerLessBright_mat)).WaitForCompletion();
 
-            superFormWarning = Assets.LoadEffect("SonicSuperWarning");
+            superFormWarning = Assets.LoadEffect("SonicSuperWarning", "", true, 0f);
             superFormWarning.AddComponent<Miscellaneous.DestroyOnExitForm>();
+
             //FormDefs haven't been initialized yet so I gotta wait before I can set the Form for the DestroyOnExitForm. That is done in SuperFormDef initialize
             EffectComponent warningEffect = superFormWarning.GetComponent<EffectComponent>();
             warningEffect.parentToReferencedTransform = true;
+            warningEffect.applyScale = true;
 
             AsyncOperationHandle<Material> asyncOutlineMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_LunarGolem.matLunarGolemShield_mat);
             asyncOutlineMaterial.Completed += delegate (AsyncOperationHandle<Material> x)

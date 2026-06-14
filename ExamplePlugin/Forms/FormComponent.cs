@@ -35,6 +35,7 @@ namespace HedgehogUtils.Forms
         private Mesh[] defaultMeshes;
         private CharacterModel.RendererInfo[] formRendererInfos;
         private Mesh[] formMeshes;
+        private bool formModelApplied;
 
         public CharacterBody body;
         private EntityStateMachine bodyState;
@@ -309,10 +310,12 @@ namespace HedgehogUtils.Forms
             ApplyMeshes(model.baseRendererInfos, formMeshes, true);
 
             model.forceUpdate = true;
+            formModelApplied = true;
         }
 
         public void ResetModel()
         {
+            if (!formModelApplied) return;
             model.baseRendererInfos = defaultRendererInfos;
             if (modelAnimator) // Animations
             {
@@ -321,6 +324,7 @@ namespace HedgehogUtils.Forms
             ApplyMeshes(model.baseRendererInfos, defaultMeshes, false);
 
             model.materialsDirty = true;
+            formModelApplied = false;
         }
 
         private void ApplyMeshes(CharacterModel.RendererInfo[] renderer, Mesh[] mesh, bool setPreviousToDefault)

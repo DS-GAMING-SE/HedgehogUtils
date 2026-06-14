@@ -10,11 +10,18 @@ namespace HedgehogUtils.Miscellaneous
 
         protected EffectComponent effectComponent;
 
+        protected EffectManagerHelper emh;
+
         public FormDef neededForm;
 
         private void Start()
         {
             effectComponent = base.GetComponent<EffectComponent>();
+            emh = base.GetComponent<EffectManagerHelper>();
+            if (emh)
+            {
+                emh.UnparentOnReturnToPool = true;
+            }
             if (effectComponent && effectComponent.effectData != null && effectComponent.effectData.rootObject)
             {
                 formComponent = effectComponent.effectData.rootObject.GetComponent<FormComponent>();
@@ -29,7 +36,14 @@ namespace HedgehogUtils.Miscellaneous
         {
             if (current != neededForm)
             {
-                Destroy(base.gameObject);
+                if (emh)
+                {
+                    emh.ReturnToPool();
+                }
+                else
+                {
+                    GameObject.Destroy(gameObject);
+                }
             }
         }
     }
