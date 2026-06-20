@@ -420,23 +420,68 @@ namespace HedgehogUtils
 
         public static void SuperForm()
         {
-            superFormTransformationEffect = Assets.LoadEffect("SonicSuperTransformation");
+            #region SuperTransformationEffect
+            superFormTransformationEffect = LoadEffect("SuperTransformationEffect", "", false, 1.5f);
+            superFormTransformationEffect.GetComponent<VFXAttributes>().vfxIntensity = VFXIntensity.Medium;
+            superFormTransformationEffect.GetComponent<EffectComponent>().applyScale = true;
+            Material darkSparkle = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Parry.matParryFlash_mat).WaitForCompletion());
+            darkSparkle.SetFloat("_DstBlend", 10);
+            darkSparkle.EnableKeyword("VERTEXCOLOR");
+            darkSparkle.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampTritone_png).WaitForCompletion());
+            darkSparkle.SetFloat("_AlphaBoost", 1.6f);
+            darkSparkle.SetFloat("_DepthOffset", -10f);
+            darkSparkle.SetInt("_ZTest", 8);
+            superFormTransformationEffect.transform.GetChild(0).GetComponent<ParticleSystemRenderer>().sharedMaterial = darkSparkle;
+            superFormTransformationEffect.transform.GetChild(1).GetComponent<ParticleSystemRenderer>().sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Huntress.matHuntressFlash_mat).WaitForCompletion();
+            var superTransformRingRenderer = superFormTransformationEffect.transform.GetChild(2).GetComponent<ParticleSystemRenderer>();
+            superTransformRingRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Seeker_SojournVehicle.matSojournTrail_mat).WaitForCompletion();
+            superTransformRingRenderer.mesh = Addressables.LoadAssetAsync<Mesh>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.mdlVFXDonut2_fbx_donut2Mesh_).WaitForCompletion();
+
+            superFormTransformationEffect.transform.GetChild(4).GetComponent<ParticleSystemRenderer>().sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_TeamWarCry.matTeamWarCryDistortion_mat).WaitForCompletion();
+
+            superFormTransformationEffect.transform.GetChild(6).GetComponent<ParticleSystemRenderer>().sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matWideGlow_mat).WaitForCompletion();
+
+            var superTransformLightCurve = superFormTransformationEffect.transform.GetChild(7).gameObject.AddComponent<LightIntensityCurve>();
+            superTransformLightCurve.timeMax = 1f;
+            superTransformLightCurve.curve = AnimationCurve.EaseInOut(0f, 0.8f, 1f, 0f);
+
+            var superTransformPP = superFormTransformationEffect.transform.GetChild(12).GetComponent<PostProcessVolume>();
+            superTransformPP.sharedProfile = Addressables.LoadAssetAsync<PostProcessProfile>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_GlobalContent.ppLocalBrotherImpact_asset).WaitForCompletion();
+            var superTransformPPFade = superTransformPP.gameObject.AddComponent<PostProcessDuration>();
+            superTransformPPFade.ppVolume = superTransformPP;
+            superTransformPPFade.ppWeightCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+            superTransformPPFade.maxDuration = 0.13f;
+            #endregion
+            //superFormTransformationEffect = Assets.LoadEffect("SonicSuperTransformation");
             if (superFormTransformationEffect)
             {
                 ShakeEmitter shakeEmitter = superFormTransformationEffect.AddComponent<ShakeEmitter>();
                 shakeEmitter.amplitudeTimeDecay = true;
-                shakeEmitter.duration = 0.7f;
+                shakeEmitter.duration = 0.5f;
                 shakeEmitter.radius = 200f;
                 shakeEmitter.scaleShakeRadiusWithLocalScale = false;
 
                 shakeEmitter.wave = new Wave
                 {
-                    amplitude = 0.7f,
+                    amplitude = 0.9f,
                     frequency = 40f,
                     cycleOffset = 0f
                 };
+
+                ShakeEmitter shakeEmitter2 = superFormTransformationEffect.AddComponent<ShakeEmitter>();
+                shakeEmitter2.amplitudeTimeDecay = true;
+                shakeEmitter2.duration = 1.4f;
+                shakeEmitter2.radius = 300f;
+                shakeEmitter2.scaleShakeRadiusWithLocalScale = false;
+
+                shakeEmitter2.wave = new Wave
+                {
+                    amplitude = 0.4f,
+                    frequency = 3f,
+                    cycleOffset = 0f
+                };
             }
-            ReplaceRainbow(superFormTransformationEffect.transform.Find("Rainbow"));
+            //ReplaceRainbow(superFormTransformationEffect.transform.Find("Rainbow"));
             transformationEmeraldSwirl = Assets.LoadEffect("SonicChaosEmeraldSwirl");
 
             superFormAura = Assets.LoadAsyncedEffect("SuperFormAura");
@@ -446,6 +491,7 @@ namespace HedgehogUtils
 
             ReplaceRainbow(superFormAura.transform.Find("Rainbow"), true);
             superAuraMaterialBase = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Parry.matParryWave_mat).WaitForCompletion());
+            superAuraMaterialBase.SetFloat("_Boost", 1.5f);
             superAuraMaterialBase.SetFloat("_AlphaBoost", 1.2f);
             superAuraMaterialBase.SetFloat("_DepthOffset", -3f);
             superAuraMaterialBase.SetTextureScale("_Cloud1Tex", new Vector2(0.7f, 0.7f));
@@ -456,6 +502,7 @@ namespace HedgehogUtils
             superAuraMaterialBase.EnableKeyword("VERTEXCOLOR");
 
             superAuraMaterial = CreateSuperAuraMaterial("SuperFormAura", AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC1_Common_ColorRamps.texRampConstructLaser_png)).WaitForCompletion());
+            superAuraMaterial.SetFloat("_Boost", 2.5f);
             superFormAura.GetComponent<ParticleSystemRenderer>().sharedMaterial = superAuraMaterial;
             superFormAura.transform.Find("Sparks").GetComponent<ParticleSystemRenderer>().sharedMaterial = AssetAsyncReferenceManager<Material>.LoadAsset(new AssetReferenceT<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matTracerLessBright_mat)).WaitForCompletion();
 
@@ -489,6 +536,10 @@ namespace HedgehogUtils
             superFormPPVolume = mainAssetBundle.LoadAsset<GameObject>("SonicSuperPostProcess");
             PostProcessVolume postProcess = superFormPPVolume.GetComponent<PostProcessVolume>();
             postProcess.sharedProfile = Addressables.LoadAssetAsync<PostProcessProfile>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_title_PostProcessing.ppLocalGrandparent_asset).WaitForCompletion();
+            var postProcessFade = superFormPPVolume.AddComponent<PostProcessDuration>();
+            postProcessFade.ppVolume = postProcess;
+            postProcessFade.ppWeightCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0.5f);
+            postProcessFade.maxDuration = 1f;
 
             chaosEmeraldDropletPrefab = mainAssetBundle.LoadAsset<GameObject>("ChaosEmeraldOrb");
             var chaosEmeraldDropletStartSound = chaosEmeraldDropletPrefab.AddComponent<PlaySoundOnEvent>();

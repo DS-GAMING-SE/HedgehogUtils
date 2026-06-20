@@ -77,6 +77,24 @@ namespace HedgehogUtils.Forms.SuperForm
                 Assets.mainAssetBundle.LoadAsset<Sprite>("texPurpleEmeraldIcon"),
                 CreateEmeraldPrefab("PurpleEmerald.prefab"));
         }
+        [ConCommand(commandName = "give_chaosemeralds", flags = ConVarFlags.ExecuteOnServer, helpText = "Give all players all 7 Chaos Emeralds.")]
+        private static void GiveChaosEmeraldsCommand(ConCommandArgs args)
+        {
+            if (!Run.instance || !SuperFormDef.superFormDef.enabled) return;
+            foreach (var player in PlayerCharacterMasterController.instances)
+            {
+                if (player.master && player.master.inventory)
+                {
+                    player.master.inventory.GiveItemPermanent(redEmerald);
+                    player.master.inventory.GiveItemPermanent(yellowEmerald);
+                    player.master.inventory.GiveItemPermanent(greenEmerald);
+                    player.master.inventory.GiveItemPermanent(cyanEmerald);
+                    player.master.inventory.GiveItemPermanent(blueEmerald);
+                    player.master.inventory.GiveItemPermanent(purpleEmerald);
+                    player.master.inventory.GiveItemPermanent(grayEmerald);
+                }
+            }
+        }
 
         internal static GameObject CreateEmeraldPrefab(string assetName)
         {

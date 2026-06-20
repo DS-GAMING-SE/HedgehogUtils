@@ -71,11 +71,10 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
                 priority = 0f
             }, 0f);
 
+            EffectManager.SpawnEffect(Assets.superFormTransformationEffect, new EffectData { origin = characterBody.corePosition, scale = characterBody.radius }, false);
             if (base.isAuthority)
             {
                 FireBlastAttack();
-
-                EffectManager.SimpleMuzzleFlash(Assets.superFormTransformationEffect, base.gameObject, "Chest", true);
             }
             if (NetworkServer.active)
             {
