@@ -29,7 +29,7 @@ namespace HedgehogUtils.Forms
         [Tooltip("The first FormDef is the form you were PREVIOUSLY in\nThe second FormDef is the one you're in now.")]
         public event Action<FormDef, FormDef> OnFormChanged;
 
-        public string skinNameToken;
+        public string skinName;
 
         private CharacterModel.RendererInfo[] defaultRendererInfos;
         private Mesh[] defaultMeshes;
@@ -95,7 +95,7 @@ namespace HedgehogUtils.Forms
                 }
             }
             bodyState = EntityStateMachine.FindByCustomName(base.gameObject, "Body");
-            skinNameToken = GetSkinNameToken();
+            skinName = GetSkinName();
             defaultMeshes = new Mesh[model.baseRendererInfos.Length];
             formMeshes = new Mesh[model.baseRendererInfos.Length];
 
@@ -116,7 +116,7 @@ namespace HedgehogUtils.Forms
                     CreateTrackerForForm(form);
                 }
 
-                if (skinNameToken != null && form.renderDictionary.TryGetValue(skinNameToken, out RenderReplacements renderReplacements))
+                if (skinName != null && form.renderDictionary.TryGetValue(skinName, out RenderReplacements renderReplacements))
                 {
                     if (renderReplacements.rendererInfo != null)
                     {
@@ -232,7 +232,7 @@ namespace HedgehogUtils.Forms
             UpdateAllRequireFormSkillDefs();
             OnFormChanged?.Invoke(previousForm, activeForm);
             if (!form) { return; }
-            SuperModel(skinNameToken);
+            SuperModel(skinName);
         }
 
         internal void TransformEnd()
@@ -276,12 +276,12 @@ namespace HedgehogUtils.Forms
                 }
             }
         }
-        public string GetSkinNameToken()
+        public string GetSkinName()
         {
             ModelSkinController skin = model.GetComponent<ModelSkinController>();
             if (skin && skin.skins.Length > body.skinIndex) // heretic causing errors without this check
             {
-                return skin.skins[body.skinIndex].nameToken;
+                return ((ScriptableObject)skin.skins[body.skinIndex]).name;
             }
             return null;
         }
@@ -291,14 +291,14 @@ namespace HedgehogUtils.Forms
             return numberOfTimesTransformed[(int)form.formIndex];
         }
 
-        private void SuperModel(string skinNameToken)
+        private void SuperModel(string skinName)
         {
             if (modelAnimator && activeForm.superAnimations) // Animations
             {
                 modelAnimator.SetFloat("isSuperFloat", 1f);
             }
 
-            if (!GetSuperModel(skinNameToken)) return;
+            if (!GetSuperModel(skinName)) return;
 
             defaultRendererInfos = ArrayUtils.Clone(model.baseRendererInfos);
             for (int i = 0; i < model.baseRendererInfos.Length; i++)
@@ -315,12 +315,12 @@ namespace HedgehogUtils.Forms
 
         public void ResetModel()
         {
-            if (!formModelApplied) return;
-            model.baseRendererInfos = defaultRendererInfos;
             if (modelAnimator) // Animations
             {
                 modelAnimator.SetFloat("isSuperFloat", 0f);
             }
+            if (!formModelApplied) return;
+            model.baseRendererInfos = defaultRendererInfos;
             ApplyMeshes(model.baseRendererInfos, defaultMeshes, false);
 
             model.materialsDirty = true;

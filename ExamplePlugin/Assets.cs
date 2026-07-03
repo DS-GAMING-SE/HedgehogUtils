@@ -409,6 +409,7 @@ namespace HedgehogUtils
         public static Material superFormOverlay;
         public static Material rainbowGlowMaterial;
         public static Material rainbowGlowSubtleMaterial;
+        public static Material darkSparkle;
         public static GameObject superFormTransformationEffect;
         public static GameObject transformationEmeraldSwirl;
         public static GameObject superFormAura;
@@ -424,11 +425,11 @@ namespace HedgehogUtils
             superFormTransformationEffect = LoadEffect("SuperTransformationEffect", "", false, 1.5f);
             superFormTransformationEffect.GetComponent<VFXAttributes>().vfxIntensity = VFXIntensity.Medium;
             superFormTransformationEffect.GetComponent<EffectComponent>().applyScale = true;
-            Material darkSparkle = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Parry.matParryFlash_mat).WaitForCompletion());
+            darkSparkle = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Parry.matParryFlash_mat).WaitForCompletion());
             darkSparkle.SetFloat("_DstBlend", 10);
             darkSparkle.EnableKeyword("VERTEXCOLOR");
             darkSparkle.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampTritone_png).WaitForCompletion());
-            darkSparkle.SetFloat("_AlphaBoost", 1.6f);
+            darkSparkle.SetFloat("_AlphaBoost", 1.5f);
             darkSparkle.SetFloat("_DepthOffset", -10f);
             darkSparkle.SetInt("_ZTest", 8);
             superFormTransformationEffect.transform.GetChild(0).GetComponent<ParticleSystemRenderer>().sharedMaterial = darkSparkle;
@@ -450,7 +451,7 @@ namespace HedgehogUtils
             var superTransformPPFade = superTransformPP.gameObject.AddComponent<PostProcessDuration>();
             superTransformPPFade.ppVolume = superTransformPP;
             superTransformPPFade.ppWeightCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
-            superTransformPPFade.maxDuration = 0.13f;
+            superTransformPPFade.maxDuration = 0.12f;
             #endregion
             //superFormTransformationEffect = Assets.LoadEffect("SonicSuperTransformation");
             if (superFormTransformationEffect)
@@ -476,7 +477,7 @@ namespace HedgehogUtils
 
                 shakeEmitter2.wave = new Wave
                 {
-                    amplitude = 0.4f,
+                    amplitude = 0.5f,
                     frequency = 3f,
                     cycleOffset = 0f
                 };
