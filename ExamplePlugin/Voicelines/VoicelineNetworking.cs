@@ -61,12 +61,12 @@ namespace HedgehogUtils.Voicelines
     }
     public class NetworkLobbyVoiceline : INetMessage
     {
-        NetworkUser networkuser;
+        GameObject networkuser;
         NetworkSoundEventIndex networkSoundEventIndex;
         public NetworkLobbyVoiceline() { }
         public NetworkLobbyVoiceline(NetworkUser networkUser, NetworkSoundEventIndex networkSoundEventIndex)
         {
-            this.networkuser = networkUser;
+            this.networkuser = networkUser.gameObject;
             this.networkSoundEventIndex = networkSoundEventIndex;
         }
         public void OnReceived()
@@ -77,7 +77,7 @@ namespace HedgehogUtils.Voicelines
             {
                 for (int i = 0; i < dioramaController.sortedNetworkUsers.Count; i++)
                 {
-                    if (dioramaController.sortedNetworkUsers[i] == networkuser && dioramaController.mannequinSlots[i] && 
+                    if (dioramaController.sortedNetworkUsers[i].gameObject == networkuser && dioramaController.mannequinSlots[i] && 
                         dioramaController.mannequinSlots[i].mannequinInstanceTransform && dioramaController.mannequinSlots[i].mannequinInstanceTransform.TryGetComponent<VoicelineDisplayComponent>(out var voicelineComponent))
                     {
                         voicelineComponent.PlayVoiceline(NetworkSoundEventCatalog.GetEventNameFromNetworkIndex(networkSoundEventIndex), VoicelinePriority.PriorityDialogue);
@@ -89,13 +89,13 @@ namespace HedgehogUtils.Voicelines
         }
         public void Serialize(NetworkWriter writer) 
         { 
-            writer.Write(networkuser.netId);
+            writer.Write(networkuser);
             writer.WriteNetworkSoundEventIndex(networkSoundEventIndex);
         }
         public void Deserialize(NetworkReader reader) 
         { 
             reader.ReadNetworkIDAndGameObject(out _, out var netUserGameObject);
-            networkuser = netUserGameObject.GetComponent<NetworkUser>();
+            networkuser = netUserGameObject;
             networkSoundEventIndex = reader.ReadNetworkSoundEventIndex();
         }
     }

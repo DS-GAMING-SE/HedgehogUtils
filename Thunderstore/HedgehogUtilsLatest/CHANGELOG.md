@@ -4,21 +4,18 @@
 *This update has a lot of breaking changes, which would matter if there was literally anyone else developing with this mod other than me*
  - (Voicelines) Added a new system for handling voicelines
  
- - (Visuals) The super form transformation now has a subtle glow around your character
- 
- - (Visuals) Redone the vfx for boosting. New methods have been added to the Assets class for making your own boost vfx. The previous methods for creating boost auras have been deprecated
- 
- - (Visuals) Redone the aura for the super form. There are now Assets.CreateFormAura methods for creating custom auras for modded super forms
- 
+ - (Visuals) Redid the vfx for boosting. New methods have been added to the Assets class for making your own boost vfx. The previous methods for creating boost auras have been deprecated
+ - (Visuals) Redid the vfx for transforming into the super form.
+ - (Visuals) Redid the aura for the super form. There are now Assets.CreateFormAura methods for creating custom auras for modded super forms
  - (Visuals) Chaos Emeralds now have unique vfx for when the item is dropped
- 
+
  - (Bug Fix) Transformations can no longer be activated while in UI (such as typing in chat) or while you're not in your main body state (usually doing some action where you can't use other skills)
- 
  - (Bug Fix) Fixed the Chaos Emerald interactable breaking if you purchase it and pick it up with Drifter at the same time
  
- - (Internal) **Breaking**. The RenderReplacements system for making custom super form models has been completely redone. It now supports characters with multiple renderers, multiple meshes, and it works with memop asset references. A RenderReplacement now has three arrays for CharacterModel.RendererInfo, Meshes, and AssetReferenceT<Mesh>s
+ - (Internal) **Breaking** The RenderReplacements system for making custom super form models has been completely redone. It now supports characters with multiple renderers, multiple meshes, and it works with memop asset references. A RenderReplacement now has three arrays for CharacterModel.RendererInfo, Meshes, and AssetReferenceT<Mesh>s
+ - (Internal) **Breaking** FormDef's RenderReplacements now use the skin scriptable object name instead of the name token to prevent issues relating to multiple skins having the same name (Apparently "Default" is a common name for skins. Who knew?)
  - (Internal) **Breaking** FormDef.enabled functionality has been moved to FormDef.setIsEnabledFunc. FormDef.enabled is now a simple and efficient method for checking if the form is enabled or not, which is decided by setIsEnabledFunc at the beginning of the stage
- - (Internal) **Breaking**. Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
+ - (Internal) **Breaking** Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
  - (Internal) FormDef now has a cachedName property. This should be used instead of using the scriptable object's name directly
  - (Internal) TransformationBase now has a reference to CharacterModel
  - (Internal) The point at which GenericTransformationBase triggers the transformation is no longer hardcoded, and can now be changed via the abstract transformationDurationPercent
