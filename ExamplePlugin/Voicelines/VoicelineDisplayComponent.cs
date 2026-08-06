@@ -59,7 +59,7 @@ namespace HedgehogUtils.Voicelines
 
         public IEnumerator Start()
         {
-            yield return null;
+            yield return new WaitForSeconds(0.1f);
             BodyIndex index = BodyCatalog.FindBodyIndex(csspdc.bodyPrefab);
             if (index != BodyIndex.None)
             {

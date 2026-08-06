@@ -33,8 +33,6 @@ namespace HedgehogUtils.Boost.EntityStates
 
         private TemporaryOverlayInstance temporaryOverlay;
 
-        protected ICharacterFlightParameterProvider flight;
-
         protected static float boostCameraDistance = -13;
         private CharacterCameraParamsData boostingCameraParams = new CharacterCameraParamsData
         {
@@ -66,7 +64,8 @@ namespace HedgehogUtils.Boost.EntityStates
         {
             base.OnEnter();
             base.characterBody.skillLocator.utility.onSkillChanged += OnSkillChanged;
-            flight = base.characterBody.GetComponent<ICharacterFlightParameterProvider>();
+
+            characterBody.OnSkillActivated(characterBody.skillLocator.utility);
 
             base.GetModelAnimator().SetBool("isBoosting", true);
 
@@ -137,7 +136,7 @@ namespace HedgehogUtils.Boost.EntityStates
             {
                 if (!base.isGrounded)
                 {
-                    if (!Helpers.Flying(flight))
+                    if (!characterMotor.isFlying)
                     {
                         base.characterMotor.velocity.y = Mathf.Max(airBoostY, base.characterMotor.velocity.y);
                     }
@@ -291,7 +290,7 @@ namespace HedgehogUtils.Boost.EntityStates
         {
             if (!base.isAuthority) { return; }
 
-            if (base.isGrounded || Helpers.Flying(flight))
+            if (base.isGrounded || characterMotor.isFlying)
             {
                 if (inputBank.moveVector == Vector3.zero)
                 {

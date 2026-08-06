@@ -16,10 +16,10 @@ namespace HedgehogUtils.Forms.SuperForm
 
         public static void Initialize()
         {
-            Dictionary<string, RenderReplacements> superRenderDictionary = new Dictionary<string, RenderReplacements>();
+            Dictionary<SkinDef, RenderReplacements> superRenderDictionary = new Dictionary<SkinDef, RenderReplacements>();
             superFormDef = Forms.CreateFormDef(HedgehogUtilsPlugin.Prefix+"SUPER_FORM", Buffs.superFormBuff, Config.SuperFormDuration().Value, true, true, Config.ConsumeEmeraldsOnUse().Value,
             1, Config.SuperFormInvincible().Value, true, true, new SerializableEntityStateType(typeof(EntityStates.SuperSonic)), new SerializableEntityStateType(typeof(EntityStates.SuperSonicTransformation)), superRenderDictionary,
-                typeof(SuperSonicHandler), new AllowedBodyList { whitelist = false }, KeyCode.V);
+                typeof(SuperSonicHandler), new AllowedBodyList { whitelist = false }, KeyCode.G);
 
             superFormDef.setIsEnabledFunc = (self) => 
             { 

@@ -105,6 +105,7 @@ namespace HedgehogUtils
                 {
                     if (LaunchManager.AttackCanLaunch(self, attackerBody, damageInfo))
                     {
+                        LaunchManager.onTryLaunchServer?.Invoke(self, damageInfo);
                         Vector3 launchDirection = damageInfo.force.normalized;
                         if (!damageInfo.damageType.HasModdedDamageType(Launch.DamageTypes.removeLaunchAutoAim))
                         {

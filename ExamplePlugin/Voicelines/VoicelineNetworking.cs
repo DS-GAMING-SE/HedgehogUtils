@@ -93,9 +93,8 @@ namespace HedgehogUtils.Voicelines
             writer.WriteNetworkSoundEventIndex(networkSoundEventIndex);
         }
         public void Deserialize(NetworkReader reader) 
-        { 
-            reader.ReadNetworkIDAndGameObject(out _, out var netUserGameObject);
-            networkuser = netUserGameObject;
+        {
+            networkuser = reader.ReadGameObject();
             networkSoundEventIndex = reader.ReadNetworkSoundEventIndex();
         }
     }

@@ -5,6 +5,7 @@ using RoR2.Skills;
 using RoR2.UI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Networking;
@@ -226,6 +227,23 @@ namespace HedgehogUtils
             Material glass = CreateGlassMaterial();
             glass.SetTexture("_MainTex", texture);
             return glass;
+        }
+
+        public static bool TryGetSkinDef(string bodyName, string skinNameToken, out SkinDef skin)
+        {
+            skin = null;
+            if (!BodyCatalog.availability.available)
+            {
+                Log.Error("Attempted to find skin before the BodyCatalog was available");
+                return false;
+            }
+            BodyIndex index = BodyCatalog.FindBodyIndex(bodyName);
+            if (index != BodyIndex.None)
+            {
+                skin = SkinCatalog.FindSkinsForBody(index).First(x => x.nameToken == skinNameToken);
+                return skin;
+            }
+            return false;
         }
     }
 }

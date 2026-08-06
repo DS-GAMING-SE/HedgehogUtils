@@ -9,6 +9,7 @@ using R2API.Networking;
 using HedgehogUtils.Forms;
 using HedgehogUtils.Miscellaneous;
 using HedgehogUtils.Voicelines;
+using Rebindables;
 
 namespace HedgehogUtils
 {
@@ -18,7 +19,7 @@ namespace HedgehogUtils
     // This one is because we use a .language file for language tokens
     // More info in https://risk-of-thunder.github.io/R2Wiki/Mod-Creation/Assets/Localization/
     [BepInDependency(LanguageAPI.PluginGUID)]
-
+    [BepInDependency(Rebindables.Rebindables.PluginGUID)]
     [BepInDependency(LookingGlass.PluginInfo.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.rune580.riskofoptions", BepInDependency.DependencyFlags.SoftDependency)]
 
