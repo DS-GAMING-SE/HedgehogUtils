@@ -217,8 +217,8 @@ namespace HedgehogUtils
 
             boostMaterialBase = AssetAsyncReferenceManager<Material>.LoadAsset(new AssetReferenceT<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matDustExhaust_mat)).WaitForCompletion();
             boostMaterialBase.SetFloat("_AlphaBoost", 2f);
-            boostMaterialBase.SetFloat("_SrcBlend", 1f);
-            boostMaterialBase.SetFloat("_DstBlend", 1f);
+            boostMaterialBase.SetInt("_SrcBlend", 1);
+            boostMaterialBase.SetInt("_DstBlend", 1);
             boostMaterialBase.SetColor("_TintColor", new Color(0.1f, 0.1f, 0.1f));
             burst.sharedMaterial = boostMaterialBase;
             auraConstant.sharedMaterial = boostMaterialBase;
@@ -259,7 +259,7 @@ namespace HedgehogUtils
         {
             return CreateBoostAuraEffect(name, CreateBoostAuraOuterMaterial(name, tintColor, remapTex), CreateBoostAuraInnerMaterial(name, tintColor, remapTex), lightColor, trailColor, size);
         }
-        public static Material CreateBoostAuraOuterMaterial(string name, Color tintColor, Texture remapTex)
+        public static Material CreateBoostAuraOuterMaterial(string name, Color tintColor, Texture remapTex, bool allowDarkColors = false)
         {
             Material constantMat = new Material(boostMaterialBase);
             constantMat.name = $"mat{name}Constant";
@@ -273,10 +273,15 @@ namespace HedgehogUtils
             constantMat.SetTextureOffset("_MainTex", new Vector2(0, 0.15f));
             constantMat.SetVector("_CutoffScroll", new Vector4(2f, 10f, -4f, 4f));
             constantMat.SetFloat("_DepthOffset", -0.15f);
+            if (allowDarkColors)
+            {
+                constantMat.SetInt("_SrcBlend", 5);
+                constantMat.SetInt("_DstBlend", 10);
+            }
 
             return constantMat;
         }
-        public static Material CreateBoostAuraInnerMaterial(string name, Color tintColor, Texture remapTex)
+        public static Material CreateBoostAuraInnerMaterial(string name, Color tintColor, Texture remapTex, bool allowDarkColors = false)
         {
             Material constantInnerMat = new Material(boostMaterialBase);
             constantInnerMat.name = $"mat{name}ConstantInner";
@@ -291,6 +296,11 @@ namespace HedgehogUtils
             constantInnerMat.SetTexture("_Cloud1Tex", mainAssetBundle.LoadAsset<Texture>("texCloudTriangles"));
             constantInnerMat.SetTextureScale("_Cloud1Tex", new Vector2(3f, 0.3f));
             constantInnerMat.SetVector("_CutoffScroll", new Vector4(20f, 20f, -30f, 10f));
+            if (allowDarkColors)
+            {
+                constantInnerMat.SetInt("_SrcBlend", 5);
+                constantInnerMat.SetInt("_DstBlend", 10);
+            }
 
             return constantInnerMat;
         }
@@ -341,7 +351,7 @@ namespace HedgehogUtils
         {
             return CreateBoostFlashEffect(name, CreateBoostFlashMaterial(name, remapTex, tintColor), lightColor, distortion, size);
         }
-        public static Material CreateBoostFlashMaterial(string name, Texture remapTex, Color tintColor)
+        public static Material CreateBoostFlashMaterial(string name, Texture remapTex, Color tintColor, bool allowDarkColors = false)
         {
             Material flashMat = new Material(boostMaterialBase);
             flashMat.name = $"mat{name}";
@@ -354,6 +364,11 @@ namespace HedgehogUtils
             flashMat.SetTexture("_Cloud1Tex", mainAssetBundle.LoadAsset<Texture>("texBoostEffect"));
             flashMat.SetTextureScale("_Cloud1Tex", new Vector2(2.5f, 1f));
             flashMat.SetVector("_CutoffScroll", new Vector4(-20f, 45f, 20f, 15f));
+            if (allowDarkColors)
+            {
+                flashMat.SetInt("_SrcBlend", 5);
+                flashMat.SetInt("_DstBlend", 10);
+            }
             return flashMat;
         }
         public static GameObject CreateBoostFlashEffect(string name, Material material, Color lightColor, bool distortion, float size)

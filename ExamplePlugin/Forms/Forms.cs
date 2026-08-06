@@ -1,21 +1,22 @@
-﻿using EntityStates;
+﻿using BepInEx;
+using BepInEx.Configuration;
+using EntityStates;
+using HarmonyLib;
+using HedgehogUtils.Forms.SuperForm;
+using HedgehogUtils.Internal;
 using HG;
 using R2API;
-using UnityEngine.Networking;
+using Rebindables;
+using RiskOfOptions;
+using RiskOfOptions.Options;
+using RoR2;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
-using BepInEx;
-using RoR2;
-using HarmonyLib;
-using BepInEx.Configuration;
-using RiskOfOptions.Options;
-using RiskOfOptions;
-using HedgehogUtils.Internal;
-using HedgehogUtils.Forms.SuperForm;
-using UnityEngine.Serialization;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Networking;
+using UnityEngine.Serialization;
 
 [assembly: HG.Reflection.SearchableAttribute.OptIn]
 namespace HedgehogUtils.Forms
@@ -30,7 +31,7 @@ namespace HedgehogUtils.Forms
 
         // Look at the tooltips in the FormDef class for more information on what all of these parameters mean
         public static FormDef CreateFormDef(string name, BuffDef buff, float duration, bool requiresItems, bool shareRequirements, bool consumeItems, int maxTransforms, bool invincible, bool flight, bool superAnimations, SerializableEntityStateType formState, SerializableEntityStateType transformState,
-            Dictionary<string, RenderReplacements> renderDictionary, Type handlerComponent, AllowedBodyList allowedBodyList, KeyCode defaultKeyBind)
+            Dictionary<SkinDef, RenderReplacements> renderDictionary, Type handlerComponent, AllowedBodyList allowedBodyList, KeyCode defaultKeyBind)
         {
             FormDef form = ScriptableObject.CreateInstance<FormDef>();
             form.cachedName = name;
@@ -52,7 +53,7 @@ namespace HedgehogUtils.Forms
             };
             form.handlerComponent = handlerComponent;
             form.allowedBodyList = allowedBodyList;
-            form.defaultKeyBind = defaultKeyBind;
+            form.keyBind = RebindAPI.RegisterModKeybind(new ModKeybind(form.cachedName, defaultKeyBind, 10));
 
             // Creating handler prefab
             GameObject handlerPrefab = PrefabAPI.CreateEmptyPrefab(form.cachedName + " " + form.handlerComponent.Name);
@@ -97,9 +98,10 @@ namespace HedgehogUtils.Forms
             return false;
         }
 
-        public static void AddSkinForForm(string skinToken, RenderReplacements render, ref FormDef form)
+        public static void AddSkinForForm(SkinDef skin, RenderReplacements render, ref FormDef form)
         {
-            form.renderDictionary.Add(skinToken, render);
+            if (form.renderDictionary == null) form.renderDictionary = new Dictionary<SkinDef, RenderReplacements>();
+            form.renderDictionary.Add(skin, render);
         }
 
         [SystemInitializer(typeof(BodyCatalog), typeof(FormCatalog))]
@@ -132,7 +134,7 @@ namespace HedgehogUtils.Forms
 
     public class FormDef : ScriptableObject
     {
-        [Tooltip("Name should be the name token for the transformation. Eg. \"DS_GAMING_SUPER_FORM\". The actual name of the form should be handled using LanguageAPI. See Tokens.cs for an example of how that works")]
+        [Tooltip("Name should be the name token for the transformation. Eg. \"DS_GAMING_HEDGEHOG_UTILS_SUPER_FORM\". The actual name of the form should be handled using LanguageAPI. See Tokens.cs for an example of how that works")]
         public string cachedName { get { return _cachedName; } set { name = value; _cachedName = value; } }
         private string _cachedName;
 
@@ -172,17 +174,14 @@ namespace HedgehogUtils.Forms
         [Tooltip("The entity state used by the \"Body\" entity state machine for the transformation animation that will transition you into the form. Should be a subclass of TransformationBase. If the EntityState is null, the transformation will be instant")]
         public SerializableEntityStateType transformState;
 
-        [Tooltip("Stores the material and mesh changes that will be applied when transforming based on what skin you're using.\nKey is the name of the skin (The scriptable object name, not the name token). Render Replacements is a struct containing the RendererInfos and mesh for each renderer on your character. All arrays in the RenderReplacements struct, as well as the defaultRendererInfos of the character, must be the same length. An array can be left null if unneeded.")]
-        public Dictionary<string, RenderReplacements> renderDictionary;
+        [Tooltip("Stores the material and mesh changes that will be applied when transforming based on what skin you're using.\nKey is the SkinDef. Render Replacements is a struct containing the RendererInfos and mesh for each renderer on your character. All arrays in the RenderReplacements struct, as well as the defaultRendererInfos of the character, must be the same length. An array can be left null if unneeded.")]
+        public Dictionary<SkinDef, RenderReplacements> renderDictionary;
 
         [Tooltip("The component that will track information about your form, such as whether all necessary items have been collected. This component will be put on a gameObject that will be created at the beginning of every stage and will stay for the duration of the stage.\nIf you're unsure what to put here, use typeof(FormHandler).\nYou can create a subclass of FormHandler and put it here if you want to add code, such as an extra requirement for transforming.")]
         public Type handlerComponent;
 
         [Tooltip("Contains information on what characters are allowed to transform.\nIf whitelist, any body name listed under bodyNames will be allowed. If not whitelist, any body name not listed under bodyNames will be allowed.\nBody name refers to the name that survivors and enemies use internally. If you're unsure about what body name means, look into RoR2 BodyCatalog related stuff.\nBodyList can be null.")]
         public AllowedBodyList allowedBodyList;
-
-        [Tooltip("The default keybind players press to transform into the form. Don't get too attached to this, it's likely these keybinds will need to be changed if forms happen to overlap. If two forms overlap the same key and both can be transformed into, the first form alphabetically by name token will be selected. \nIf set to Keybind.None, there will be no keybind for activating the form. You can make your own way of transforming into the form.")]
-        public KeyCode defaultKeyBind;
 
         [Tooltip("If it is possible for the form to be activated this stage. This value is set by setIsEnabledFunc at the beginning of every stage.")]
         public bool enabled { get; internal set; }
@@ -224,7 +223,7 @@ namespace HedgehogUtils.Forms
             return RoR2.Language.GetString(this.cachedName, RoR2.Language.currentLanguageName);
         }
 
-        public ConfigEntry<KeyboardShortcut> keybind;
+        public ModKeybind keyBind;
 
         public int numberOfNeededItems
         {

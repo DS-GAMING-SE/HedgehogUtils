@@ -18,6 +18,10 @@ namespace HedgehogUtils.Launch
     {
         public static GameObject launchProjectilePrefab;
 
+        public static Action<HealthComponent, DamageInfo> onTryLaunchServer;
+
+        public static Action<CharacterBody, CharacterBody, Vector3, float, float, float, bool, float, float, LaunchProjectileController> onLaunchServer;
+
         public static string[] bodyBlacklist = { "BrotherBody", "BrotherGlassBody", "BrotherHurtBody", "FalseSonBossBody", "FalseSonBossBodyBrokenLunarShard", "FalseSonBossBodyLunarShard", "MagmaWormBody", "ElectricWormBody", "ShopkeeperBody", "MiniVoidRaidCrabBodyBase", "MiniVoidRaidCrabBodyPhase1", "MiniVoidRaidCrabBodyPhase2", "MiniVoidRaidCrabBodyPhase3", "ScorchlingBody", "GravekeeperTrackingFireball", "SolusVendorBody" };
 
         public const float launchSpeed = 55f;
@@ -31,6 +35,7 @@ namespace HedgehogUtils.Launch
             if (currentLaunchController)
             {
                 currentLaunchController.Restart(attacker, direction, speed, damage, wallCollisionDamage, crit, procCoefficient, duration);
+                onLaunchServer?.Invoke(target, attacker, direction, speed, damage, wallCollisionDamage, crit, procCoefficient, duration, currentLaunchController);
                 return;
             }
 
@@ -41,6 +46,8 @@ namespace HedgehogUtils.Launch
             vehicle.AssignPassenger(target.gameObject);
             target.AddBuff(Buffs.launchedBuff);
             NetworkServer.Spawn(launchProjectile);
+
+            onLaunchServer?.Invoke(target, attacker, direction, speed, damage, wallCollisionDamage, crit, procCoefficient, duration, launchController);
         }
 
         public static void Launch(CharacterBody target, CharacterBody attacker, Vector3 direction, float damage, bool crit, float procCoefficient)
@@ -89,23 +96,24 @@ namespace HedgehogUtils.Launch
         public static bool TargetCanBeLaunched(CharacterBody target, out LaunchProjectileController currentLaunchController)
         {
             currentLaunchController = null;
-            if (!(Config.LaunchBodyBlacklist().Value && bodyBlacklist.Contains(BodyCatalog.GetBodyName(target.bodyIndex)) || target.bodyFlags.HasFlag(CharacterBody.BodyFlags.IgnoreKnockup)) )
+            if ((Config.LaunchBodyBlacklist().Value && bodyBlacklist.Contains(BodyCatalog.GetBodyName(target.bodyIndex))) || (target.bodyFlags & (CharacterBody.BodyFlags.IgnoreKnockup | CharacterBody.BodyFlags.Unmovable)) > CharacterBody.BodyFlags.None)
             {
-                EntityStateMachine bodyState = EntityStateMachine.FindByCustomName(target.gameObject, "Body");
-                if (bodyState && bodyState.CanInterruptState(InterruptPriority.Vehicle))
+                return false;
+            }
+            EntityStateMachine bodyState = EntityStateMachine.FindByCustomName(target.gameObject, "Body");
+            if (bodyState && bodyState.CanInterruptState(InterruptPriority.Vehicle))
+            {
+                if (target.HasBuff(Buffs.launchedBuff))
                 {
-                    if (target.HasBuff(Buffs.launchedBuff))
+                    if (target.currentVehicle && target.currentVehicle.gameObject.TryGetComponent<LaunchProjectileController>(out LaunchProjectileController existingController))
                     {
-                        if (target.currentVehicle && target.currentVehicle.gameObject.TryGetComponent<LaunchProjectileController>(out LaunchProjectileController existingController))
-                        {
-                            currentLaunchController = existingController;
-                            return existingController.age > 0.3f;
-                        }
+                        currentLaunchController = existingController;
+                        return existingController.age > 0.3f;
                     }
-                    else
-                    {
-                        return true;
-                    }
+                }
+                else
+                {
+                    return true;
                 }
             }
             return false;

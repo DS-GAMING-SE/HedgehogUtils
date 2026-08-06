@@ -13,6 +13,7 @@ using System;
 using HedgehogUtils.Forms.EntityStates;
 using RoR2.ContentManagement;
 using HG;
+using Rebindables;
 
 namespace HedgehogUtils.Forms
 {
@@ -29,7 +30,7 @@ namespace HedgehogUtils.Forms
         [Tooltip("The first FormDef is the form you were PREVIOUSLY in\nThe second FormDef is the one you're in now.")]
         public event Action<FormDef, FormDef> OnFormChanged;
 
-        public string skinName;
+        public SkinDef skin;
 
         private CharacterModel.RendererInfo[] defaultRendererInfos;
         private Mesh[] defaultMeshes;
@@ -95,7 +96,7 @@ namespace HedgehogUtils.Forms
                 }
             }
             bodyState = EntityStateMachine.FindByCustomName(base.gameObject, "Body");
-            skinName = GetSkinName();
+            skin = GetSkin();
             defaultMeshes = new Mesh[model.baseRendererInfos.Length];
             formMeshes = new Mesh[model.baseRendererInfos.Length];
 
@@ -116,7 +117,7 @@ namespace HedgehogUtils.Forms
                     CreateTrackerForForm(form);
                 }
 
-                if (skinName != null && form.renderDictionary.TryGetValue(skinName, out RenderReplacements renderReplacements))
+                if (skin && form.renderDictionary != null && form.renderDictionary.TryGetValue(skin, out RenderReplacements renderReplacements))
                 {
                     if (renderReplacements.rendererInfo != null)
                     {
@@ -158,7 +159,7 @@ namespace HedgehogUtils.Forms
             targetedForm = null;
             foreach (FormDef form in FormCatalog.formsCatalog)
             {
-                if (!form.keybind.Value.Equals(BepInEx.Configuration.KeyboardShortcut.Empty) && Input.GetKeyDown(form.keybind.Value.MainKey) && !localUser.isUIFocused && bodyState.state is GenericCharacterMain)
+                if (form.keyBind != null && body.inputBank && body.inputBank.GetButtonState(form.keyBind).down && !localUser.isUIFocused && bodyState.state is GenericCharacterMain)
                 {
                     targetedForm = form;
                     
@@ -232,7 +233,7 @@ namespace HedgehogUtils.Forms
             UpdateAllRequireFormSkillDefs();
             OnFormChanged?.Invoke(previousForm, activeForm);
             if (!form) { return; }
-            SuperModel(skinName);
+            SuperModel(skin);
         }
 
         internal void TransformEnd()
@@ -276,12 +277,12 @@ namespace HedgehogUtils.Forms
                 }
             }
         }
-        public string GetSkinName()
+        public SkinDef GetSkin()
         {
             ModelSkinController skin = model.GetComponent<ModelSkinController>();
             if (skin && skin.skins.Length > body.skinIndex) // heretic causing errors without this check
             {
-                return ((ScriptableObject)skin.skins[body.skinIndex]).name;
+                return skin.skins[body.skinIndex];
             }
             return null;
         }
@@ -291,21 +292,24 @@ namespace HedgehogUtils.Forms
             return numberOfTimesTransformed[(int)form.formIndex];
         }
 
-        private void SuperModel(string skinName)
+        private void SuperModel(SkinDef skin)
         {
             if (modelAnimator && activeForm.superAnimations) // Animations
             {
                 modelAnimator.SetFloat("isSuperFloat", 1f);
             }
 
-            if (!GetSuperModel(skinName)) return;
+            if (!GetSuperModel(skin)) return;
 
-            defaultRendererInfos = ArrayUtils.Clone(model.baseRendererInfos);
-            for (int i = 0; i < model.baseRendererInfos.Length; i++)
+            if (formRendererInfos != null)
             {
-                formRendererInfos[i].renderer = defaultRendererInfos[i].renderer; // sets renderers to your current character instead of the prefab
+                defaultRendererInfos = ArrayUtils.Clone(model.baseRendererInfos);
+                for (int i = 0; i < model.baseRendererInfos.Length; i++)
+                {
+                    formRendererInfos[i].renderer = defaultRendererInfos[i].renderer; // sets renderers to your current character instead of the prefab
+                }
+                model.baseRendererInfos = formRendererInfos;
             }
-            model.baseRendererInfos = formRendererInfos;
 
             ApplyMeshes(model.baseRendererInfos, formMeshes, true);
 
@@ -320,10 +324,13 @@ namespace HedgehogUtils.Forms
                 modelAnimator.SetFloat("isSuperFloat", 0f);
             }
             if (!formModelApplied) return;
-            model.baseRendererInfos = defaultRendererInfos;
+            if (formRendererInfos != null)
+            {
+                model.baseRendererInfos = defaultRendererInfos;
+                model.materialsDirty = true;
+            }
             ApplyMeshes(model.baseRendererInfos, defaultMeshes, false);
 
-            model.materialsDirty = true;
             formModelApplied = false;
         }
 
@@ -352,16 +359,16 @@ namespace HedgehogUtils.Forms
             }
         }
 
-        private bool GetSuperModel(string skinName)
+        private bool GetSuperModel(SkinDef skin)
         {
-            if (activeForm.renderDictionary == null || string.IsNullOrEmpty(skinName)) 
+            if (activeForm.renderDictionary == null || !skin) 
             {
                 return false; 
             }
 
-            if (activeForm.renderDictionary.TryGetValue(skinName, out RenderReplacements renderReplacements))
+            if (activeForm.renderDictionary.TryGetValue(skin, out RenderReplacements renderReplacements))
             {
-                formRendererInfos = ArrayUtils.Clone(renderReplacements.rendererInfo);
+                if (renderReplacements.rendererInfo != null) formRendererInfos = ArrayUtils.Clone(renderReplacements.rendererInfo);
                 formMeshes = new Mesh[model.baseRendererInfos.Length];
                 for (int i = 0; i < model.baseRendererInfos.Length; i++)
                 {

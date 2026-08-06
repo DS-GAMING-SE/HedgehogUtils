@@ -106,7 +106,7 @@ namespace HedgehogUtils.Boost.EntityStates
         {
             if (!base.isAuthority) { return; }
 
-            if (base.skillLocator.utility.IsReady() && base.inputBank.skill3.down)
+            if (typeof(Boost).IsAssignableFrom(skillLocator.utility.activationState.stateType) && base.skillLocator.utility.IsReady() && base.inputBank.skill3.down)
             {
                 base.skillLocator.utility.OnExecute();
             }

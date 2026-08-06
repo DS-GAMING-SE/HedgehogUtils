@@ -67,6 +67,9 @@
 	  <Reference Include="R2API.Sound">
 	    <HintPath>..\libs\R2API.Sound.dll</HintPath>
 	  </Reference>
+	  <Reference Include="Rebindables">
+	    <HintPath>..\libs\Rebindables.dll</HintPath>
+	  </Reference>
 	  <Reference Include="RiskOfOptions">
 	    <HintPath>..\libs\RiskOfOptions.dll</HintPath>
 	  </Reference>

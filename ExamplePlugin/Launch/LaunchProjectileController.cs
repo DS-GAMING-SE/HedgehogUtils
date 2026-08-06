@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Xml.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -46,8 +47,7 @@ namespace HedgehogUtils.Launch
         public float age;
         protected bool collidedWithWall;
 
-        protected GameObject vfxObject;
-        protected EffectManagerHelper emh;
+        protected EffectManagerHelper vfx;
 
         protected Renderer vfxRenderer;
         protected VehicleSeat vehicle;
@@ -101,19 +101,12 @@ namespace HedgehogUtils.Launch
 
         protected virtual void VFXAura()
         {
-            if (vfxObject) 
+            if (vfx) 
             {
-                if (emh)
-                {
-                    emh.ReturnToPoolOrDestroyInstance(ref vfxObject);
-                }
-                else
-                {
-                    Destroy(vfxObject);
-                }
+                vfx.ReturnToPool();
             }
-            emh = EffectManager.GetAndActivatePooledEffect(crit ? Assets.launchCritAuraEffect : Assets.launchAuraEffect, transform, true);
-            vfxObject = emh.gameObject;
+            vfx = EffectManager.GetAndActivatePooledEffect(crit ? Assets.launchCritAuraEffect : Assets.launchAuraEffect, transform.position, rigidbody.rotation);
+            GameObject vfxObject = vfx.gameObject;
             Assets.ResizeBoostAura(ref vfxObject, radius / 2.5f);
             //vfxRenderer = vfxObject.transform.Find("Aura").GetComponent<Renderer>();
         }
@@ -141,6 +134,14 @@ namespace HedgehogUtils.Launch
             if (age > duration && NetworkServer.active)
             {
                 Destroy(base.gameObject); // Gotta make sure there's time for client's buff to be removed before the launch ends so that their death after the launch won't be cancelled
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (vfx) // making the vfx separate instead of parented to projectile makes pooling easier
+            {
+                vfx.transform.SetPositionAndRotation(transform.position, rigidbody.rotation);
             }
         }
 
@@ -181,15 +182,15 @@ namespace HedgehogUtils.Launch
 
         public void OnDestroy()
         {
-            if (emh)
+            if (vfx)
             {
-                if (vfxObject.TryGetComponent<FadeTrailAndLightWithDestroy>(out var fade))
+                if (vfx.TryGetComponent<FadeTrailAndLightWithDestroy>(out var fade))
                 {
                     fade.StartDisable();
                 }
                 else
                 {
-                    emh.ReturnToPool();
+                    vfx.ReturnToPool();
                 }
             }
             if (NetworkServer.active)

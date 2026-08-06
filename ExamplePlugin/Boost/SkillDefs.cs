@@ -6,13 +6,45 @@ using RoR2;
 using RoR2.Skills;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using UnityEngine;
+using static RoR2.TeleporterInteraction;
 
 namespace HedgehogUtils.Boost
 {
     public class SkillDefs
     {
+        public static T CreateBoostSkillDef<T>(string nameToken, string descriptionToken, Sprite skillIcon, SerializableEntityStateType boostState, SerializableEntityStateType boostIdleState, SerializableEntityStateType brakeState, Color hudColor) where T : BoostSkillDef
+        {
+            T skillDef = ScriptableObject.CreateInstance<T>();
+            skillDef.skillName = nameToken;
+            skillDef.skillNameToken = nameToken;
+            skillDef.skillDescriptionToken = descriptionToken;
+            skillDef.icon = skillIcon;
+            skillDef.activationState = boostState;
+            skillDef.boostIdleState = boostIdleState;
+            skillDef.brakeState = brakeState;
+            skillDef.activationStateMachineName = "Body";
+            skillDef.baseMaxStock = 1;
+            skillDef.baseRechargeInterval = 0f;
+            skillDef.beginSkillCooldownOnSkillEnd = true;
+            skillDef.canceledFromSprinting = false;
+            skillDef.forceSprintDuringState = false;
+            skillDef.fullRestockOnAssign = true;
+            skillDef.interruptPriority = InterruptPriority.PrioritySkill;
+            skillDef.resetCooldownTimerOnUse = false;
+            skillDef.isCombatSkill = false;
+            skillDef.mustKeyPress = true;
+            skillDef.cancelSprintingOnActivation = false;
+            skillDef.rechargeStock = 0;
+            skillDef.requiredStock = 1;
+            skillDef.stockToConsume = 0;
+            skillDef.suppressSkillActivation = true;
+            skillDef.boostHUDColor = hudColor;
+            return skillDef;
+        }
+        
         public interface IBoostSkill
         {
             public SerializableEntityStateType boostIdleState { get; set; }
