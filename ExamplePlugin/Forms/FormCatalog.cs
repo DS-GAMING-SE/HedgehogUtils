@@ -1,14 +1,15 @@
 ﻿using BepInEx.Configuration;
-using RiskOfOptions.Options;
+using HedgehogUtils.Internal;
+using R2API;
+using Rebindables;
 using RiskOfOptions;
+using RiskOfOptions.Options;
 using RoR2;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
-using System.Linq;
-using HedgehogUtils.Internal;
-using Rebindables;
 
 namespace HedgehogUtils.Forms
 {
@@ -23,6 +24,8 @@ namespace HedgehogUtils.Forms
         private static void SystemInit()
         {
             Log.Message("FormCatalog initialized", Config.Logs.All);
+            BakeFormIndices();
+            RoR2.UI.MainMenu.MainMenuController.OnMainMenuInitialised += Forms.BakeRenderDictionaries;
             availability.MakeAvailable();
         }
         public static void AddFormDefs(FormDef[] forms)
@@ -47,6 +50,25 @@ namespace HedgehogUtils.Forms
 
             string allForms = string.Concat(formsCatalog.Select(x => x.ToString() + "\n"));
             Log.Message("FormDef(s) added to formCatalog. formCatalog now contains:\n"+allForms);
+        }
+        private static void BakeFormIndices()
+        {
+            Forms.formHandlerObjects = new GameObject[formsCatalog.Length];
+            Forms.formHandlers = new FormHandler[formsCatalog.Length];
+            Forms.formHandlerPrefabs = new GameObject[formsCatalog.Length];
+            for (int i = 0;i < formsCatalog.Length;i++)
+            {
+                // Creating handler prefab
+                GameObject handlerPrefab = PrefabAPI.CreateEmptyPrefab(formsCatalog[i].cachedName + " " + formsCatalog[i].handlerComponent.Name);
+                FormHandler handlerObjectComponent = (FormHandler)handlerPrefab.AddComponent(formsCatalog[i].handlerComponent);
+                handlerObjectComponent.form = formsCatalog[i];
+                if (formsCatalog[i].requiresItems)
+                {
+                    handlerPrefab.AddComponent(formsCatalog[i].shareRequirements ? typeof(SyncedItemTracker) : typeof(UnsyncedItemTracker));
+                }
+                //PrefabAPI.RegisterNetworkPrefab(handlerPrefab);
+                Forms.formHandlerPrefabs[i] = handlerPrefab;
+            }
         }
     }
 }

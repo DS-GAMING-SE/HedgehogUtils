@@ -24,16 +24,17 @@ namespace HedgehogUtils.Miscellaneous
                 return;
             }
             mouthDefaultScaleX = mouth.transform.localScale.x;
+            SceneCamera.onSceneCameraPreRender += UpdateMouthSide;
         }
-        public void Update()
+        public void UpdateMouthSide(SceneCamera camera)
         {
-            if (Vector3.Dot(SceneCamera._camera.transform.forward, currentSideIsRight ? mouth.right : -mouth.right) >= sideChangeDot)
+            if (Vector3.Dot(camera.transform.forward, currentSideIsRight ? mouth.right : -mouth.right) >= sideChangeDot)
             {
                 currentSideIsRight = !currentSideIsRight;
-                UpdateMouthSide(mouthDefaultRight == currentSideIsRight);
+                SetMouthSide(mouthDefaultRight == currentSideIsRight);
             }
         }
-        public void UpdateMouthSide(bool isDefaultSide)
+        public void SetMouthSide(bool isDefaultSide)
         {
             mouth.transform.localScale.Set(isDefaultSide ? mouthDefaultScaleX : -mouthDefaultScaleX, mouth.transform.localScale.y, mouth.transform.localScale.z);
         }

@@ -13,6 +13,8 @@ using RoR2;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Networking;
@@ -23,11 +25,11 @@ namespace HedgehogUtils.Forms
 {
     public static class Forms
     {
-        public static Dictionary<FormDef, GameObject> formToHandlerPrefab = new Dictionary<FormDef, GameObject>();
+        public static GameObject[] formHandlerPrefabs;
 
-        public static Dictionary<FormDef, GameObject> formToHandlerObject = new Dictionary<FormDef, GameObject>();
+        public static GameObject[] formHandlerObjects;
 
-        public static Dictionary<FormDef, FormHandler> formToHandler = new Dictionary<FormDef, FormHandler>();
+        public static FormHandler[] formHandlers;
 
         // Look at the tooltips in the FormDef class for more information on what all of these parameters mean
         public static FormDef CreateFormDef(string name, BuffDef buff, float duration, bool requiresItems, bool shareRequirements, bool consumeItems, int maxTransforms, bool invincible, bool flight, bool superAnimations, SerializableEntityStateType formState, SerializableEntityStateType transformState,
@@ -55,17 +57,7 @@ namespace HedgehogUtils.Forms
             form.allowedBodyList = allowedBodyList;
             form.keyBind = RebindAPI.RegisterModKeybind(new ModKeybind(form.cachedName, defaultKeyBind, 10));
 
-            // Creating handler prefab
-            GameObject handlerPrefab = PrefabAPI.CreateEmptyPrefab(form.cachedName + " " + form.handlerComponent.Name);
-            FormHandler handlerObjectComponent = (FormHandler)handlerPrefab.AddComponent(handlerComponent);
-            handlerObjectComponent.form = form;
-            if (form.requiresItems)
-            {
-                handlerPrefab.AddComponent(form.shareRequirements ? typeof(SyncedItemTracker) : typeof(UnsyncedItemTracker));
-            }
-            //PrefabAPI.RegisterNetworkPrefab(handlerPrefab);
-            formToHandlerPrefab.Add(form, handlerPrefab);
-            Log.Message("FormDef "+form.cachedName+" created. Created new "+form.handlerComponent.Name+" prefab");
+            Log.Message("FormDef "+form.cachedName+" created.");
 
             return form;
         }
@@ -98,10 +90,34 @@ namespace HedgehogUtils.Forms
             return false;
         }
 
+        /// <summary>
+        /// This exists because it's easier for skin mod creators to use. However, it's recommended to use the SkinDef overload if possible.
+        /// </summary>
+        public static void AddSkinForForm(string skinName, RenderReplacements render, ref FormDef form)
+        {
+            if (form.nameRenderDictionary == null) form.nameRenderDictionary = new Dictionary<string, RenderReplacements>();
+            form.nameRenderDictionary.Add(skinName, render);
+        }
+
         public static void AddSkinForForm(SkinDef skin, RenderReplacements render, ref FormDef form)
         {
             if (form.renderDictionary == null) form.renderDictionary = new Dictionary<SkinDef, RenderReplacements>();
             form.renderDictionary.Add(skin, render);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameObject GetFormHandlerPrefab(FormIndex index)
+        {
+            return formHandlerPrefabs[(int)index];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameObject GetFormHandlerObject(FormIndex index)
+        {
+            return formHandlerObjects[(int)index];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static FormHandler GetFormHandler(FormIndex index)
+        {
+            return formHandlers[(int)index];
         }
 
         [SystemInitializer(typeof(BodyCatalog), typeof(FormCatalog))]
@@ -128,6 +144,36 @@ namespace HedgehogUtils.Forms
                         break;
                     }
                 }
+            }
+        }
+        internal static void BakeRenderDictionaries()
+        {
+            RoR2.UI.MainMenu.MainMenuController.OnMainMenuInitialised -= Forms.BakeRenderDictionaries;
+            bool nameRenderDictionariesExist = false;
+            foreach (var form in FormCatalog.formsCatalog)
+            {
+                if (form.nameRenderDictionary != null)
+                {
+                    nameRenderDictionariesExist = true;
+                }
+            }
+
+            if (!nameRenderDictionariesExist) return;
+
+            foreach (var skin in SkinCatalog.allSkinDefs)
+            {
+                foreach (var form in FormCatalog.formsCatalog)
+                {
+                    if (form.nameRenderDictionary != null && form.nameRenderDictionary.TryGetValue((skin as ScriptableObject).name, out var replacements))
+                    {
+                        form.renderDictionary.Add(skin, replacements);
+                    }
+                }
+            }
+
+            foreach (var form in FormCatalog.formsCatalog)
+            {
+                form.nameRenderDictionary = null;
             }
         }
     }
@@ -176,6 +222,9 @@ namespace HedgehogUtils.Forms
 
         [Tooltip("Stores the material and mesh changes that will be applied when transforming based on what skin you're using.\nKey is the SkinDef. Render Replacements is a struct containing the RendererInfos and mesh for each renderer on your character. All arrays in the RenderReplacements struct, as well as the defaultRendererInfos of the character, must be the same length. An array can be left null if unneeded.")]
         public Dictionary<SkinDef, RenderReplacements> renderDictionary;
+
+        [Tooltip("A render dictionary based on the skin's name (not nameToken). This exists to make it easier for mods to add render replacements without needing to get the skin's SkinDef. If possible, it is recommended to use the SkinDef renderDictionary. This dictionary will be converted into the SkinDef dictionary after the game loads.")]
+        public Dictionary<string, RenderReplacements> nameRenderDictionary;
 
         [Tooltip("The component that will track information about your form, such as whether all necessary items have been collected. This component will be put on a gameObject that will be created at the beginning of every stage and will stay for the duration of the stage.\nIf you're unsure what to put here, use typeof(FormHandler).\nYou can create a subclass of FormHandler and put it here if you want to add code, such as an extra requirement for transforming.")]
         public Type handlerComponent;
@@ -243,6 +292,31 @@ namespace HedgehogUtils.Forms
                     return -1;
                 }
             }
+        }
+
+        public void AddSkinForForm(string skinName, RenderReplacements render)
+        {
+            if (nameRenderDictionary == null) nameRenderDictionary = new Dictionary<string, RenderReplacements>();
+            nameRenderDictionary.Add(skinName, render);
+        }
+
+        public void AddSkinForForm(SkinDef skin, RenderReplacements render)
+        {
+            if (renderDictionary == null) renderDictionary = new Dictionary<SkinDef, RenderReplacements>();
+            renderDictionary.Add(skin, render);
+        }
+
+        public GameObject GetFormHandlerPrefab()
+        {
+            return Forms.formHandlerPrefabs[(int)formIndex];
+        }
+        public GameObject GetFormHandlerObject()
+        {
+            return Forms.formHandlerObjects[(int)formIndex];
+        }
+        public FormHandler GetFormHandler()
+        {
+            return Forms.formHandlers[(int)formIndex];
         }
     }
 

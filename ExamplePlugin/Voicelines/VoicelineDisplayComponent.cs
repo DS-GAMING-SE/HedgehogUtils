@@ -59,6 +59,7 @@ namespace HedgehogUtils.Voicelines
 
         public IEnumerator Start()
         {
+            LoadSoundBank();
             yield return new WaitForSeconds(0.1f);
             BodyIndex index = BodyCatalog.FindBodyIndex(csspdc.bodyPrefab);
             if (index != BodyIndex.None)
@@ -68,6 +69,11 @@ namespace HedgehogUtils.Voicelines
                     PlayRandomVoiceline();
                 }
             }
+        }
+
+        private void OnDestroy()
+        {
+            UnloadSoundBank();
         }
 
         public void PlayRandomVoiceline()

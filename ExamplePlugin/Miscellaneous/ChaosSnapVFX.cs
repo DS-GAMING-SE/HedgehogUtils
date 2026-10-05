@@ -14,6 +14,7 @@ namespace HedgehogUtils.Miscellaneous
         public ScaleParticleSystemDuration scale;
         public LightIntensityCurve lightIntensityCurve;
         public bool reverse;
+        public string soundString;
 
         public Material temporaryOverlayMaterial;
 
@@ -52,6 +53,10 @@ namespace HedgehogUtils.Miscellaneous
                         Flash(model, effectComponent.effectData.genericFloat, reverse);
                     }
                 }
+            }
+            if (!string.IsNullOrEmpty(soundString))
+            {
+                ChaosSnapManager.PlayChaosSnapSound(soundString, effectComponent.effectData.genericFloat, gameObject);
             }
         }
 

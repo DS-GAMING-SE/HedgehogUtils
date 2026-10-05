@@ -33,17 +33,20 @@ namespace HedgehogUtils.Forms
         public const float teamSuperTimerDuration = 10f;
         public float teamSuperTimer;
 
+        public delegate void CanTransformDelegate(FormDef form, bool hasItems, bool teamSuper, bool notTransformedMaxTimes, ref bool canTransform);
+        public static event CanTransformDelegate onCheckCanTransform;
+
         
         private void OnEnable()
         {
             if (!(form && FormCatalog.formsCatalog.Contains(form))) { Log.Error("FormHandler does not have a valid formDef set."); }
-            if (!Forms.formToHandlerObject.ContainsKey(form))
+            if (!Forms.formHandlerObjects[(int)form.formIndex])
             {
                 itemTracker = GetComponent<INeededItemTracker>();
-                Forms.formToHandlerObject.Add(form, gameObject);
-                if (!Forms.formToHandler.ContainsKey(form))
+                Forms.formHandlerObjects[(int)form.formIndex] = gameObject;
+                if (!Forms.formHandlers[(int)form.formIndex])
                 {
-                    Forms.formToHandler.Add(form, this);
+                    Forms.formHandlers[(int)form.formIndex] = this;
                 }
                 Log.Message("FormHandler for form " + form.ToString() + " created");
                 return;
@@ -53,14 +56,14 @@ namespace HedgehogUtils.Forms
 
         private void OnDisable()
         {
-            if (Forms.formToHandlerObject.GetValueSafe(form) == this.gameObject)
+            if (Forms.formHandlerObjects[(int)form.formIndex] == this.gameObject)
             {
-                Forms.formToHandlerObject.Remove(form);
+                Forms.formHandlerObjects[(int)form.formIndex] = null;
                 SetEvents(false);
             }
-            if (Forms.formToHandler.GetValueSafe(form) == this)
+            if (Forms.formHandlers[(int)form.formIndex] = this)
             {
-                Forms.formToHandler.Remove(form);
+                Forms.formHandlers[(int)form.formIndex] = null;
             }
         }
 
@@ -100,7 +103,10 @@ namespace HedgehogUtils.Forms
         {
             bool hasItems = HasItems(component);
             Log.Message("FormHandler with form " + form.ToString() + "\nTeam Super? " + teamSuper + ". Has Items? " + hasItems + ". Number of transforms? " + numberOfTimesTransformed + "/" + component.GetNumberOfTimesTransformed(form) + " out of max " + form.maxTransforms, Config.Logs.All);
-            return (hasItems && HasNotTransformedMaxAmountOfTimes(component)) || teamSuper;
+            bool notTransformedMaxTimes = HasNotTransformedMaxAmountOfTimes(component);
+            bool canTransform = (hasItems && notTransformedMaxTimes) || teamSuper;
+            onCheckCanTransform?.Invoke(form, hasItems, teamSuper, notTransformedMaxTimes, ref canTransform);
+            return canTransform;
         }
 
         public virtual void OnTransform(FormComponent component)

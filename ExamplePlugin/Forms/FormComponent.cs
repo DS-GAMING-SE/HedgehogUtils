@@ -112,7 +112,7 @@ namespace HedgehogUtils.Forms
             foreach (FormDef form in FormCatalog.formsCatalog)
             {
                 if (!form.enabled) continue;
-                if (Forms.formToHandler.TryGetValue(form, out FormHandler handler) && form.requiresItems)
+                if (Forms.GetFormHandler(form.formIndex) && form.requiresItems)
                 {
                     CreateTrackerForForm(form);
                 }
@@ -163,10 +163,10 @@ namespace HedgehogUtils.Forms
                 {
                     targetedForm = form;
                     
-                    if (targetedForm != activeForm && Forms.formToHandler.TryGetValue(targetedForm, out FormHandler handler) &&
+                    if (targetedForm != activeForm && Forms.GetFormHandler(form.formIndex) &&
                         formStateMachine && (formStateMachine.state is not FormStateBase || ((FormStateBase)(formStateMachine.state)).CanBeOverridden()))
                     {
-                        if (handler.CanTransform(this))
+                        if (Forms.GetFormHandler(form.formIndex).CanTransform(this))
                         {
                             Transform();
                             break;
@@ -183,12 +183,12 @@ namespace HedgehogUtils.Forms
         public void Transform(FormDef form)
         {
             if (!bodyState) { return; }
-            if (!Forms.formToHandler.TryGetValue(form, out FormHandler handler)) { return; }
+            if (!Forms.GetFormHandler(form.formIndex)) { return; }
             bool transformSuccess;
             if (form.transformState.stateType != null)
             {
                 TransformationBase transformState = (TransformationBase)EntityStateCatalog.InstantiateState(form.transformState.stateType);
-                transformState.fromTeamSuper = handler.teamSuper;
+                transformState.fromTeamSuper = Forms.GetFormHandler(form.formIndex).teamSuper;
 
                 transformSuccess = bodyState.SetInterruptState(transformState, InterruptPriority.Frozen);
             }
@@ -203,7 +203,7 @@ namespace HedgehogUtils.Forms
                 numberOfTimesTransformed[(int)form.formIndex] += 1;
                 if (NetworkServer.active)
                 {
-                    handler.OnTransform(this);
+                    Forms.GetFormHandler(form.formIndex).OnTransform(this);
                 }
                 else
                 {
@@ -422,12 +422,12 @@ namespace HedgehogUtils.Forms
         // HOW DO I GET THE INVENTORY?!?!?
         private void Start()
         {
-            if (Forms.formToHandler.TryGetValue(form, out FormHandler handler))
+            if (Forms.GetFormHandler(form.formIndex))
             {
-                formHandler = handler;
-                if (typeof(SyncedItemTracker).IsAssignableFrom(handler.itemTracker.GetType()))
+                formHandler = Forms.GetFormHandler(form.formIndex);
+                if (typeof(SyncedItemTracker).IsAssignableFrom(Forms.GetFormHandler(form.formIndex).itemTracker.GetType()))
                 {
-                    syncedItemTracker = handler.itemTracker as SyncedItemTracker;
+                    syncedItemTracker = Forms.GetFormHandler(form.formIndex).itemTracker as SyncedItemTracker;
                 }
             }
         }
