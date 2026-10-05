@@ -432,7 +432,6 @@ namespace HedgehogUtils
         public static LoopSoundDef superLoopSoundDef;
         public static GameObject superFormPPVolume;
         public static GameObject chaosEmeraldDropletPrefab;
-        #endregion
 
         public static void SuperForm()
         {
@@ -625,6 +624,7 @@ namespace HedgehogUtils
             rainbowAura.sharedMaterial = subtle ? rainbowGlowSubtleMaterial : rainbowGlowMaterial;
             rainbowAura.mesh = Addressables.LoadAssetAsync<Mesh>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.mdlVFXDonut1_fbx_donut1Mesh_).WaitForCompletion();
         }
+        #endregion
 
         public static Material ringMaterial;
         #region Chaos Snap
@@ -632,11 +632,10 @@ namespace HedgehogUtils
         public static GameObject chaosSnapInEffect;
         public static GameObject chaosSnapOutEffect;
         public static Material chaosSnapMaterial;
-        public static NetworkSoundEventDef chaosSnapSoundEventDef;
-        public static NetworkSoundEventDef chaosSnapLargeSoundEventDef;
         #endregion
         public static GameObject lockOnIndicator;
         public static Material lockOnUIRemap;
+        public static Material glitchOverlayMaterial;
         public static void Miscellaneous()
         {
             rainbowGlowMaterial = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC2_Elites_EliteBead.matEliteBeadSpikeGrowthRing_mat).WaitForCompletion());
@@ -657,9 +656,6 @@ namespace HedgehogUtils
             chaosSnapMaterial.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampLightning2_png).WaitForCompletion());
             chaosSnapInEffect = CreateChaosSnapEffect("ChaosSnapInVFX", true);
             chaosSnapOutEffect = CreateChaosSnapEffect("ChaosSnapOutVFX", false);
-
-            chaosSnapSoundEventDef = CreateNetworkSoundEventDef("Play_hedgehogutils_teleport");
-            chaosSnapLargeSoundEventDef = CreateNetworkSoundEventDef("Play_hedgehogutils_teleport_large");
 
             lockOnIndicator = mainAssetBundle.LoadAsset<GameObject>("LockOnIndicator");
             var lockOnIndicatorComponent = lockOnIndicator.AddComponent<LockOnIndicator>();
@@ -693,6 +689,23 @@ namespace HedgehogUtils
             lockOnStartScaleCurve.useOverallCurveOnly = true;
             lockOnStartScaleCurve.overallCurve = AnimationCurve.Linear(0f, 3f, 1f, 0f);
             lockOnIndicatorComponent.start = lockOnStartScaleCurve.GetComponent<SpriteRenderer>();
+
+            glitchOverlayMaterial = new Material(AssetAsyncReferenceManager<Material>.LoadAsset(new AssetReferenceT<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matOmniHitspark1Generic_mat)).WaitForCompletion());
+            glitchOverlayMaterial.name = "matHedgehogUtilsGlitchOverlay";
+            glitchOverlayMaterial.SetInt("_ZTest", 7);
+            glitchOverlayMaterial.SetFloat("_InvFade", 2f);
+            glitchOverlayMaterial.SetFloat("_DepthOffset", -2f);
+            glitchOverlayMaterial.SetFloat("_Boost", 5f);
+            glitchOverlayMaterial.SetFloat("_AlphaBoost", 1.5f);
+            glitchOverlayMaterial.SetFloat("_AlphaBias", 0f);
+            glitchOverlayMaterial.SetTexture("_MainTex", AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.texOmniExplosion2Mask_png)).WaitForCompletion());
+            glitchOverlayMaterial.SetTexture("_RemapTex", AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampDefault_png)).WaitForCompletion());
+            glitchOverlayMaterial.SetTexture("_Cloud1Tex", AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Drone_Tech.texNanoScanLines_png)).WaitForCompletion());
+            glitchOverlayMaterial.SetTexture("_Cloud2Tex", AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_TiledTextures.texCloudIce_png)).WaitForCompletion());
+            glitchOverlayMaterial.SetVector("_CutoffScroll", new Vector4(0f, -100f, 40f, -200f));
+            glitchOverlayMaterial.SetFloat("_DistortionStrength", 0.5f);
+            glitchOverlayMaterial.EnableKeyword("USE_CLOUDS");
+            glitchOverlayMaterial.EnableKeyword("CLOUDOFFSET");
         }
         private static SpriteRenderer LockOnNibs(Transform nibHolder, Sprite sprite)
         {
@@ -733,7 +746,7 @@ namespace HedgehogUtils
             // Material swapping
             teleportLineRenderer.sharedMaterial = chaosSnapMaterial;
             distortionRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matInverseDistortion_mat).WaitForCompletion();
-            flashRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_VFX.matGenericFlash_mat).WaitForCompletion();
+            flashRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Items_ShockDamageAura.matDroneShockDamageGlowBurst_mat).WaitForCompletion();
 
             EffectComponent effectComponent = effect.AddComponent<EffectComponent>();
             effectComponent.applyScale = true;
@@ -742,6 +755,7 @@ namespace HedgehogUtils
             ChaosSnapVFX chaosSnapVFXComponent = effect.AddComponent<ChaosSnapVFX>();
             chaosSnapVFXComponent.reverse = teleportIn;
             chaosSnapVFXComponent.temporaryOverlayMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Huntress.matHuntressFlashBright_mat).WaitForCompletion();
+            chaosSnapVFXComponent.soundString = "Play_hedgehogutils_teleport";
 
             AddNewEffectDef(effect);
 

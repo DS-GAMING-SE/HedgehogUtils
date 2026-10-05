@@ -141,9 +141,9 @@ namespace HedgehogUtils
             emeraldStats.calculateValuesNew = (luck, stackCount, procChance) =>
             {
                 var list = new List<float>();
-                if (Forms.Forms.formToHandlerObject.TryGetValue(SuperFormDef.superFormDef, out GameObject handler))
+                if (Forms.Forms.GetFormHandlerObject(SuperFormDef.superFormDef.formIndex))
                 {
-                    if (handler.TryGetComponent(out SuperSonicHandler emeraldSpawner))
+                    if (Forms.Forms.GetFormHandlerObject(SuperFormDef.superFormDef.formIndex).TryGetComponent(out SuperSonicHandler emeraldSpawner))
                     {
                         list.Add(7 - ((SyncedItemTracker)emeraldSpawner.itemTracker).missingItems.Count);
                     }
@@ -205,10 +205,10 @@ namespace HedgehogUtils
             {
                 bool formAvailable = form.setIsEnabledFunc(form);
 
-                if (!Forms.Forms.formToHandlerObject.ContainsKey(form) && formAvailable)
+                if (!Forms.Forms.GetFormHandlerObject(form.formIndex) && formAvailable)
                 {
                     Log.Message("Spawning new handler object for form " + form.ToString());
-                    NetworkServer.Spawn(GameObject.Instantiate<GameObject>(Forms.Forms.formToHandlerPrefab.GetValueSafe(form)));
+                    NetworkServer.Spawn(GameObject.Instantiate<GameObject>(Forms.Forms.GetFormHandlerPrefab(form.formIndex)));
                     form.enabled = true;
                 }
                 else
@@ -218,14 +218,14 @@ namespace HedgehogUtils
                     continue;
                 }
 
-                FormHandler formHandler = Forms.Forms.formToHandlerObject.GetValueSafe(form).GetComponent(typeof(FormHandler)) as FormHandler;
+                FormHandler formHandler = Forms.Forms.GetFormHandlerObject(form.formIndex).GetComponent<FormHandler>();
 
                 formHandler.SetEvents(formAvailable);
             }
             #region Super Form Handler and Emeralds
-            if (!Forms.Forms.formToHandlerObject.TryGetValue(SuperFormDef.superFormDef, out GameObject handler)) { return; }
+            if (!Forms.Forms.GetFormHandlerObject(SuperFormDef.superFormDef.formIndex)) { return; }
 
-            if (!handler.TryGetComponent(out SuperSonicHandler emeraldSpawner)) { return; }
+            if (!Forms.Forms.GetFormHandlerObject(SuperFormDef.superFormDef.formIndex).TryGetComponent(out SuperSonicHandler emeraldSpawner)) { return; }
 
             emeraldSpawner.FilterOwnedEmeralds();
 

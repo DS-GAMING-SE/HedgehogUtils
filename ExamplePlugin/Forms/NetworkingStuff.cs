@@ -29,10 +29,9 @@ namespace HedgehogUtils.Forms
         {
             GameObject body = Util.FindNetworkObject(netId);
             if (!body) { return; }
-            if (Forms.formToHandlerObject.TryGetValue(Forms.GetFormDef(formIndex), out GameObject handlerObject))
+            if (Forms.formHandlers[(int)formIndex])
             {
-                FormHandler handler = handlerObject.GetComponent(typeof(FormHandler)) as FormHandler;
-                handler.OnTransform(body.GetComponent<FormComponent>());
+                Forms.formHandlers[(int)formIndex].OnTransform(body.GetComponent<FormComponent>());
             }
 
         }

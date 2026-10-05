@@ -63,11 +63,11 @@ namespace HedgehogUtils.Voicelines
                 isVoicelinePlaying = false;
             }
         }
-        protected virtual void OnEnable()
+        protected void LoadSoundBank()
         {
             if (!string.IsNullOrEmpty(soundBankFilePath)) soundBankID = SoundAPI.SoundBanks.Add(soundBankFilePath);
         }
-        protected virtual void OnDisable()
+        protected void UnloadSoundBank()
         {
             if (!string.IsNullOrEmpty(soundBankFilePath)) SoundAPI.SoundBanks.Remove(soundBankID);
         }
@@ -128,7 +128,7 @@ namespace HedgehogUtils.Voicelines
         private void EnableVoicelines()
         {
             InstanceTracker.Add<VoicelineComponent>(this);
-            if (!string.IsNullOrEmpty(soundBankFilePath)) soundBankID = SoundAPI.SoundBanks.Add(soundBankFilePath);
+            LoadSoundBank();
             SubscribeEvents();
         }
         private void Start()
@@ -142,14 +142,10 @@ namespace HedgehogUtils.Voicelines
                 enabled = false;
             }
         }
-        protected override void OnEnable()
-        {
-
-        }
-        protected override void OnDisable()
+        protected void OnDisable()
         {
             InstanceTracker.Remove<VoicelineComponent>(this);
-            base.OnDisable();
+            UnloadSoundBank();
             UnsubscribeEvents();
         }
     }
