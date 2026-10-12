@@ -465,7 +465,7 @@ namespace HedgehogUtils
             var superTransformPPFade = superTransformPP.gameObject.AddComponent<PostProcessDuration>();
             superTransformPPFade.ppVolume = superTransformPP;
             superTransformPPFade.ppWeightCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
-            superTransformPPFade.maxDuration = 0.12f;
+            superTransformPPFade.maxDuration = 0.19f;
             #endregion
             //superFormTransformationEffect = Assets.LoadEffect("SonicSuperTransformation");
             if (superFormTransformationEffect)

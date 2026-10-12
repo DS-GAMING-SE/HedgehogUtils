@@ -232,6 +232,10 @@ namespace HedgehogUtils.Forms
             this.activeForm = form;
             UpdateAllRequireFormSkillDefs();
             OnFormChanged?.Invoke(previousForm, activeForm);
+            if (previousForm)
+            {
+                ResetModel();
+            }
             if (!form) { return; }
             SuperModel(skin);
         }

@@ -33,7 +33,7 @@ namespace HedgehogUtils.Forms
         public const float teamSuperTimerDuration = 10f;
         public float teamSuperTimer;
 
-        public delegate void CanTransformDelegate(FormDef form, bool hasItems, bool teamSuper, bool notTransformedMaxTimes, ref bool canTransform);
+        public delegate void CanTransformDelegate(FormDef form, FormComponent formComponent, bool hasItems, bool teamSuper, bool notTransformedMaxTimes, ref bool canTransform);
         public static event CanTransformDelegate onCheckCanTransform;
 
         
@@ -99,14 +99,18 @@ namespace HedgehogUtils.Forms
             return (form.maxTransforms <= 0 || (numberOfTimesTransformed < form.maxTransforms || (component.GetNumberOfTimesTransformed(form) < form.maxTransforms && !form.shareRequirements)));
         }
 
-        public virtual bool CanTransform(FormComponent component)
+        public bool CanTransform(FormComponent component)
         {
-            bool hasItems = HasItems(component);
-            Log.Message("FormHandler with form " + form.ToString() + "\nTeam Super? " + teamSuper + ". Has Items? " + hasItems + ". Number of transforms? " + numberOfTimesTransformed + "/" + component.GetNumberOfTimesTransformed(form) + " out of max " + form.maxTransforms, Config.Logs.All);
-            bool notTransformedMaxTimes = HasNotTransformedMaxAmountOfTimes(component);
-            bool canTransform = (hasItems && notTransformedMaxTimes) || teamSuper;
-            onCheckCanTransform?.Invoke(form, hasItems, teamSuper, notTransformedMaxTimes, ref canTransform);
+            bool canTransform = CheckTransformationConditions(component, out bool hasItems, out bool notTransformedMaxTimes);
+            onCheckCanTransform?.Invoke(form, component, hasItems, teamSuper, notTransformedMaxTimes, ref canTransform);
             return canTransform;
+        }
+        protected virtual bool CheckTransformationConditions(FormComponent component, out bool hasItems, out bool notTransformedMaxTimes)
+        {
+            hasItems = HasItems(component);
+            Log.Message("FormHandler with form " + form.ToString() + "\nTeam Super? " + teamSuper + ". Has Items? " + hasItems + ". Number of transforms? " + numberOfTimesTransformed + "/" + component.GetNumberOfTimesTransformed(form) + " out of max " + form.maxTransforms, Config.Logs.All);
+            notTransformedMaxTimes = HasNotTransformedMaxAmountOfTimes(component);
+            return (hasItems && notTransformedMaxTimes) || teamSuper;
         }
 
         public virtual void OnTransform(FormComponent component)
