@@ -1,8 +1,10 @@
 # Changelog
 
 ## v2.0.0
+Fixed for Hallowed Concepts
+
 *This update has a lot of breaking changes, which would matter if there was literally anyone developing with this mod other than me*
- - (Voicelines) Added a new system for handling voicelines. It's a system designed to respond to certain events in gameplay, such as encountering specific bosses or entering specific stages. In the future, I plan on using this system for something cool...
+ - (Voicelines) Added a new system for handling voicelines. It's a system designed to respond to certain events in gameplay, such as encountering specific bosses or entering specific stages.
  
  - (Visuals) Redid the vfx for boosting. New methods have been added to the Assets class for making your own boost vfx. The previous methods for creating boost auras have been deprecated
  - (Visuals) Redid the vfx for transforming into the super form.
@@ -13,14 +15,19 @@
 
  - (Bug Fix) Transformations can no longer be activated while in UI (such as typing in chat) or while you're not in your main body state (usually doing some action where you can't use other skills)
  - (Bug Fix) Fixed the Chaos Emerald interactable breaking if you purchase it and pick it up with Drifter at the same time
+ - (Bug Fix) Boost now only triggers skill activation effects when you actually start boosting. It won't trigger when entering Boost's idle stance, preventing unintended interactions with items like [Sandswept's](https://thunderstore.io/package/SandsweptTeam/Sandswept) Fractured Timepiece
  
- - (Config) Super transformation key binds have been moved to the [Rebindables](https://thunderstore.io/c/riskofrain2/p/pseudopulse/Rebindables/) mod, meaning the key binds now have support for controllers. The default key bind for the Super form has been changed from V to G. *Hallowed Concepts took my damn key bind.*
+ - (Config) **Your Super transformation key bind must be redone**. Super transformation key binds have been moved to the [Rebindables](https://thunderstore.io/c/riskofrain2/p/pseudopulse/Rebindables/) mod, meaning the key binds now have support for controllers. The default key bind for the Super form has been changed from V to G. *Hallowed Concepts took my damn key bind.*
+
+ <details>
+ <summary>Internal Changes (Not relevant to gameplay)</summary>
  
  - (Internal) **Breaking** The RenderReplacements system for making custom super form models has been completely redone. It now supports characters with multiple renderers, multiple meshes, and it works with memop asset references. A RenderReplacement now has three arrays for CharacterModel.RendererInfo, Meshes, and AssetReferenceT<Mesh>s
  - (Internal) **Breaking** FormDef's RenderReplacements now use the skin scriptable object name instead of the name token to prevent issues relating to multiple skins having the same name (Apparently "Default" is a common name for skins. Who knew?). There is also a new (preferred) option to use the SkinDef itself directly as the key to the dictionary.
  - (Internal) **Breaking** FormDef.enabled functionality has been moved to FormDef.setIsEnabledFunc. FormDef.enabled is now a simple and efficient method for checking if the form is enabled or not, which is decided by setIsEnabledFunc at the beginning of the stage
  - (Internal) **Breaking** Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
   - (Internal) **Breaking** The formToHandlerPrefab, formToHandlerObject, and formToHandler dictionaries have been replaced with arrays that use the FormIndex as the array index. There are also new methods, such as Forms.GetFormHandlerPrefab, that can now be used for convenience
+  - (Internal) **Breaking** FormHandler's CanTransform method has been slightly reorganized. It is no longer a virtual method, it instead calls CheckTransformationConditions, which is the virtual method. This change was made to help introduce a new static event, onCheckCanTransform, which lets you override whether someone is able to transform
  - (Internal) FormDef now has a cachedName property. This should be used instead of using the scriptable object's name directly
  - (Internal) TransformationBase now has a reference to CharacterModel
  - (Internal) The point at which GenericTransformationBase triggers the transformation is no longer hardcoded, and can now be changed via the abstract transformationDurationPercent
@@ -28,7 +35,7 @@
  - (Internal) Removed unnecessary On.RoR2.UI.HUD.Awake hook used for creating the boost meter. The boost meter hud is now handled through RoR2's Hud Overlay system
  - (Internal) Removed unnecessary On.RoR2.SceneDirector.Start hook used for spawning technical objects at the start of the stage. This is now done via the Stage.onServerStageBegin event
  - (Internal) Removed unnecessary On.RoR2.GenericPickupController.Start hook used for playing the sound for the Chaos Emerald item landing on the ground. This is now handled by the new droplet vfx
- - (Internal) Added a static onCheckCanTransform event so whether a form can be transformed into or not can be overridden by any arbitrary reason for any form
+ </details>
  
 ### Known Issues
  - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
