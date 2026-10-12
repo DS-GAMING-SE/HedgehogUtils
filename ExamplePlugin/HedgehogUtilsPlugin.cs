@@ -9,6 +9,7 @@ using R2API.Networking;
 using HedgehogUtils.Forms;
 using HedgehogUtils.Miscellaneous;
 using HedgehogUtils.Voicelines;
+using Rebindables;
 
 namespace HedgehogUtils
 {
@@ -18,7 +19,7 @@ namespace HedgehogUtils
     // This one is because we use a .language file for language tokens
     // More info in https://risk-of-thunder.github.io/R2Wiki/Mod-Creation/Assets/Localization/
     [BepInDependency(LanguageAPI.PluginGUID)]
-
+    [BepInDependency(Rebindables.Rebindables.PluginGUID)]
     [BepInDependency(LookingGlass.PluginInfo.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.rune580.riskofoptions", BepInDependency.DependencyFlags.SoftDependency)]
 
@@ -40,7 +41,7 @@ namespace HedgehogUtils
         public const string PluginGUID = "com.ds_gaming.HedgehogUtils";
         public const string PluginAuthor = "ds_gaming";
         public const string PluginName = "HedgehogUtils";
-        public const string PluginVersion = "1.1.6";
+        public const string PluginVersion = "2.0.0";
 
         public const string Prefix = "DS_GAMING_HEDGEHOG_UTILS_";
 
@@ -96,6 +97,7 @@ namespace HedgehogUtils
             VoicelineManager.Initialize();
 
             NetworkingAPI.RegisterMessageType<NetworkVoiceline>();
+            NetworkingAPI.RegisterMessageType<NetworkLobbyVoiceline>();
             #endregion
 
             OnHooks.Initialize();

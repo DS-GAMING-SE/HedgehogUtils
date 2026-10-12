@@ -33,17 +33,20 @@ namespace HedgehogUtils.Forms
         public const float teamSuperTimerDuration = 10f;
         public float teamSuperTimer;
 
+        public delegate void CanTransformDelegate(FormDef form, FormComponent formComponent, bool hasItems, bool teamSuper, bool notTransformedMaxTimes, ref bool canTransform);
+        public static event CanTransformDelegate onCheckCanTransform;
+
         
         private void OnEnable()
         {
             if (!(form && FormCatalog.formsCatalog.Contains(form))) { Log.Error("FormHandler does not have a valid formDef set."); }
-            if (!Forms.formToHandlerObject.ContainsKey(form))
+            if (!Forms.formHandlerObjects[(int)form.formIndex])
             {
                 itemTracker = GetComponent<INeededItemTracker>();
-                Forms.formToHandlerObject.Add(form, gameObject);
-                if (!Forms.formToHandler.ContainsKey(form))
+                Forms.formHandlerObjects[(int)form.formIndex] = gameObject;
+                if (!Forms.formHandlers[(int)form.formIndex])
                 {
-                    Forms.formToHandler.Add(form, this);
+                    Forms.formHandlers[(int)form.formIndex] = this;
                 }
                 Log.Message("FormHandler for form " + form.ToString() + " created");
                 return;
@@ -53,14 +56,14 @@ namespace HedgehogUtils.Forms
 
         private void OnDisable()
         {
-            if (Forms.formToHandlerObject.GetValueSafe(form) == this.gameObject)
+            if (Forms.formHandlerObjects[(int)form.formIndex] == this.gameObject)
             {
-                Forms.formToHandlerObject.Remove(form);
+                Forms.formHandlerObjects[(int)form.formIndex] = null;
                 SetEvents(false);
             }
-            if (Forms.formToHandler.GetValueSafe(form) == this)
+            if (Forms.formHandlers[(int)form.formIndex] = this)
             {
-                Forms.formToHandler.Remove(form);
+                Forms.formHandlers[(int)form.formIndex] = null;
             }
         }
 
@@ -96,11 +99,18 @@ namespace HedgehogUtils.Forms
             return (form.maxTransforms <= 0 || (numberOfTimesTransformed < form.maxTransforms || (component.GetNumberOfTimesTransformed(form) < form.maxTransforms && !form.shareRequirements)));
         }
 
-        public virtual bool CanTransform(FormComponent component)
+        public bool CanTransform(FormComponent component)
         {
-            bool hasItems = HasItems(component);
+            bool canTransform = CheckTransformationConditions(component, out bool hasItems, out bool notTransformedMaxTimes);
+            onCheckCanTransform?.Invoke(form, component, hasItems, teamSuper, notTransformedMaxTimes, ref canTransform);
+            return canTransform;
+        }
+        protected virtual bool CheckTransformationConditions(FormComponent component, out bool hasItems, out bool notTransformedMaxTimes)
+        {
+            hasItems = HasItems(component);
             Log.Message("FormHandler with form " + form.ToString() + "\nTeam Super? " + teamSuper + ". Has Items? " + hasItems + ". Number of transforms? " + numberOfTimesTransformed + "/" + component.GetNumberOfTimesTransformed(form) + " out of max " + form.maxTransforms, Config.Logs.All);
-            return (hasItems && HasNotTransformedMaxAmountOfTimes(component)) || teamSuper;
+            notTransformedMaxTimes = HasNotTransformedMaxAmountOfTimes(component);
+            return (hasItems && notTransformedMaxTimes) || teamSuper;
         }
 
         public virtual void OnTransform(FormComponent component)
@@ -132,7 +142,7 @@ namespace HedgehogUtils.Forms
                     {
                         baseToken = HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT",
                         subjectAsNetworkUser = component.body.master.playerCharacterMasterController.networkUser,
-                        paramTokens = new string[] { RoR2.Language.GetString(form.name) }
+                        paramTokens = new string[] { RoR2.Language.GetString(form.cachedName) }
                     });
                 }
                 else
@@ -141,7 +151,7 @@ namespace HedgehogUtils.Forms
                     {
                         baseToken = HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT",
                         subjectAsCharacterBody = component.body,
-                        paramTokens = new string[] { RoR2.Language.GetString(form.name) }
+                        paramTokens = new string[] { RoR2.Language.GetString(form.cachedName) }
                     });
                 }
             }

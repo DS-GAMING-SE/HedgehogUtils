@@ -23,8 +23,8 @@ namespace HedgehogUtils
 
             LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM", "Super");
 
-            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT", Helpers.SuperFormText("<size=110%>{0} has transformed into their {1} form!</color></size>"));
-            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT_2P", Helpers.SuperFormText("<size=110%>You transformed into your {1} form!</color></size>"));
+            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT", Helpers.SuperFormText("<size=110%>{0} has transformed into their {1} form!</size>"));
+            LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "SUPER_FORM_ANNOUNCE_TEXT_2P", Helpers.SuperFormText("<size=110%>You transformed into your {1} form!</size>"));
 
             #endregion
 
@@ -45,8 +45,8 @@ namespace HedgehogUtils
             LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "EMERALD_TEMPLE_CYAN", "Chaos Emerald: Cyan");
             LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "EMERALD_TEMPLE_PURPLE", "Chaos Emerald: Purple");
             // Couldn't figure out how to change the tokens at runtime to match the keybind config but ehhhhh whatever
-            string chaosEmeraldDesc = $" of the <style=cIsUtility>seven</style> Chaos Emeralds." + Environment.NewLine + $"When all <style=cIsUtility>seven</style> are collected by you and/or other players, press {Helpers.SuperFormText("V")} to transform into your {Helpers.SuperFormText("Super Form")} for {Helpers.SuperFormText(Forms.SuperForm.StaticValues.superSonicDuration.ToString())} seconds. Transforming increases <style=cIsDamage>damage</style> by <style=cIsDamage>+{100f * Forms.SuperForm.StaticValues.superSonicBaseDamage}%</style>. Increases <style=cIsDamage>attack speed</style> by <style=cIsDamage>+{100f * Forms.SuperForm.StaticValues.superSonicAttackSpeed}%</style>. Increases <style=cIsUtility>movement speed</style> by <style=cIsUtility>+{100f * Forms.SuperForm.StaticValues.superSonicMovementSpeed}%</style>. Grants <style=cIsHealing>complete invincibility</style> and <style=cIsUtility>flight</style>. Certain <style=cIsUtility>characters</style> have {Helpers.SuperFormText("all of their skills upgraded")}." + Environment.NewLine + Environment.NewLine + "This will <style=cIsUtility>consume</style> all seven Chaos Emeralds.";
-            string chaosEmeraldPickup = $"One out of seven. When all are collected, transform into your Super form by pressing V, granting invincibility, flight, and incredible power for {Forms.SuperForm.StaticValues.superSonicDuration} seconds. Consumed on use.";
+            string chaosEmeraldDesc = $" of the <style=cIsUtility>seven</style> Chaos Emeralds." + Environment.NewLine + $"When all <style=cIsUtility>seven</style> are collected by you and/or other players, press {Helpers.SuperFormText("G")} to transform into your {Helpers.SuperFormText("Super Form")} for {Helpers.SuperFormText(Forms.SuperForm.StaticValues.superSonicDuration.ToString())} seconds. Transforming increases <style=cIsDamage>damage</style> by <style=cIsDamage>+{100f * Forms.SuperForm.StaticValues.superSonicBaseDamage}%</style>. Increases <style=cIsDamage>attack speed</style> by <style=cIsDamage>+{100f * Forms.SuperForm.StaticValues.superSonicAttackSpeed}%</style>. Increases <style=cIsUtility>movement speed</style> by <style=cIsUtility>+{100f * Forms.SuperForm.StaticValues.superSonicMovementSpeed}%</style>. Grants <style=cIsHealing>complete invincibility</style> and <style=cIsUtility>flight</style>. Certain <style=cIsUtility>characters</style> have {Helpers.SuperFormText("all of their skills upgraded")}." + Environment.NewLine + Environment.NewLine + "This will <style=cIsUtility>consume</style> all seven Chaos Emeralds.";
+            string chaosEmeraldPickup = $"One out of seven. When all are collected, transform into your Super form by pressing G, granting invincibility, flight, and incredible power for {Forms.SuperForm.StaticValues.superSonicDuration} seconds. Consumed on use.";
 
             LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "YELLOW_EMERALD", "Chaos Emerald: <style=cIsDamage>Yellow</style>");
             LanguageAPI.Add(HedgehogUtilsPlugin.Prefix + "YELLOW_EMERALD_PICKUP", chaosEmeraldPickup);

@@ -6,16 +6,19 @@ using RoR2.Navigation;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
 namespace HedgehogUtils.Miscellaneous
 {
-    public class ChaosSnapManager : MonoBehaviour
+    public class ChaosSnapManager : MonoBehaviour, ICameraStateProvider
     {
         public static ChaosSnapManager instance;
         public static GameObject prefab;
+
+        private const float CAMERA_MOVEMENT_PERCENT_OF_DURATION = 0.7f;
 
         public static void Initialize()
         {
@@ -68,13 +71,17 @@ namespace HedgehogUtils.Miscellaneous
         IEnumerator TeleportAfterDelay(CharacterBody target, Vector3 teleportFootPosition, float startDuration, float endDuration)
         {
             TeleportVFX(target, target.corePosition, true, startDuration, true);
-            yield return new WaitForSeconds(startDuration);
+            yield return new WaitForSeconds(startDuration * (1 - CAMERA_MOVEMENT_PERCENT_OF_DURATION));
+            ChaosSnapCameraInstance camera = StartCameraMove(target.gameObject, teleportFootPosition, Vector3.zero, (startDuration + endDuration) * CAMERA_MOVEMENT_PERCENT_OF_DURATION);
+            yield return new WaitForSeconds(startDuration * CAMERA_MOVEMENT_PERCENT_OF_DURATION);
             if (target)
             {
                 TeleportVFX(target, VFXPosition(target, teleportFootPosition), false, endDuration, true);
                 TeleportHelper.TeleportBody(target, teleportFootPosition, true);
             }
-
+            yield return new WaitForSeconds(endDuration * CAMERA_MOVEMENT_PERCENT_OF_DURATION);
+            EndCameraMove(camera);
+            //yield return new WaitForSeconds(endDuration * (1 - CAMERA_MOVEMENT_PERCENT_OF_DURATION));
         }
         public bool TeleportBodyToRandomNode(CharacterBody target, float minDistance, float maxDistance)
         {
@@ -91,7 +98,14 @@ namespace HedgehogUtils.Miscellaneous
         }
         public static void TeleportVFX(CharacterBody target, Vector3 position, GameObject vfxPrefab, float duration, bool useTemporaryOverlay)
         {
-            if (duration <= 0.05f) { return; }
+            if (duration <= 0.05f) 
+            { 
+                if (vfxPrefab.TryGetComponent<ChaosSnapVFX>(out var vfx) && !string.IsNullOrEmpty(vfx.soundString))
+                {
+                    PlayChaosSnapSound(vfx.soundString, duration, target.gameObject);
+                }
+                return;
+            }
             float scale = 1f;
             if (target)
             {
@@ -111,7 +125,6 @@ namespace HedgehogUtils.Miscellaneous
             {
                 scale = scale,
                 genericFloat = duration,
-                networkSoundEventIndex = duration < 0.27f ? Assets.chaosSnapSoundEventDef.index : Assets.chaosSnapLargeSoundEventDef.index,
                 origin = position,
                 rootObject = target ? target.gameObject : null,
                 genericBool = useTemporaryOverlay && target
@@ -158,6 +171,145 @@ namespace HedgehogUtils.Miscellaneous
 
             nodeGraph.GetNodePosition(nodeIndex, out Vector3 vector3);
             destination = vector3;
+            return true;
+        }
+
+        public static void PlayChaosSnapSound(string soundString, float duration, GameObject gameObject)
+        {
+            AkSoundEngine.SetRTPCValueByPlayingID("teleportDuration", duration, RoR2.Util.PlaySound(soundString, gameObject));
+        }
+
+        // Camera movement
+        // Not sure if this set up is a good idea, since usually there's a separate ICameraStateProvider for each target, but I'm trying to do all targets with one provider
+        // Worst case, it couldn't break, right? It'd just hold onto this override that won't actually change anything. Eventually it'll get overwritten by another override or..
+        // .. when the singleton is deleted and respawned next stage. Teleports won't last more than a second and all overrides get cleared when all teleports end
+        // Yep... solid... for sure
+
+        public const float maxLerpTime = 0.35f; // Copied from amy multi-lock, currently unused. Not sure if I want to use it
+        public struct ChaosSnapCameraInstance
+        {
+            public GameObject user;
+            public Vector3 startPosition;
+            public Vector3 targetPosition;
+            public Quaternion targetRotation;
+        }
+        private readonly List<ChaosSnapCameraInstance> cameraInstances = new List<ChaosSnapCameraInstance>();
+
+        public static ChaosSnapCameraInstance StartCameraMove(GameObject user, Vector3 targetPosition, Vector3 targetForward, float lerpTime)
+        {
+            targetForward.y = Mathf.Clamp(targetForward.y, -0.3f, 0f);
+            ChaosSnapCameraInstance provider = new ChaosSnapCameraInstance
+            {
+                user = user,
+                startPosition = user.transform.position,
+                targetPosition = targetPosition,
+                targetRotation = targetForward == Vector3.zero ? Quaternion.identity : Quaternion.LookRotation(targetForward)
+            };
+            instance.cameraInstances.Add(provider);
+            foreach (CameraRigController cameraRigController in CameraRigController.readOnlyInstancesList)
+            {
+                if (cameraRigController.target == user)
+                {
+                    cameraRigController.SetOverrideCam(instance, lerpTime);//Mathf.Min(lerpTime, maxLerpTime));
+                }
+                else if (cameraRigController.IsOverrideCam(instance))
+                {
+                    cameraRigController.SetOverrideCam(null, 0.05f);
+                }
+            }
+            return provider;
+        }
+
+        public void EndCameraMove(ChaosSnapCameraInstance cameraInstance)
+        {
+            if (!cameraInstance.user)
+            {
+                cameraInstances.Remove(cameraInstance);
+                if (cameraInstances.Count == 0) return;
+            }
+            ReadOnlyCollection<CameraRigController> readOnlyInstancesList = CameraRigController.readOnlyInstancesList;
+            for (int i = 0; i < readOnlyInstancesList.Count; i++)
+            {
+                CameraRigController cameraRigController = readOnlyInstancesList[i];
+                if (cameraRigController.IsOverrideCam(this) && (cameraInstances.Count == 0 || cameraRigController.target == cameraInstance.user))
+                {
+                    cameraRigController.SetOverrideCam(null, 0.2f);
+                }
+            }
+            cameraInstances.Remove(cameraInstance);
+        }
+
+        public void GetCameraState(CameraRigController cameraRigController, ref CameraState cameraState)
+        {
+            if (TryGetCameraInstance(cameraRigController, out var cameraInstance))
+            {
+                Vector3 userPosition = cameraInstance.user ? cameraInstance.user.transform.position : cameraInstance.startPosition;
+
+                Vector3 cameraLocalPos = cameraRigController.targetParams.currentCameraParamsData.idealLocalCameraPos.value;
+                cameraLocalPos.y += cameraRigController.targetParams.currentCameraParamsData.pivotVerticalOffset.value + 0.9f;
+                cameraLocalPos += (cameraRigController.targetParams.cameraPivotTransform ? cameraRigController.targetParams.cameraPivotTransform.localPosition : Vector3.zero);
+                Vector3 cameraPosition = cameraInstance.targetPosition;
+                cameraPosition += (cameraInstance.targetRotation == Quaternion.identity ? cameraState.rotation : cameraInstance.targetRotation) * cameraLocalPos;
+
+                Vector3 between = cameraPosition - userPosition;
+                float distanceFromPivot = Raycast(userPosition, between.normalized, between.magnitude, 0.09f);
+                Vector3 finalPosition = (between.normalized * distanceFromPivot) + userPosition;
+
+                cameraState.position = finalPosition;
+
+                if (cameraInstance.targetRotation != Quaternion.identity)
+                {
+                    cameraState.rotation = cameraInstance.targetRotation.normalized;
+                }
+            }
+        }
+        public float Raycast(Vector3 origin, Vector3 direction, float maxDistance, float wallCushion)
+        {
+            LayerIndex world = LayerIndex.world;
+            int hitCount = HGPhysics.SphereCastAll(out RaycastHit[] array, origin, wallCushion, direction, maxDistance, world.mask, QueryTriggerInteraction.Ignore);
+            float num = maxDistance;
+            for (int i = 0; i < hitCount; i++)
+            {
+                float distance = array[i].distance;
+                if (distance < num)
+                {
+                    Collider collider = array[i].collider;
+                    if (collider && !collider.GetComponent<NonSolidToCamera>())
+                    {
+                        num = distance;
+                    }
+                }
+            }
+            HGPhysics.ReturnResults(array);
+            return num;
+        }
+
+        private bool TryGetCameraInstance(CameraRigController cameraRigController, out ChaosSnapCameraInstance cameraInstance)
+        {
+            cameraInstance = default;
+            for (int i = 0; i < cameraInstances.Count; i++)
+            {
+                if (cameraInstances[i].user == cameraRigController.target)
+                {
+                    cameraInstance = cameraInstances[i];
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool IsHudAllowed(CameraRigController cameraRigController)
+        {
+            return true;
+        }
+
+        public bool IsUserControlAllowed(CameraRigController cameraRigController)
+        {
+            return true;
+        }
+
+        public bool IsUserLookAllowed(CameraRigController cameraRigController)
+        {
             return true;
         }
     }

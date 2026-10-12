@@ -1,16 +1,49 @@
 # Changelog
 
-## v?
- - (Voicelines) Added a new system for handling voicelines
+## v2.0.0
+Fixed for Hallowed Concepts
+
+*This update has a lot of breaking changes, which would matter if there was literally anyone developing with this mod other than me*
+ - (Voicelines) Added a new system for handling voicelines. It's a system designed to respond to certain events in gameplay, such as encountering specific bosses or entering specific stages.
  
- - (Visuals) The super form transformation now has a subtle glow around your character
+ - (Visuals) Redid the vfx for boosting. New methods have been added to the Assets class for making your own boost vfx. The previous methods for creating boost auras have been deprecated
+ - (Visuals) Redid the vfx for transforming into the super form.
+ - (Visuals) Redid the aura for the super form. There are now Assets.CreateFormAura methods for creating custom auras for modded super forms
+ - (Visuals) Chaos Emeralds now have unique vfx for when the item is dropped
+ - (Visuals) Added smooth camera movement to thrown Chaos Emeralds' teleporting effect
+ - (Audio) The teleport sound effect now properly scales with the effect duration instead of only picking from a short version and long version
+
+ - (Bug Fix) Transformations can no longer be activated while in UI (such as typing in chat) or while you're not in your main body state (usually doing some action where you can't use other skills)
+ - (Bug Fix) Fixed the Chaos Emerald interactable breaking if you purchase it and pick it up with Drifter at the same time
+ - (Bug Fix) Boost now only triggers skill activation effects when you actually start boosting. It won't trigger when entering Boost's idle stance, preventing unintended interactions with items like [Sandswept's](https://thunderstore.io/package/SandsweptTeam/Sandswept) Fractured Timepiece
  
+ - (Config) **Your Super transformation key bind must be redone**. Super transformation key binds have been moved to the [Rebindables](https://thunderstore.io/c/riskofrain2/p/pseudopulse/Rebindables/) mod, meaning the key binds now have support for controllers. The default key bind for the Super form has been changed from V to G. *Hallowed Concepts took my damn key bind.*
+
+ <details>
+ <summary>Internal Changes (Not relevant to gameplay)</summary>
+ 
+ - (Internal) **Breaking** The RenderReplacements system for making custom super form models has been completely redone. It now supports characters with multiple renderers, multiple meshes, and it works with memop asset references. A RenderReplacement now has three arrays for CharacterModel.RendererInfo, Meshes, and AssetReferenceT<Mesh>s
+ - (Internal) **Breaking** FormDef's RenderReplacements now use the skin scriptable object name instead of the name token to prevent issues relating to multiple skins having the same name (Apparently "Default" is a common name for skins. Who knew?). There is also a new (preferred) option to use the SkinDef itself directly as the key to the dictionary.
+ - (Internal) **Breaking** FormDef.enabled functionality has been moved to FormDef.setIsEnabledFunc. FormDef.enabled is now a simple and efficient method for checking if the form is enabled or not, which is decided by setIsEnabledFunc at the beginning of the stage
+ - (Internal) **Breaking** Using RequiresFormSkillDefs has been SUPER simplified. They are now an interface, so they can be effortlessly added to any other kind of SkillDef
+  - (Internal) **Breaking** The formToHandlerPrefab, formToHandlerObject, and formToHandler dictionaries have been replaced with arrays that use the FormIndex as the array index. There are also new methods, such as Forms.GetFormHandlerPrefab, that can now be used for convenience
+  - (Internal) **Breaking** FormHandler's CanTransform method has been slightly reorganized. It is no longer a virtual method, it instead calls CheckTransformationConditions, which is the virtual method. This change was made to help introduce a new static event, onCheckCanTransform, which lets you override whether someone is able to transform
+ - (Internal) FormDef now has a cachedName property. This should be used instead of using the scriptable object's name directly
  - (Internal) TransformationBase now has a reference to CharacterModel
  - (Internal) The point at which GenericTransformationBase triggers the transformation is no longer hardcoded, and can now be changed via the abstract transformationDurationPercent
+ - (Internal) GenericTransformationBase now has a OnGenericTransform event for when the state starts
  - (Internal) Removed unnecessary On.RoR2.UI.HUD.Awake hook used for creating the boost meter. The boost meter hud is now handled through RoR2's Hud Overlay system
  - (Internal) Removed unnecessary On.RoR2.SceneDirector.Start hook used for spawning technical objects at the start of the stage. This is now done via the Stage.onServerStageBegin event
+ - (Internal) Removed unnecessary On.RoR2.GenericPickupController.Start hook used for playing the sound for the Chaos Emerald item landing on the ground. This is now handled by the new droplet vfx
+ </details>
+ 
+### Known Issues
+ - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
+ - Some enemies become invisible in their death animations after being killed by a launch
 
-## v1.1.6
+<details>
+<summary>v1.1.6</summary>
+
  - (Bug Fix) Fixed harmless *"ItemDef 'ChaosEmerald' has an item index of 'None'. Attempting to fix..."* error that appeared in the logs when opening the game
 
  - (Compatibility) Removed [Sandswept's](https://thunderstore.io/package/SandsweptTeam/Sandswept) Delta Construct from the launch blacklist since the issue has been fixed on their end
@@ -20,12 +53,10 @@
  - (Internal) There is a new entity state in HedgehogUtils.Miscellaneous that handles death states for characters like Sonic. It will play the animation named "Death" in the "FullBody, Override" layer. The character's model will gradually fade away and be destroyed as the animation is about to end. The state automatically uses the duration of the death animation, so you should be able to use the state directly on whatever character with whatever death animation and it should work
 
  - (Internal) GenericTransformationBase transforming animations now play on the FullBody, Override layer by default. There are now properties for changing the animation's state, layer, and playback rate parameter
- 
-### Known Issues
- - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
- - Some enemies become invisible in their death animations after being killed by a launch
+</details>
+<details>
+<summary>v1.1.5</summary>
 
-## v1.1.5
  - (Bug Fix) Fixed corpses being able to be hit by players after being launched in multiplayer
  
  - (Internal) Added new sound effects. Some of these sounds were originally part of the Sonic mod but have been moved here
@@ -34,8 +65,10 @@
 	 - Jump ball (From Sonic)
 	 - Braking (From Sonic)
 	 - Lock-On (Currently unused)
+</details>
+<details>
+<summary>v1.1.4</summary>
 
-## v1.1.4
  - (+ Buff) Launched enemies now apply the same enemy-specific on-hit effects as enemies thrown by Drifter
  
  - (Assets) Small improvements to Super form related VFX, mainly the rainbow effects
@@ -57,15 +90,21 @@
  - (Internal) Added Helper method RemoveTempOrPermanentItem which attempts to remove temporary items first, then permanent items
  
  - (Internal) All OnHooks have been moved into one file instead of being split up per feature in the mod. This prevents OnHooking the same method multiple times in multiple different places
+</details>
 
-## v1.1.3
+<details>
+<summary>v1.1.3</summary>
+
  - (Internal) **Potentially breaks custom Boost skills**. Added missing Time.fixedDeltaTime to boost meter FixedUpdate stuff. The default values for BoostLogic.baseBoostRegen and the Boost entity state's boostMeterDrain are now 60x what they previously were
  
  - (Internal) Instead of adding/removing Boost skill stocks when the meter comes-back/runs-out, now it checks for whether boost is available within the BoostSkillDef's IsReady()
  
  - (Bug Fix) Fixed subtle miscoloring in some keywords (Added missing </style> to the launch keyword)
+</details>
 
-## v1.1.2
+<details>
+<summary>v1.1.2</summary>
+
  - (+ Buff) Sliiiiightly reduced the speed the boost meter drains so 2 Alien Heads is enough to reach infinite boost
 
  - (Bug Fix) Fixed boost not properly updating meter recharge stats when on characters other than Sonic
@@ -75,12 +114,16 @@
  - (Internal) Added a new overload to the new overload of Helpers.Flying() that doesn't out an ICharacterFlightParameterProvider
  - (Internal) Added a new method to Helpers.cs that cancels the slow downwards floating that Milky Chrysalis does after its duration has run out
  - (Internal) Set BoostIdle and Brake's interrupt priority to PrioritySkill for consistency with Boost. They're both body skill states that don't read inputs, so I'm not even sure if this does anything
+</details>
 
-## v1.1.1
+<details>
+<summary>v1.1.1</summary>
 
  - (Bug Fix) Fixed issue causing Gilded elites to be miscolored
-
-## v1.1.0
+</details>
+ 
+<details>
+<summary>v1.1.0</summary>
 
  - (Assets) Redone the design for the Chaos Emeralds. The emeralds have a new model, texture, shader, item icons, and artifact icons. The new Chaos Emerald model and shader look much better than the old one
 
@@ -92,16 +135,20 @@
  - (Internal) Added an overload to the Helpers.cs Flying method that outs an ICharacterFlightParameterProvider so you don't have to do GetComponent yourself
  - (Internal) LaunchManager's AngleAwayFromGround and AngleTowardsEnemies now returns a Vector of the same magnitude as the one it was given
  - (Internal) Added missing NetworkServer.active checks to ensure that Launches are only run on host
+</details>
 
-## v1.0.1
+<details>
+<summary>v1.0.1</summary>
 
  - (Bug Fix) Blacklisted [Sandswept's](https://thunderstore.io/package/SandsweptTeam/Sandswept) Delta Construct from being launched to prevent framerate killing error spam on death
  
  - (Internal) The check for whether an enemy is unable to be launched has been moved into its own static method
  - (Internal) The check for whether a damagetype launch attack is able to launch a given enemy has been moved into its own static method
  - (Internal) Added a new CanBeOverridden method to FormStateBase that determines whether the form can be cancelled by trying to transform into a different form
-
+</details>
  
-## v1.0.0
+<details>
+<summary>v1.0.0</summary>
 
  - Initial Release
+</details>

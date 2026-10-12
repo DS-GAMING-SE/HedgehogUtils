@@ -16,12 +16,12 @@ namespace HedgehogUtils.Forms.SuperForm
 
         public static void Initialize()
         {
-            Dictionary<string, RenderReplacements> superRenderDictionary = new Dictionary<string, RenderReplacements>();
+            Dictionary<SkinDef, RenderReplacements> superRenderDictionary = new Dictionary<SkinDef, RenderReplacements>();
             superFormDef = Forms.CreateFormDef(HedgehogUtilsPlugin.Prefix+"SUPER_FORM", Buffs.superFormBuff, Config.SuperFormDuration().Value, true, true, Config.ConsumeEmeraldsOnUse().Value,
             1, Config.SuperFormInvincible().Value, true, true, new SerializableEntityStateType(typeof(EntityStates.SuperSonic)), new SerializableEntityStateType(typeof(EntityStates.SuperSonicTransformation)), superRenderDictionary,
-                typeof(SuperSonicHandler), new AllowedBodyList { whitelist = false, bodyNames = Array.Empty<string>() }, KeyCode.V);
+                typeof(SuperSonicHandler), new AllowedBodyList { whitelist = false }, KeyCode.G);
 
-            superFormDef.enabled = (self) => 
+            superFormDef.setIsEnabledFunc = (self) => 
             { 
                 return RunArtifactManager.instance.IsArtifactEnabled(Artifact.chaosEmeraldArtifactDef) && FormDef.AnySelectedSurvivorCanUseForm(self); 
             };

@@ -75,13 +75,7 @@ namespace HedgehogUtils.Boost
         {
             if (boostLogic && boostLogic.boostExists)
             {
-                if (!this.boostHudActive)
-                {
-                    this.boostHudActive = true;
-                    PrepareBoostMeter();
-                }
                 BoostMeterVisuals();
-                return;
             }
             else
             {

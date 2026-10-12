@@ -1,4 +1,5 @@
 ﻿using EntityStates;
+using HedgehogUtils.Miscellaneous;
 using RoR2;
 using RoR2.Audio;
 using System;
@@ -7,6 +8,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Xml.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -45,7 +47,8 @@ namespace HedgehogUtils.Launch
         public float age;
         protected bool collidedWithWall;
 
-        protected GameObject vfxObject;
+        protected EffectManagerHelper vfx;
+
         protected Renderer vfxRenderer;
         protected VehicleSeat vehicle;
         protected Rigidbody rigidbody;
@@ -98,10 +101,14 @@ namespace HedgehogUtils.Launch
 
         protected virtual void VFXAura()
         {
-            if (vfxObject) { Destroy(vfxObject); }
-            vfxObject = UnityEngine.Object.Instantiate(crit ? Assets.launchCritAuraEffect : Assets.launchAuraEffect, base.transform);
-            vfxObject.transform.localScale *= radius;
-            vfxRenderer = vfxObject.transform.Find("Aura").GetComponent<Renderer>();
+            if (vfx) 
+            {
+                vfx.ReturnToPool();
+            }
+            vfx = EffectManager.GetAndActivatePooledEffect(crit ? Assets.launchCritAuraEffect : Assets.launchAuraEffect, transform.position, rigidbody.rotation);
+            GameObject vfxObject = vfx.gameObject;
+            Assets.ResizeBoostAura(ref vfxObject, radius / 2.5f);
+            //vfxRenderer = vfxObject.transform.Find("Aura").GetComponent<Renderer>();
         }
 
         public void FixedUpdate()
@@ -130,16 +137,24 @@ namespace HedgehogUtils.Launch
             }
         }
 
+        private void LateUpdate()
+        {
+            if (vfx) // making the vfx separate instead of parented to projectile makes pooling easier
+            {
+                vfx.transform.SetPositionAndRotation(transform.position, rigidbody.rotation);
+            }
+        }
+
         public void Move()
         {
             float finalSpeed = movementVector.magnitude;
             if (age > duration * fadeDurationPercent)
             {
                 float lerp = (age - (duration * fadeDurationPercent)) - (duration * (1 - fadeDurationPercent));
-                if (vfxRenderer)
+                /*if (vfxRenderer)
                 {
                     vfxRenderer.material.SetFloat("_AlphaBoost", Mathf.Lerp(0.2f, 0f, lerp));
-                }
+                }*/
                 finalSpeed = Mathf.Lerp(movementVector.magnitude, movementVector.magnitude / 2, lerp);
             }
 
@@ -167,6 +182,17 @@ namespace HedgehogUtils.Launch
 
         public void OnDestroy()
         {
+            if (vfx)
+            {
+                if (vfx.TryGetComponent<FadeTrailAndLightWithDestroy>(out var fade))
+                {
+                    fade.StartDisable();
+                }
+                else
+                {
+                    vfx.ReturnToPool();
+                }
+            }
             if (NetworkServer.active)
             {
                 if (body)

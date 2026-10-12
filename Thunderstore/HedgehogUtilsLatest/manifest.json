@@ -1,6 +1,6 @@
 {
     "name": "HedgehogUtils",
-    "version_number": "1.1.6",
+    "version_number": "2.0.0",
     "website_url": "https://github.com/DS-GAMING-SE/HedgehogUtils",
     "description": "Adds Chaos Emeralds, super forms, and other mechanics for other mods to use.",
     "dependencies": [
@@ -14,6 +14,7 @@
 	"RiskofThunder-R2API_Sound-1.0.3",
 	"RiskofThunder-R2API_RecalculateStats-1.4.0",
 	"RiskofThunder-R2API_Items-1.0.4",
-	"RiskofThunder-R2API_DamageType-1.1.4"
+	"RiskofThunder-R2API_DamageType-1.1.4",
+	"pseudopulse-Rebindables-1.0.4"
     ]
 }

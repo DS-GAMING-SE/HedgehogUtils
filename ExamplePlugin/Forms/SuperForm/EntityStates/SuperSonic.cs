@@ -48,6 +48,7 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
             if (chest)
             {
                 this.superAura = GameObject.Instantiate<GameObject>(Assets.superFormAura, chest);
+                this.superAura.transform.localScale = Vector3.one * characterBody.radius;
             }
             if (Config.SuperFormPostProcessing().Value)
             {
@@ -70,11 +71,10 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
                 priority = 0f
             }, 0f);
 
+            EffectManager.SpawnEffect(Assets.superFormTransformationEffect, new EffectData { origin = characterBody.corePosition, scale = characterBody.radius }, false);
             if (base.isAuthority)
             {
                 FireBlastAttack();
-
-                EffectManager.SimpleMuzzleFlash(Assets.superFormTransformationEffect, base.gameObject, "Chest", true);
             }
             if (NetworkServer.active)
             {
@@ -146,7 +146,8 @@ namespace HedgehogUtils.Forms.SuperForm.EntityStates
         {
             EffectData data = new EffectData
             {
-                origin = chest.position
+                origin = chest.position,
+                scale = characterBody.radius
             };
             if (base.GetModelTransform())
             {

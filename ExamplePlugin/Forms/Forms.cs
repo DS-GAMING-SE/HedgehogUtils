@@ -1,37 +1,42 @@
-﻿using EntityStates;
+﻿using BepInEx;
+using BepInEx.Configuration;
+using EntityStates;
+using HarmonyLib;
+using HedgehogUtils.Forms.SuperForm;
+using HedgehogUtils.Internal;
 using HG;
 using R2API;
-using UnityEngine.Networking;
+using Rebindables;
+using RiskOfOptions;
+using RiskOfOptions.Options;
+using RoR2;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
-using BepInEx;
-using RoR2;
-using HarmonyLib;
-using BepInEx.Configuration;
-using RiskOfOptions.Options;
-using RiskOfOptions;
-using HedgehogUtils.Internal;
-using HedgehogUtils.Forms.SuperForm;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.Networking;
+using UnityEngine.Serialization;
 
 [assembly: HG.Reflection.SearchableAttribute.OptIn]
 namespace HedgehogUtils.Forms
 {
     public static class Forms
     {
-        public static Dictionary<FormDef, GameObject> formToHandlerPrefab = new Dictionary<FormDef, GameObject>();
+        public static GameObject[] formHandlerPrefabs;
 
-        public static Dictionary<FormDef, GameObject> formToHandlerObject = new Dictionary<FormDef, GameObject>();
+        public static GameObject[] formHandlerObjects;
 
-        public static Dictionary<FormDef, FormHandler> formToHandler = new Dictionary<FormDef, FormHandler>();
+        public static FormHandler[] formHandlers;
 
         // Look at the tooltips in the FormDef class for more information on what all of these parameters mean
         public static FormDef CreateFormDef(string name, BuffDef buff, float duration, bool requiresItems, bool shareRequirements, bool consumeItems, int maxTransforms, bool invincible, bool flight, bool superAnimations, SerializableEntityStateType formState, SerializableEntityStateType transformState,
-            Dictionary<string, RenderReplacements> renderDictionary, Type handlerComponent, AllowedBodyList allowedBodyList, KeyCode defaultKeyBind)
+            Dictionary<SkinDef, RenderReplacements> renderDictionary, Type handlerComponent, AllowedBodyList allowedBodyList, KeyCode defaultKeyBind)
         {
             FormDef form = ScriptableObject.CreateInstance<FormDef>();
-            form.name = name;
+            form.cachedName = name;
             form.buff = buff;
             form.duration = duration;
             form.requiresItems = requiresItems;
@@ -50,19 +55,9 @@ namespace HedgehogUtils.Forms
             };
             form.handlerComponent = handlerComponent;
             form.allowedBodyList = allowedBodyList;
-            form.defaultKeyBind = defaultKeyBind;
+            form.keyBind = RebindAPI.RegisterModKeybind(new ModKeybind(form.cachedName, defaultKeyBind, 10));
 
-            // Creating handler prefab
-            GameObject handlerPrefab = PrefabAPI.InstantiateClone(Assets.mainAssetBundle.LoadAsset<GameObject>("SuperSonicHandler"), form.name + " " + form.handlerComponent.Name);
-            FormHandler handlerObjectComponent = (FormHandler)handlerPrefab.AddComponent(handlerComponent);
-            handlerObjectComponent.form = form;
-            if (form.requiresItems)
-            {
-                handlerPrefab.AddComponent(form.shareRequirements ? typeof(SyncedItemTracker) : typeof(UnsyncedItemTracker));
-            }
-            //PrefabAPI.RegisterNetworkPrefab(handlerPrefab);
-            formToHandlerPrefab.Add(form, handlerPrefab);
-            Log.Message("FormDef "+form.name+" created. Created new "+form.handlerComponent.Name+" prefab");
+            Log.Message("FormDef "+form.cachedName+" created.");
 
             return form;
         }
@@ -95,14 +90,38 @@ namespace HedgehogUtils.Forms
             return false;
         }
 
-        // This takes a RenderReplacements struct, aka just a mesh and material that you'll change into when Super and using the given skin. Mesh or material can be null if you don't want them to change
-        public static void AddSkinForForm(string skinToken, RenderReplacements render, ref FormDef form)
+        /// <summary>
+        /// This exists because it's easier for skin mod creators to use. However, it's recommended to use the SkinDef overload if possible.
+        /// </summary>
+        public static void AddSkinForForm(string skinName, RenderReplacements render, ref FormDef form)
         {
-            form.renderDictionary.Add(skinToken, render);
+            if (form.nameRenderDictionary == null) form.nameRenderDictionary = new Dictionary<string, RenderReplacements>();
+            form.nameRenderDictionary.Add(skinName, render);
+        }
+
+        public static void AddSkinForForm(SkinDef skin, RenderReplacements render, ref FormDef form)
+        {
+            if (form.renderDictionary == null) form.renderDictionary = new Dictionary<SkinDef, RenderReplacements>();
+            form.renderDictionary.Add(skin, render);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameObject GetFormHandlerPrefab(FormIndex index)
+        {
+            return formHandlerPrefabs[(int)index];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameObject GetFormHandlerObject(FormIndex index)
+        {
+            return formHandlerObjects[(int)index];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static FormHandler GetFormHandler(FormIndex index)
+        {
+            return formHandlers[(int)index];
         }
 
         [SystemInitializer(typeof(BodyCatalog), typeof(FormCatalog))]
-        public static void FormComponentsForEveryone()
+        private static void FormComponentsForEveryone()
         {
             foreach (GameObject body in BodyCatalog.allBodyPrefabs)
             {
@@ -127,11 +146,43 @@ namespace HedgehogUtils.Forms
                 }
             }
         }
+        internal static void BakeRenderDictionaries()
+        {
+            RoR2.UI.MainMenu.MainMenuController.OnMainMenuInitialised -= Forms.BakeRenderDictionaries;
+            bool nameRenderDictionariesExist = false;
+            foreach (var form in FormCatalog.formsCatalog)
+            {
+                if (form.nameRenderDictionary != null)
+                {
+                    nameRenderDictionariesExist = true;
+                }
+            }
+
+            if (!nameRenderDictionariesExist) return;
+
+            foreach (var skin in SkinCatalog.allSkinDefs)
+            {
+                foreach (var form in FormCatalog.formsCatalog)
+                {
+                    if (form.nameRenderDictionary != null && form.nameRenderDictionary.TryGetValue((skin as ScriptableObject).name, out var replacements))
+                    {
+                        form.renderDictionary.Add(skin, replacements);
+                    }
+                }
+            }
+
+            foreach (var form in FormCatalog.formsCatalog)
+            {
+                form.nameRenderDictionary = null;
+            }
+        }
     }
 
     public class FormDef : ScriptableObject
     {
-        //Name should be the name token for the transformation. Eg. "DS_GAMING_SUPER_FORM". The actual name of the form should be handled using LanguageAPI. See Tokens.cs for an example of how that works
+        [Tooltip("Name should be the name token for the transformation. Eg. \"DS_GAMING_HEDGEHOG_UTILS_SUPER_FORM\". The actual name of the form should be handled using LanguageAPI. See Tokens.cs for an example of how that works")]
+        public string cachedName { get { return _cachedName; } set { name = value; _cachedName = value; } }
+        private string _cachedName;
 
         [Tooltip("The buff given to you when you're transformed. This should be a buff unique to the form you're making.\nUse this buff for applying whatever stat increases you want.\nThis will be applied as a timed buff and will end the form when it goes away.")]
         public BuffDef buff;
@@ -142,7 +193,7 @@ namespace HedgehogUtils.Forms
         [Tooltip("Whether or not the form requires having certain items in order to transform. The specific items needed to transform are defined in neededItems once the ItemsCatalog is done.")]
         public bool requiresItems;
 
-        [Tooltip("The item or items that are needed to transform. NeededItem struct stores a RoR2.ItemDef and a uint for how many of that item is needed. You can also just use ItemDefs here if you won't need multiple of the same item, there is an implicit cast")]
+        [Tooltip("The item or items that are needed to transform. NeededItem struct stores a RoR2.ItemIndex and an int for how many of that item is needed. You can also just use the ItemIndex here if you won't need multiple of the same item, there is an implicit cast")]
         public NeededItem[] neededItems;
 
         [Tooltip("If transformation requirements, such as needed items and max amount of times you can transform, will be shared amongst all players. Any player will be able to transform if any other player or combination of players have the needed items.")]
@@ -163,37 +214,48 @@ namespace HedgehogUtils.Forms
         [Tooltip("If you will use Super Sonic's animations or stay with default animations.\nSuper Sonic's animations include hovering in his idles, hovering when moving on the ground, replacing his \"falling\" animations with flying, and some animations made under the assumption that his quills are pointed up.")]
         public bool superAnimations;
 
-        [Tooltip("The entity state used by the \"SonicForms\" entity state machine while transformed. Should be a subclass of SonicFormBase")]
+        [Tooltip("The entity state used by the \"HedgehogUtilsForms\" entity state machine while transformed. Should be a subclass of FormStateBase")]
         public SerializableEntityStateType formState;
 
         [Tooltip("The entity state used by the \"Body\" entity state machine for the transformation animation that will transition you into the form. Should be a subclass of TransformationBase. If the EntityState is null, the transformation will be instant")]
         public SerializableEntityStateType transformState;
 
-        [Tooltip("Stores the material and mesh changes that will be applied when transforming based on what skin you're using.\nKey is the string token of the skin. RenderReplacements is a struct containing a material and mesh.\nPutting null for material or mesh will make them not change when transforming.")]
-        public Dictionary<string, RenderReplacements> renderDictionary;
+        [Tooltip("Stores the material and mesh changes that will be applied when transforming based on what skin you're using.\nKey is the SkinDef. Render Replacements is a struct containing the RendererInfos and mesh for each renderer on your character. All arrays in the RenderReplacements struct, as well as the defaultRendererInfos of the character, must be the same length. An array can be left null if unneeded.")]
+        public Dictionary<SkinDef, RenderReplacements> renderDictionary;
+
+        [Tooltip("A render dictionary based on the skin's name (not nameToken). This exists to make it easier for mods to add render replacements without needing to get the skin's SkinDef. If possible, it is recommended to use the SkinDef renderDictionary. This dictionary will be converted into the SkinDef dictionary after the game loads.")]
+        public Dictionary<string, RenderReplacements> nameRenderDictionary;
 
         [Tooltip("The component that will track information about your form, such as whether all necessary items have been collected. This component will be put on a gameObject that will be created at the beginning of every stage and will stay for the duration of the stage.\nIf you're unsure what to put here, use typeof(FormHandler).\nYou can create a subclass of FormHandler and put it here if you want to add code, such as an extra requirement for transforming.")]
         public Type handlerComponent;
 
-        [Tooltip("Contains information on what characters are allowed to transform.\nIf whitelist, any body name listed under bodyNames will be allowed. If not whitelist, any body name not listed under bodyNames will be allowed.\nBody name refers to the name that survivors and enemies use internally. If you're unsure about what body name means, look into RoR2 BodyCatalog related stuff")]
+        [Tooltip("Contains information on what characters are allowed to transform.\nIf whitelist, any body name listed under bodyNames will be allowed. If not whitelist, any body name not listed under bodyNames will be allowed.\nBody name refers to the name that survivors and enemies use internally. If you're unsure about what body name means, look into RoR2 BodyCatalog related stuff.\nBodyList can be null.")]
         public AllowedBodyList allowedBodyList;
 
-        [Tooltip("The default keybind players press to transform into the form. Don't get too attached to this, it's likely these keybinds will need to be changed if forms happen to overlap. If two forms overlap the same key and both can be transformed into, the first form alphabetically by name token will be selected. \nIf set to Keybind.None, there will be no keybind for activating the form. You can make your own way of transforming into the form.")]
-        public KeyCode defaultKeyBind;
-
-        [Tooltip("A function that decides whether the FormHandler of this form will be created at the beginning of the stage, thus making the form usable. Use this for any enabling or disabling of forms via config, artifacts, or any other arbitrary reason that would keep it disabled for an entire stage or run.\nBy default this just checks if any survivor is playing a character than can use the form.")]
-        public Func<FormDef, bool> enabled = (self) => { return AnySelectedSurvivorCanUseForm(self); }; 
+        [Tooltip("If it is possible for the form to be activated this stage. This value is set by setIsEnabledFunc at the beginning of every stage.")]
+        public bool enabled { get; internal set; }
+        
+        [Tooltip("A function that decides whether the FormHandler of this form will be created at the beginning of the stage, thus making the form usable. Use this for any enabling or disabling of forms via config, artifacts, or any other arbitrary reason that would keep it disabled for an entire stage or run.\nBy default this checks if any survivor is playing a character than can use the form, based on the allowedBodyList.")]
+        [FormerlySerializedAs("enabled")]
+        public Func<FormDef, bool> setIsEnabledFunc = (self) => { return AnySelectedSurvivorCanUseForm(self); }; 
 
         public static bool AnySelectedSurvivorCanUseForm(FormDef form)
         {
-            foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
+            if (form.allowedBodyList.bodyNames != null)
             {
-                if (form.allowedBodyList.BodyIsAllowed(BodyCatalog.FindBodyIndex(player.master.bodyPrefab)))
+                foreach (PlayerCharacterMasterController player in PlayerCharacterMasterController.instances)
                 {
-                    return true;
+                    if (form.allowedBodyList.BodyIsAllowed(BodyCatalog.FindBodyIndex(player.master.bodyPrefab)))
+                    {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
+            else
+            {
+                return !form.allowedBodyList.whitelist;
+            }
         }
 
         public FormIndex formIndex 
@@ -207,10 +269,10 @@ namespace HedgehogUtils.Forms
 
         public override string ToString()
         {
-            return RoR2.Language.GetString(this.name, RoR2.Language.currentLanguageName);
+            return RoR2.Language.GetString(this.cachedName, RoR2.Language.currentLanguageName);
         }
 
-        public ConfigEntry<KeyboardShortcut> keybind;
+        public ModKeybind keyBind;
 
         public int numberOfNeededItems
         {
@@ -230,6 +292,31 @@ namespace HedgehogUtils.Forms
                     return -1;
                 }
             }
+        }
+
+        public void AddSkinForForm(string skinName, RenderReplacements render)
+        {
+            if (nameRenderDictionary == null) nameRenderDictionary = new Dictionary<string, RenderReplacements>();
+            nameRenderDictionary.Add(skinName, render);
+        }
+
+        public void AddSkinForForm(SkinDef skin, RenderReplacements render)
+        {
+            if (renderDictionary == null) renderDictionary = new Dictionary<SkinDef, RenderReplacements>();
+            renderDictionary.Add(skin, render);
+        }
+
+        public GameObject GetFormHandlerPrefab()
+        {
+            return Forms.formHandlerPrefabs[(int)formIndex];
+        }
+        public GameObject GetFormHandlerObject()
+        {
+            return Forms.formHandlerObjects[(int)formIndex];
+        }
+        public FormHandler GetFormHandler()
+        {
+            return Forms.formHandlers[(int)formIndex];
         }
     }
 
@@ -258,7 +345,11 @@ namespace HedgehogUtils.Forms
 
         public bool BodyIsAllowed(string bodyName)
         {
-            return !(whitelist ^ bodyNames.Contains(bodyName));
+            if (bodyNames == null || string.IsNullOrEmpty(bodyName)) return !whitelist;
+            else
+            {
+                return !(whitelist ^ bodyNames.Contains(bodyName));
+            }
         }
 
         public bool BodyIsAllowed(BodyIndex bodyIndex)
@@ -269,8 +360,9 @@ namespace HedgehogUtils.Forms
 
     public struct RenderReplacements
     {
-        public Material material;
-        public Mesh mesh;
+        public CharacterModel.RendererInfo[] rendererInfo;
+        public Mesh[] mesh;
+        public AssetReferenceT<Mesh>[] meshAddress;
     }
 
     // Handles neededItem sharing and who has permission to transform

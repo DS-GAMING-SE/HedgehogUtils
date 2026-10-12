@@ -25,13 +25,17 @@ namespace HedgehogUtils.Forms.EntityStates
         protected bool effectFired = false;
         private int animationLayerIndex;
         private Animator animator;
+
+        public static Action<FormComponent, FormDef> OnGenericTransform;
+        private ICharacterGravityParameterProvider gravity;
         public override void OnEnter()
         {
             base.OnEnter();
             if (base.isAuthority)
             {
-                this.formComponent.superSonicState.SetNextStateToMain(); // detransform
+                this.formComponent.formStateMachine.SetNextStateToMain(); // detransform
             }
+            OnGenericTransform?.Invoke(formComponent, form);
             if (duration > 0)
             {
                 animator = GetModelAnimator();
@@ -47,7 +51,11 @@ namespace HedgehogUtils.Forms.EntityStates
                     base.characterBody.AddTimedBuff(RoR2Content.Buffs.HiddenInvincibility, duration, 1);
                 }
             }
-
+            if (gameObject.TryGetComponent<ICharacterGravityParameterProvider>(out gravity))
+            {
+                CharacterGravityParameters gravityParams = gravity.gravityParameters;
+                gravityParams.channeledAntiGravityGranterCount += 1;
+            }
         }
 
         public override void FixedUpdate()
@@ -69,6 +77,16 @@ namespace HedgehogUtils.Forms.EntityStates
             {
                 base.characterMotor.velocity = Vector3.zero;
             }
+        }
+
+        public override void OnExit()
+        {
+            if (gravity != null)
+            {
+                CharacterGravityParameters gravityParams = gravity.gravityParameters;
+                gravityParams.channeledAntiGravityGranterCount -= 1;
+            }
+            base.OnExit();
         }
 
         public override void Transform()

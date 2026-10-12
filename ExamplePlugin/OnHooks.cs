@@ -14,6 +14,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 using HarmonyLib;
+using HedgehogUtils.Voicelines;
 
 namespace HedgehogUtils
 {
@@ -34,12 +35,14 @@ namespace HedgehogUtils
                 RoR2Application.onLoad += LookingGlassSetup;
             }
 
-            On.RoR2.GenericPickupController.Start += EmeraldDropSound;
-
             On.RoR2.GenericSkill.CanApplyAmmoPack += CanApplyAmmoPackToBoost;
             On.RoR2.GenericSkill.ApplyAmmoPack += ApplyAmmoPackToBoost;
 
-            //On.EntityStates.SolusHeart.SolusWebMissionPhaseBaseState.OnEnter += For Solus Heart phase advance voicelines?
+            On.EntityStates.SolusHeart.Phase1.Mission1.OnEnter += SolusHeart1DefeatedVoiceline;
+            On.EntityStates.SolusHeart.Phase2.Mission2.OnEnter += SolusHeart2DefeatedVoiceline;
+            On.EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start.OnEnter += SolusHeart3DefeatedVoiceline;
+            On.EntityStates.SolusHeart.SolusHeartTransformationBaseState.OnEnter += SolusHeartPhaseStartVoiceline;
+            On.RoR2.SolusWing.SolusWingWeakPointsController.onWeakpointDestroyedServer += SolusWingWeakPointDefeatedVoiceline;
         }
         private static void DontDieWhileLaunched(On.RoR2.CharacterDeathBehavior.orig_OnDeath orig, CharacterDeathBehavior self)
         {
@@ -102,6 +105,7 @@ namespace HedgehogUtils
                 {
                     if (LaunchManager.AttackCanLaunch(self, attackerBody, damageInfo))
                     {
+                        LaunchManager.onTryLaunchServer?.Invoke(self, damageInfo);
                         Vector3 launchDirection = damageInfo.force.normalized;
                         if (!damageInfo.damageType.HasModdedDamageType(Launch.DamageTypes.removeLaunchAutoAim))
                         {
@@ -137,9 +141,9 @@ namespace HedgehogUtils
             emeraldStats.calculateValuesNew = (luck, stackCount, procChance) =>
             {
                 var list = new List<float>();
-                if (Forms.Forms.formToHandlerObject.TryGetValue(SuperFormDef.superFormDef, out GameObject handler))
+                if (Forms.Forms.GetFormHandlerObject(SuperFormDef.superFormDef.formIndex))
                 {
-                    if (handler.TryGetComponent(out SuperSonicHandler emeraldSpawner))
+                    if (Forms.Forms.GetFormHandlerObject(SuperFormDef.superFormDef.formIndex).TryGetComponent(out SuperSonicHandler emeraldSpawner))
                     {
                         list.Add(7 - ((SyncedItemTracker)emeraldSpawner.itemTracker).missingItems.Count);
                     }
@@ -174,10 +178,10 @@ namespace HedgehogUtils
                 {
                     if (component.activeForm)
                     {
-                        if (!RoR2.Language.IsTokenInvalid(component.activeForm.name + "_PREFIX"))
+                        if (!RoR2.Language.IsTokenInvalid(component.activeForm.cachedName + "_PREFIX"))
                         {
                             string text = orig(bodyObject);
-                            text = RoR2.Language.GetStringFormatted(component.activeForm.name + "_PREFIX", new object[]
+                            text = RoR2.Language.GetStringFormatted(component.activeForm.cachedName + "_PREFIX", new object[]
                             {
                             text
                             });
@@ -189,27 +193,6 @@ namespace HedgehogUtils
             return orig(bodyObject);
         }
 
-        private static void EmeraldDropSound(On.RoR2.GenericPickupController.orig_Start orig, GenericPickupController self)
-        {
-            orig(self);
-            if (self && self.pickupDisplay)
-            {
-                PickupDef pickupDef = self.pickup.pickupIndex.pickupDef;
-                if (pickupDef != null)
-                {
-                    ItemIndex itemIndex = pickupDef.itemIndex;
-                    if (itemIndex != ItemIndex.None)
-                    {
-                        ItemDef itemDef = ItemCatalog.GetItemDef(itemIndex);
-                        if (itemDef && itemDef._itemTierDef == Items.emeraldTier)
-                        {
-                            Util.PlaySound("Play_hedgehogutils_emerald_spawn", self.gameObject);
-                        }
-                    }
-                }
-            }
-        }
-
         private static void StageBegin(Stage stage)
         {
             if (!NetworkServer.active) return;
@@ -217,40 +200,32 @@ namespace HedgehogUtils
             NetworkServer.Spawn(GameObject.Instantiate<GameObject>(ChaosSnapManager.prefab));
             #region Form Handlers
             SceneDef scene = stage.sceneDef;
-            /*if (sceneName == "intro")
-            {
-                return;
-            }
-
-            if (sceneName == "title")
-            {
-                // TODO:: create prefab of super sonic floating in the air silly style.
-                Vector3 vector = new Vector3(38, 23, 36);
-            }*/
 
             foreach (FormDef form in FormCatalog.formsCatalog)
             {
-                bool formAvailable = form.enabled(form);
+                bool formAvailable = form.setIsEnabledFunc(form);
 
-                if (!Forms.Forms.formToHandlerObject.ContainsKey(form) && formAvailable)
+                if (!Forms.Forms.GetFormHandlerObject(form.formIndex) && formAvailable)
                 {
                     Log.Message("Spawning new handler object for form " + form.ToString());
-                    NetworkServer.Spawn(GameObject.Instantiate<GameObject>(Forms.Forms.formToHandlerPrefab.GetValueSafe(form)));
+                    NetworkServer.Spawn(GameObject.Instantiate<GameObject>(Forms.Forms.GetFormHandlerPrefab(form.formIndex)));
+                    form.enabled = true;
                 }
                 else
                 {
                     Log.Message("Did NOT spawn handler object for form " + form.ToString());
+                    form.enabled = false;
                     continue;
                 }
 
-                FormHandler formHandler = Forms.Forms.formToHandlerObject.GetValueSafe(form).GetComponent(typeof(FormHandler)) as FormHandler;
+                FormHandler formHandler = Forms.Forms.GetFormHandlerObject(form.formIndex).GetComponent<FormHandler>();
 
                 formHandler.SetEvents(formAvailable);
             }
             #region Super Form Handler and Emeralds
-            if (!Forms.Forms.formToHandlerObject.TryGetValue(SuperFormDef.superFormDef, out GameObject handler)) { return; }
+            if (!Forms.Forms.GetFormHandlerObject(SuperFormDef.superFormDef.formIndex)) { return; }
 
-            if (!handler.TryGetComponent(out SuperSonicHandler emeraldSpawner)) { return; }
+            if (!Forms.Forms.GetFormHandlerObject(SuperFormDef.superFormDef.formIndex).TryGetComponent(out SuperSonicHandler emeraldSpawner)) { return; }
 
             emeraldSpawner.FilterOwnedEmeralds();
 
@@ -295,6 +270,54 @@ namespace HedgehogUtils
                 {
                     boost.AddBoost(BoostLogic.boostRegenPerBandolier);
                 }
+            }
+        }
+        private static void SolusHeart1DefeatedVoiceline(On.EntityStates.SolusHeart.Phase1.Mission1.orig_OnEnter orig, EntityStates.SolusHeart.Phase1.Mission1 self)
+        {
+            orig(self);
+            if (VoicelineManager.instance && NetworkServer.active)
+            {
+                VoicelineManager.instance.SendFinalBossDefeatedEvent(FinalBoss.SolusHeart1);
+            }
+        }
+        private static void SolusHeart2DefeatedVoiceline(On.EntityStates.SolusHeart.Phase2.Mission2.orig_OnEnter orig, EntityStates.SolusHeart.Phase2.Mission2 self)
+        {
+            orig(self);
+            if (VoicelineManager.instance && NetworkServer.active)
+            {
+                VoicelineManager.instance.SendFinalBossDefeatedEvent(FinalBoss.SolusHeart2);
+            }
+        }
+
+        private static void SolusHeart3DefeatedVoiceline(On.EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start.orig_OnEnter orig, EntityStates.SolusHeart.Death.SolusHeartDeathSequence.Start self)
+        {
+            orig(self);
+            if (VoicelineManager.instance && NetworkServer.active)
+            {
+                VoicelineManager.instance.SendFinalBossDefeatedEvent(FinalBoss.SolusHeart3);
+            }
+        }
+        private static void SolusHeartPhaseStartVoiceline(On.EntityStates.SolusHeart.SolusHeartTransformationBaseState.orig_OnEnter orig, EntityStates.SolusHeart.SolusHeartTransformationBaseState self)
+        {
+            orig(self);
+            if (VoicelineManager.instance && NetworkServer.active)
+            {
+                if (self is EntityStates.SolusHeart.Phase1.SolusHeart1)
+                {
+                    VoicelineManager.instance.SendFinalBossStartEvent(FinalBoss.SolusHeart2);
+                }
+                else if (self is EntityStates.SolusHeart.Phase2.SolusHeart2)
+                {
+                    VoicelineManager.instance.SendFinalBossStartEvent(FinalBoss.SolusHeart3);
+                }
+            }
+        }
+        private static void SolusWingWeakPointDefeatedVoiceline(On.RoR2.SolusWing.SolusWingWeakPointsController.orig_onWeakpointDestroyedServer orig, RoR2.SolusWing.SolusWingWeakPointsController self, GameObject weakpointObject, CharacterBody body)
+        {
+            orig(self, weakpointObject, body);
+            if (VoicelineManager.instance && NetworkServer.active)
+            {
+                VoicelineManager.instance.SendFinalBossDefeatedEvent(FinalBoss.SolusWingWeakPoint);
             }
         }
     }

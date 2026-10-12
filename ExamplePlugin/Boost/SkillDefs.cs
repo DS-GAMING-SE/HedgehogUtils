@@ -1,17 +1,50 @@
 ﻿using EntityStates;
 using HedgehogUtils.Boost.EntityStates;
+using HedgehogUtils.Forms;
 using JetBrains.Annotations;
 using RoR2;
 using RoR2.Skills;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using UnityEngine;
+using static RoR2.TeleporterInteraction;
 
 namespace HedgehogUtils.Boost
 {
     public class SkillDefs
     {
+        public static T CreateBoostSkillDef<T>(string nameToken, string descriptionToken, Sprite skillIcon, SerializableEntityStateType boostState, SerializableEntityStateType boostIdleState, SerializableEntityStateType brakeState, Color hudColor) where T : BoostSkillDef
+        {
+            T skillDef = ScriptableObject.CreateInstance<T>();
+            skillDef.skillName = nameToken;
+            skillDef.skillNameToken = nameToken;
+            skillDef.skillDescriptionToken = descriptionToken;
+            skillDef.icon = skillIcon;
+            skillDef.activationState = boostState;
+            skillDef.boostIdleState = boostIdleState;
+            skillDef.brakeState = brakeState;
+            skillDef.activationStateMachineName = "Body";
+            skillDef.baseMaxStock = 1;
+            skillDef.baseRechargeInterval = 0f;
+            skillDef.beginSkillCooldownOnSkillEnd = true;
+            skillDef.canceledFromSprinting = false;
+            skillDef.forceSprintDuringState = false;
+            skillDef.fullRestockOnAssign = true;
+            skillDef.interruptPriority = InterruptPriority.PrioritySkill;
+            skillDef.resetCooldownTimerOnUse = false;
+            skillDef.isCombatSkill = false;
+            skillDef.mustKeyPress = true;
+            skillDef.cancelSprintingOnActivation = false;
+            skillDef.rechargeStock = 0;
+            skillDef.requiredStock = 1;
+            skillDef.stockToConsume = 0;
+            skillDef.suppressSkillActivation = true;
+            skillDef.boostHUDColor = hudColor;
+            return skillDef;
+        }
+        
         public interface IBoostSkill
         {
             public SerializableEntityStateType boostIdleState { get; set; }
@@ -77,7 +110,7 @@ namespace HedgehogUtils.Boost
 
             public override bool IsReady([NotNull] GenericSkill skillSlot)
             {
-                return base.IsReady(skillSlot) && (!(skillSlot.skillInstanceData is InstanceData) || ((InstanceData)skillSlot.skillInstanceData).boostLogic.boostAvailable);
+                return base.IsReady(skillSlot) && (skillSlot.skillInstanceData is not InstanceData data || data.boostLogic.boostAvailable);
             }
             // Idk why I made these static methods for making entity states that are both exactly the same.
             // Probably a result of me changing things a bunch internally until the methods were no longer needed, but I didn't notice
@@ -120,32 +153,9 @@ namespace HedgehogUtils.Boost
             }
         }
 
-        public class RequiresFormBoostSkillDef : Forms.SkillDefs.RequiresFormSkillDef, IBoostSkill
+        public class RequiresFormBoostSkillDef : BoostSkillDef, IBoostSkill, Forms.SkillDefs.IRequiresFormSkillDef
         {
-            public SerializableEntityStateType boostIdleState { get; set; }
-            public SerializableEntityStateType brakeState { get; set; }
-            public Color boostHUDColor { get; set; }
-
-            public override BaseSkillInstanceData OnAssigned([NotNull] GenericSkill skillSlot)
-            {
-                InstanceData oldData = (InstanceData)base.OnAssigned(skillSlot);
-                return new BoostInstanceData { boostLogic = skillSlot.GetComponent<BoostLogic>(), formComponent = oldData.formComponent };
-            }
-
-            public override EntityState InstantiateNextState([NotNull] GenericSkill skillSlot)
-            {
-                if (!skillSlot.characterBody || !skillSlot.characterBody.characterMotor) { return base.InstantiateNextState(skillSlot); }
-                return BoostSkillDef.DetermineNextBoostState(skillSlot, activationState, boostIdleState);
-            }
-            public override bool IsReady([NotNull] GenericSkill skillSlot)
-            {
-                return base.IsReady(skillSlot) && (!(skillSlot.skillInstanceData is BoostInstanceData) || ((BoostInstanceData)skillSlot.skillInstanceData).boostLogic.boostAvailable);
-            }
-
-            protected class BoostInstanceData : InstanceData
-            {
-                public BoostLogic boostLogic;
-            }
+            public FormDef requiredForm { get; set; }
         }
     }
 }

@@ -31,7 +31,7 @@ namespace HedgehogUtils.Forms.SuperForm
             emeraldTier.pickupRules = ItemTierDef.PickupRules.Default;
             emeraldTier.name = HedgehogUtilsPlugin.Prefix + "_CHAOS_EMERALD_TIER";
             emeraldTier.highlightPrefab = Addressables.LoadAssetAsync<GameObject>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.HighlightTier1Item_prefab).WaitForCompletion();
-            emeraldTier.dropletDisplayPrefab = Addressables.LoadAssetAsync<GameObject>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common.Tier1Orb_prefab).WaitForCompletion();
+            emeraldTier.dropletDisplayPrefab = Assets.chaosEmeraldDropletPrefab;
             emeraldTier.canScrap = false;
             emeraldTier.colorIndex = ColorCatalog.ColorIndex.Tier1Item;
             emeraldTier.darkColorIndex = ColorCatalog.ColorIndex.Tier1ItemDark;
@@ -41,10 +41,6 @@ namespace HedgehogUtils.Forms.SuperForm
 
             // The first string input on this method, the name of the itemDef, is an internal name and CANNOT have spaces or other special characters
             // THIS was the reason the mastery skin wasn't working. THIS was the reason RunReports were breaking
-
-            /* Addressables.
-             * You'd need to build your assetbundle using addressables
-             * instead of AssetBundleBrowser */
 
             //"88448356f06897a4e930138476d4dd77"
             yellowEmerald = AddNewItem("ChaosEmeraldYellow", "YELLOW_EMERALD", true, emeraldTier,
@@ -80,6 +76,24 @@ namespace HedgehogUtils.Forms.SuperForm
             purpleEmerald = AddNewItem("ChaosEmeraldPurple", "PURPLE_EMERALD", true, emeraldTier,
                 Assets.mainAssetBundle.LoadAsset<Sprite>("texPurpleEmeraldIcon"),
                 CreateEmeraldPrefab("PurpleEmerald.prefab"));
+        }
+        [ConCommand(commandName = "give_chaosemeralds", flags = ConVarFlags.ExecuteOnServer, helpText = "Give all players all 7 Chaos Emeralds.")]
+        private static void GiveChaosEmeraldsCommand(ConCommandArgs args)
+        {
+            if (!Run.instance || !SuperFormDef.superFormDef.enabled) return;
+            foreach (var player in PlayerCharacterMasterController.instances)
+            {
+                if (player.master && player.master.inventory)
+                {
+                    player.master.inventory.GiveItemPermanent(redEmerald);
+                    player.master.inventory.GiveItemPermanent(yellowEmerald);
+                    player.master.inventory.GiveItemPermanent(greenEmerald);
+                    player.master.inventory.GiveItemPermanent(cyanEmerald);
+                    player.master.inventory.GiveItemPermanent(blueEmerald);
+                    player.master.inventory.GiveItemPermanent(purpleEmerald);
+                    player.master.inventory.GiveItemPermanent(grayEmerald);
+                }
+            }
         }
 
         internal static GameObject CreateEmeraldPrefab(string assetName)

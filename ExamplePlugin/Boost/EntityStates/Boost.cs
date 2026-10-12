@@ -1,4 +1,5 @@
 ﻿using EntityStates;
+using HedgehogUtils.Miscellaneous;
 using R2API;
 using RoR2;
 using System;
@@ -32,8 +33,6 @@ namespace HedgehogUtils.Boost.EntityStates
 
         private TemporaryOverlayInstance temporaryOverlay;
 
-        protected ICharacterFlightParameterProvider flight;
-
         protected static float boostCameraDistance = -13;
         private CharacterCameraParamsData boostingCameraParams = new CharacterCameraParamsData
         {
@@ -46,6 +45,7 @@ namespace HedgehogUtils.Boost.EntityStates
         private CameraTargetParams.CameraParamsOverrideHandle camOverrideHandle;
 
         protected GameObject aura;
+        protected EffectManagerHelper emh;
 
         protected virtual BuffDef buff
         {
@@ -64,7 +64,8 @@ namespace HedgehogUtils.Boost.EntityStates
         {
             base.OnEnter();
             base.characterBody.skillLocator.utility.onSkillChanged += OnSkillChanged;
-            flight = base.characterBody.GetComponent<ICharacterFlightParameterProvider>();
+
+            characterBody.OnSkillActivated(characterBody.skillLocator.utility);
 
             base.GetModelAnimator().SetBool("isBoosting", true);
 
@@ -135,7 +136,7 @@ namespace HedgehogUtils.Boost.EntityStates
             {
                 if (!base.isGrounded)
                 {
-                    if (!Helpers.Flying(flight))
+                    if (!characterMotor.isFlying)
                     {
                         base.characterMotor.velocity.y = Mathf.Max(airBoostY, base.characterMotor.velocity.y);
                     }
@@ -231,14 +232,24 @@ namespace HedgehogUtils.Boost.EntityStates
 
             if (GetAuraPrefab())
             {
-                aura = GameObject.Instantiate<GameObject>(GetAuraPrefab(), base.FindModelChild("MainHurtbox"));
+                emh = EffectManager.GetAndActivatePooledEffect(GetAuraPrefab(), characterBody.coreTransform, true);
+                aura = emh.gameObject;
             }
         }
 
         protected virtual void RemoveBoostVFX()
         {
             RemoveTemporaryOverlay();
-
+            if (emh)
+            {
+                if (aura.TryGetComponent<FadeTrailAndLightWithDestroy>(out var fade))
+                {
+                    fade.StartDisable();
+                    return;
+                }
+                emh.ReturnToPoolOrDestroyInstance(ref aura);
+                return;
+            }
             if (aura)
             {
                 Destroy(aura);
@@ -279,7 +290,7 @@ namespace HedgehogUtils.Boost.EntityStates
         {
             if (!base.isAuthority) { return; }
 
-            if (base.isGrounded || Helpers.Flying(flight))
+            if (base.isGrounded || characterMotor.isFlying)
             {
                 if (inputBank.moveVector == Vector3.zero)
                 {
@@ -336,11 +347,11 @@ namespace HedgehogUtils.Boost.EntityStates
         }
         public virtual GameObject GetAuraPrefab()
         {
-            return Assets.powerBoostAuraEffect;
+            return Assets.boostAuraEffectBase;
         }
         public virtual Material GetOverlayMaterial()
         {
-            return LegacyResourcesAPI.Load<Material>("Materials/matOnHelfire");
+            return null;
         }
 
         public virtual void PlayBoostAnimation()
