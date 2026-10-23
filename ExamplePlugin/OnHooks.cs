@@ -48,7 +48,7 @@ namespace HedgehogUtils
         {
             if (self.gameObject.TryGetComponent<CharacterBody>(out CharacterBody body))
             {
-                if (body.HasBuff(Buffs.launchedBuff))
+                if (body.HasBuff(Buffs.launchedBuff) || body.HasBuff(Buffs.suppressDeathBuff))
                 {
                     return;
                 }

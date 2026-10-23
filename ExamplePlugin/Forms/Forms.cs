@@ -55,7 +55,7 @@ namespace HedgehogUtils.Forms
             };
             form.handlerComponent = handlerComponent;
             form.allowedBodyList = allowedBodyList;
-            form.keyBind = RebindAPI.RegisterModKeybind(new ModKeybind(form.cachedName, defaultKeyBind, 10));
+            if (defaultKeyBind != KeyCode.None) form.keyBind = RebindAPI.RegisterModKeybind(new ModKeybind(form.cachedName, defaultKeyBind, 10));
 
             Log.Message("FormDef "+form.cachedName+" created.");
 

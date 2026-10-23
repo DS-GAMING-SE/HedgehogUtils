@@ -11,16 +11,16 @@ namespace HedgehogUtils.Forms.SuperForm
     public static class Items
     {
         // Emerald item tier
-        internal static ItemTierDef emeraldTier;
+        public static ItemTierDef emeraldTier;
 
         // Definition of all the different chaos emeralds.
-        internal static ItemDef yellowEmerald;
-        internal static ItemDef redEmerald;
-        internal static ItemDef grayEmerald;
-        internal static ItemDef blueEmerald;
-        internal static ItemDef cyanEmerald;
-        internal static ItemDef greenEmerald;
-        internal static ItemDef purpleEmerald;
+        public static ItemDef yellowEmerald;
+        public static ItemDef redEmerald;
+        public static ItemDef grayEmerald;
+        public static ItemDef blueEmerald;
+        public static ItemDef cyanEmerald;
+        public static ItemDef greenEmerald;
+        public static ItemDef purpleEmerald;
 
         internal static void RegisterItems()
         {

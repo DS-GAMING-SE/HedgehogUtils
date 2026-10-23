@@ -44,6 +44,11 @@ namespace HedgehogUtils
         {
             return HedgehogUtilsPlugin.instance.Config.Bind<FormItemSharing>("Chaos Emeralds", "Item Sharing", FormItemSharing.All, "Handles how Chaos Emeralds are shared between teammates and determines who has permission to transform based on the items they have. The restrictions only apply to the first person to transform and don't apply to anyone who transforms in the 10 second window afterwards. Host's config takes priority. Default is All.\n\nAssuming all items have been collected across the team...\nAll: Anyone, whether they HAVE ANY ITEMS OR NOT, can transform.\nContributor: Players that have AT LEAST ONE of the needed items can transform\nMajorityRule: The player(s) with the MAJORITY number of the needed items can transform\nNone: Only the player with ALL items can transform\n\nWARNING: A mod that lets you drop items to your teammates is reccommended if you are changing this setting. Otherwise, transforming may be impossible if items are split between players in certain ways.");
         }
+
+        public static ConfigEntry<bool> KarmaFromChaosEmeralds()
+        {
+            return HedgehogUtilsPlugin.instance.Config.Bind<bool>("Chaos Emeralds", "Karma", true, "Whether collecting all 7 Chaos Emeralds will increase Karma. Host's config takes priority. Default is true.");
+        }
         #endregion
         #region Super Form
         public static ConfigEntry<bool> SuperFormInvincible()
@@ -97,6 +102,8 @@ namespace HedgehogUtils
             Config.ConsumeEmeraldsOnUse().SettingChanged += Forms.SuperForm.SuperFormDef.UpdateConsumeEmeraldsConfig;
 
             ModSettingsManager.AddOption(new ChoiceOption(Config.NeededItemSharing()));
+
+            ModSettingsManager.AddOption(new CheckBoxOption(Config.KarmaFromChaosEmeralds()));
 
             ModSettingsManager.AddOption(new CheckBoxOption(Config.AnnounceSuperTransformation()));
 

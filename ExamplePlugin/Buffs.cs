@@ -10,6 +10,8 @@ namespace HedgehogUtils
 
         public static BuffDef launchedBuff;
 
+        public static BuffDef suppressDeathBuff;
+
         public static BuffDef chaosSnapRandomIdentifierBuff;
 
         internal static void RegisterBuffs()
@@ -21,6 +23,12 @@ namespace HedgehogUtils
                 false,
                 false);
             launchedBuff = AddNewBuff("bdHedgehogLaunch",
+                LegacyResourcesAPI.Load<BuffDef>("BuffDefs/Weak").iconSprite,
+                new Color(1f, 1f, 1f),
+                false,
+                false,
+                true);
+            suppressDeathBuff = AddNewBuff("bdHedgehogSuppressDeath",
                 LegacyResourcesAPI.Load<BuffDef>("BuffDefs/Weak").iconSprite,
                 new Color(1f, 1f, 1f),
                 false,

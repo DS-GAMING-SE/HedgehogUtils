@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.0.2
+ - (- Nerf) Collecting all Chaos Emeralds now increases Karma. This can be disabled in the config
+ 
+ - (Internal) Added a new suppressDeathBuff for preventing targets from dying like how Launching does
+ - (Internal) Forms no longer register a keybind if their default keybind is set to None
+ - (Internal) LockOnIndicator now has a reference to its RoR2.Indicator
+
+## v2.0.1
+Apparently my files weren't getting copied properly, so I was just uploading older versions of the mod again...
+
 ## v2.0.0
 Fixed for Hallowed Concepts
 
