@@ -38,7 +38,7 @@ namespace HedgehogUtils.Miscellaneous
             }
         }
 
-        public void Teleport(CharacterBody target, Vector3 teleportFootPosition)
+        public ChaosSnapInstanceHandle Teleport(CharacterBody target, Vector3 teleportFootPosition)
         {
             float duration;
             switch (target.hullClassification)
@@ -53,35 +53,61 @@ namespace HedgehogUtils.Miscellaneous
                     duration = 0.25f;
                     break;
             }
-            Teleport(target, teleportFootPosition, duration, duration);
+            return Teleport(target, teleportFootPosition, Vector3.zero, duration, duration);
         }
-        public void Teleport(CharacterBody target, Vector3 teleportFootPosition, float startDuration, float endDuration)
+        public ChaosSnapInstanceHandle Teleport(CharacterBody target, Vector3 teleportFootPosition, float startDuration, float endDuration)
         {
+            return Teleport(target, teleportFootPosition, Vector3.zero, startDuration, endDuration);
+        }
+        public ChaosSnapInstanceHandle Teleport(CharacterBody target, Vector3 teleportFootPosition, Vector3 targetForward, float startDuration, float endDuration)
+        {
+            ChaosSnapInstanceHandle handle = CreateInstance(target, teleportFootPosition, targetForward);
             if (startDuration > 0)
             {
-                StartCoroutine(TeleportAfterDelay(target, teleportFootPosition, startDuration, endDuration));
+                StartCoroutine(TeleportAfterDelay(handle, startDuration, endDuration));
             }
             else
             {
-                TeleportVFX(target, target.corePosition, true, 0.2f, false);
-                TeleportVFX(target, VFXPosition(target, teleportFootPosition), false, endDuration, true);
-                TeleportHelper.TeleportBody(target, teleportFootPosition, true);
+                StartCoroutine(InstantTeleport(handle, endDuration));
             }
+            return handle;
         }
-        IEnumerator TeleportAfterDelay(CharacterBody target, Vector3 teleportFootPosition, float startDuration, float endDuration)
+        private IEnumerator TeleportAfterDelay(ChaosSnapInstanceHandle handle, float startDuration, float endDuration)
         {
-            TeleportVFX(target, target.corePosition, true, startDuration, true);
+            TeleportVFX(handle.user, handle.user.corePosition, true, startDuration, true);
+            
             yield return new WaitForSeconds(startDuration * (1 - CAMERA_MOVEMENT_PERCENT_OF_DURATION));
-            ChaosSnapCameraInstance camera = StartCameraMove(target.gameObject, teleportFootPosition, Vector3.zero, (startDuration + endDuration) * CAMERA_MOVEMENT_PERCENT_OF_DURATION);
+            handle.StartCameraMove((startDuration + endDuration) * CAMERA_MOVEMENT_PERCENT_OF_DURATION);
             yield return new WaitForSeconds(startDuration * CAMERA_MOVEMENT_PERCENT_OF_DURATION);
-            if (target)
+            if (handle.user)
             {
-                TeleportVFX(target, VFXPosition(target, teleportFootPosition), false, endDuration, true);
-                TeleportHelper.TeleportBody(target, teleportFootPosition, true);
+                TeleportVFX(handle.user, VFXPosition(handle.user, handle.targetPosition), false, endDuration, true);
+                TeleportHelper.TeleportBody(handle.user, handle.targetPosition, true);
             }
             yield return new WaitForSeconds(endDuration * CAMERA_MOVEMENT_PERCENT_OF_DURATION);
-            EndCameraMove(camera);
-            //yield return new WaitForSeconds(endDuration * (1 - CAMERA_MOVEMENT_PERCENT_OF_DURATION));
+            handle.EndCameraMove();
+            if (!handle.user) 
+            { 
+                chaosSnapInstances.Remove(handle); 
+                yield break; 
+            }
+            yield return new WaitForSeconds(endDuration * (1 - CAMERA_MOVEMENT_PERCENT_OF_DURATION));
+            chaosSnapInstances.Remove(handle);
+        }
+        private IEnumerator InstantTeleport(ChaosSnapInstanceHandle handle, float endDuration)
+        {
+            TeleportVFX(handle.user, handle.user.corePosition, true, 0.2f, false);
+            TeleportVFX(handle.user, VFXPosition(handle.user, handle.targetPosition), false, endDuration, true);
+            TeleportHelper.TeleportBody(handle.user, handle.targetPosition, true);
+            yield return new WaitForSeconds(endDuration * CAMERA_MOVEMENT_PERCENT_OF_DURATION);
+            handle.EndCameraMove();
+            if (!handle.user)
+            {
+                chaosSnapInstances.Remove(handle);
+                yield break;
+            }
+            yield return new WaitForSeconds(endDuration * (1 - CAMERA_MOVEMENT_PERCENT_OF_DURATION));
+            chaosSnapInstances.Remove(handle);
         }
         public bool TeleportBodyToRandomNode(CharacterBody target, float minDistance, float maxDistance)
         {
@@ -186,62 +212,62 @@ namespace HedgehogUtils.Miscellaneous
         // Yep... solid... for sure
 
         public const float maxLerpTime = 0.35f; // Copied from amy multi-lock, currently unused. Not sure if I want to use it
-        public struct ChaosSnapCameraInstance
+        public class ChaosSnapInstanceHandle
         {
-            public GameObject user;
+            public CharacterBody user;
             public Vector3 startPosition;
             public Vector3 targetPosition;
             public Quaternion targetRotation;
-        }
-        private readonly List<ChaosSnapCameraInstance> cameraInstances = new List<ChaosSnapCameraInstance>();
+            public bool cameraMove;
 
-        public static ChaosSnapCameraInstance StartCameraMove(GameObject user, Vector3 targetPosition, Vector3 targetForward, float lerpTime)
+            public void StartCameraMove(float lerpTime)
+            {
+                foreach (CameraRigController cameraRigController in CameraRigController.readOnlyInstancesList)
+                {
+                    if (cameraRigController.target == user.gameObject)
+                    {
+                        cameraRigController.SetOverrideCam(instance, lerpTime);//Mathf.Min(lerpTime, maxLerpTime));
+                    }
+                    else if (cameraRigController.IsOverrideCam(instance))
+                    {
+                        cameraRigController.SetOverrideCam(null, 0.05f);
+                    }
+                }
+                cameraMove = true;
+            }
+            public void EndCameraMove()
+            {
+                ReadOnlyCollection<CameraRigController> readOnlyInstancesList = CameraRigController.readOnlyInstancesList;
+                for (int i = 0; i < readOnlyInstancesList.Count; i++)
+                {
+                    CameraRigController cameraRigController = readOnlyInstancesList[i];
+                    if (cameraRigController.IsOverrideCam(instance) && (instance.chaosSnapInstances.Count == 0 || (!user || cameraRigController.target == user.gameObject)))
+                    {
+                        cameraRigController.SetOverrideCam(null, 0.2f);
+                    }
+                }
+                cameraMove = false;
+            }
+        }
+        private readonly List<ChaosSnapInstanceHandle> chaosSnapInstances = new List<ChaosSnapInstanceHandle>();
+
+        public static ChaosSnapInstanceHandle CreateInstance(CharacterBody user, Vector3 targetPosition, Vector3 targetForward)
         {
             targetForward.y = Mathf.Clamp(targetForward.y, -0.3f, 0f);
-            ChaosSnapCameraInstance provider = new ChaosSnapCameraInstance
+            ChaosSnapInstanceHandle provider = new ChaosSnapInstanceHandle
             {
                 user = user,
                 startPosition = user.transform.position,
                 targetPosition = targetPosition,
                 targetRotation = targetForward == Vector3.zero ? Quaternion.identity : Quaternion.LookRotation(targetForward)
             };
-            instance.cameraInstances.Add(provider);
-            foreach (CameraRigController cameraRigController in CameraRigController.readOnlyInstancesList)
-            {
-                if (cameraRigController.target == user)
-                {
-                    cameraRigController.SetOverrideCam(instance, lerpTime);//Mathf.Min(lerpTime, maxLerpTime));
-                }
-                else if (cameraRigController.IsOverrideCam(instance))
-                {
-                    cameraRigController.SetOverrideCam(null, 0.05f);
-                }
-            }
+            instance.chaosSnapInstances.Add(provider);
             return provider;
-        }
-
-        public void EndCameraMove(ChaosSnapCameraInstance cameraInstance)
-        {
-            if (!cameraInstance.user)
-            {
-                cameraInstances.Remove(cameraInstance);
-                if (cameraInstances.Count == 0) return;
-            }
-            ReadOnlyCollection<CameraRigController> readOnlyInstancesList = CameraRigController.readOnlyInstancesList;
-            for (int i = 0; i < readOnlyInstancesList.Count; i++)
-            {
-                CameraRigController cameraRigController = readOnlyInstancesList[i];
-                if (cameraRigController.IsOverrideCam(this) && (cameraInstances.Count == 0 || cameraRigController.target == cameraInstance.user))
-                {
-                    cameraRigController.SetOverrideCam(null, 0.2f);
-                }
-            }
-            cameraInstances.Remove(cameraInstance);
         }
 
         public void GetCameraState(CameraRigController cameraRigController, ref CameraState cameraState)
         {
-            if (TryGetCameraInstance(cameraRigController, out var cameraInstance))
+            if (TryGetInstance(cameraRigController, out var cameraInstance) && cameraInstance.cameraMove)
             {
                 Vector3 userPosition = cameraInstance.user ? cameraInstance.user.transform.position : cameraInstance.startPosition;
 
@@ -284,14 +310,18 @@ namespace HedgehogUtils.Miscellaneous
             return num;
         }
 
-        private bool TryGetCameraInstance(CameraRigController cameraRigController, out ChaosSnapCameraInstance cameraInstance)
+        public bool TryGetInstance(CameraRigController cameraRigController, out ChaosSnapInstanceHandle cameraInstance)
         {
-            cameraInstance = default;
-            for (int i = 0; i < cameraInstances.Count; i++)
+            return TryGetInstance(cameraRigController.target, out cameraInstance);
+        }
+        public bool TryGetInstance(GameObject target, out ChaosSnapInstanceHandle cameraInstance)
+        {
+            cameraInstance = null;
+            for (int i = 0; i < chaosSnapInstances.Count; i++)
             {
-                if (cameraInstances[i].user == cameraRigController.target)
+                if (chaosSnapInstances[i].user == target)
                 {
-                    cameraInstance = cameraInstances[i];
+                    cameraInstance = chaosSnapInstances[i];
                     return true;
                 }
             }

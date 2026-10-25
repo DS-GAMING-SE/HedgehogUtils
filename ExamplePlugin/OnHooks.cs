@@ -22,7 +22,7 @@ namespace HedgehogUtils
     {
         public static void Initialize()
         {
-            On.RoR2.CharacterDeathBehavior.OnDeath += DontDieWhileLaunched;
+            On.RoR2.HealthComponent.StartDeath += DontDieWhileLaunched;
             On.RoR2.HealthComponent.TakeDamageForce_DamageInfo_bool_bool += DontDoNormalKnockbackWhenLaunched;
             On.RoR2.HealthComponent.TakeDamage += TakeDamageHook;
 
@@ -44,14 +44,11 @@ namespace HedgehogUtils
             On.EntityStates.SolusHeart.SolusHeartTransformationBaseState.OnEnter += SolusHeartPhaseStartVoiceline;
             On.RoR2.SolusWing.SolusWingWeakPointsController.onWeakpointDestroyedServer += SolusWingWeakPointDefeatedVoiceline;
         }
-        private static void DontDieWhileLaunched(On.RoR2.CharacterDeathBehavior.orig_OnDeath orig, CharacterDeathBehavior self)
+        private static void DontDieWhileLaunched(On.RoR2.HealthComponent.orig_StartDeath orig, HealthComponent self)
         {
-            if (self.gameObject.TryGetComponent<CharacterBody>(out CharacterBody body))
+            if (self.body && self.body.HasBuff(Buffs.launchedBuff) || self.body.HasBuff(Buffs.suppressDeathBuff))
             {
-                if (body.HasBuff(Buffs.launchedBuff) || body.HasBuff(Buffs.suppressDeathBuff))
-                {
-                    return;
-                }
+                return;
             }
             orig(self);
         }
@@ -88,11 +85,11 @@ namespace HedgehogUtils
             orig(self, damageInfo);
 
             #region Chaos Snap On Hit
-            if (NetworkServer.active && self && !damageInfo.rejected && !self.body.HasBuff(Buffs.chaosSnapRandomIdentifierBuff) && 
-                damageInfo.HasModdedDamageType(Miscellaneous.DamageTypes.chaosSnapRandom) && ChaosSnapManager.instance)
+            if (NetworkServer.active && self && !damageInfo.rejected && 
+                damageInfo.HasModdedDamageType(Miscellaneous.DamageTypes.chaosSnapRandom) && 
+                ChaosSnapManager.instance && !ChaosSnapManager.instance.TryGetInstance(self.gameObject, out _))
             {
                 ChaosSnapManager.instance.TeleportBodyToRandomNode(self.body, 30f, 50f);
-                self.body.AddTimedBuff(Buffs.chaosSnapRandomIdentifierBuff, 1f);
             }
             #endregion
 

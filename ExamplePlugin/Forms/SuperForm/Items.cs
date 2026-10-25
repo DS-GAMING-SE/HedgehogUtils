@@ -30,7 +30,7 @@ namespace HedgehogUtils.Forms.SuperForm
             emeraldTier.canRestack = false;
             emeraldTier.pickupRules = ItemTierDef.PickupRules.Default;
             emeraldTier.name = HedgehogUtilsPlugin.Prefix + "_CHAOS_EMERALD_TIER";
-            emeraldTier.highlightPrefab = Addressables.LoadAssetAsync<GameObject>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_UI.HighlightTier1Item_prefab).WaitForCompletion();
+            emeraldTier.highlightPrefab = Addressables.LoadAssetAsync<GameObject>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_UI.HighlightTier1Item_prefab).WaitForCompletion();
             emeraldTier.dropletDisplayPrefab = Assets.chaosEmeraldDropletPrefab;
             emeraldTier.canScrap = false;
             emeraldTier.colorIndex = ColorCatalog.ColorIndex.Tier1Item;

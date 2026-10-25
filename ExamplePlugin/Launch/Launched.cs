@@ -45,10 +45,10 @@ namespace HedgehogUtils.Launch
                     }
                 }
             }
-            if (!NetworkServer.active)
+            /*if (!NetworkServer.active)
             {
                 base.gameObject.AddComponent<DieOnLaunchEnd>();
-            }
+            }*/
         }
 
         public override void FixedUpdate()

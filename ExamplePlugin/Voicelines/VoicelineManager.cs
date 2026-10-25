@@ -20,8 +20,8 @@ namespace HedgehogUtils.Voicelines
         public static VoicelineManager instance;
         public static GameObject prefab;
 
-        private bool[] finalBossStartSaid = new bool[17];
-        private bool[] finalBossDefeatSaid = new bool[17];
+        private bool[] finalBossStartSaid = new bool[19];
+        private bool[] finalBossDefeatSaid = new bool[19];
 
         public delegate void StageEventHandler(Stage stage, List<NetworkedVoiceline> networkedVoicelines);
         public delegate void BossEventHandler(BodyIndex boss, List<NetworkedVoiceline> networkedVoicelines);
@@ -51,6 +51,8 @@ namespace HedgehogUtils.Voicelines
         public static BodyIndex[] lunarScavengerIndices;
         public static BodyIndex arraign1EnemiesReturnsBodyIndex;
         public static BodyIndex arraign2EnemiesReturnsBodyIndex;
+        public static BodyIndex animaHarvester1BodyIndex;
+        public static BodyIndex animaHarvester2BodyIndex;
 
         public static void Initialize()
         {
@@ -352,6 +354,8 @@ namespace HedgehogUtils.Voicelines
                 BodyCatalog.FindBodyIndex("ScavLunar4Body")];
             arraign1EnemiesReturnsBodyIndex = BodyCatalog.FindBodyIndex("ArraignP1Body");
             arraign2EnemiesReturnsBodyIndex = BodyCatalog.FindBodyIndex("ArraignP2Body");
+            animaHarvester1BodyIndex = BodyCatalog.FindBodyIndex("ReaperBossBody");
+            animaHarvester2BodyIndex = BodyCatalog.FindBodyIndex("ReaperBossMalachiteBody");
             //BodyCatalog.FindBodyIndex("ProvidenceP1Body")};
         }
         public static BodyIndex GetBossBodyIndex(BossGroup boss)
@@ -439,6 +443,8 @@ namespace HedgehogUtils.Voicelines
             if (lunarScavengerIndices.Contains(index)) { return FinalBoss.LunarScavenger; }
             if (index == arraign1EnemiesReturnsBodyIndex) { return FinalBoss.Arraign1; }
             if (index == arraign2EnemiesReturnsBodyIndex) { return FinalBoss.Arraign2; }
+            if (index == animaHarvester1BodyIndex) { return FinalBoss.AnimaHarvester1; }
+            if (index == animaHarvester2BodyIndex) { return FinalBoss.AnimaHarvester2; }
             return FinalBoss.None;
         }
     }
@@ -461,7 +467,9 @@ namespace HedgehogUtils.Voicelines
         SolusHeart3,
         LunarScavenger,
         Arraign1,
-        Arraign2
+        Arraign2,
+        AnimaHarvester1,
+        AnimaHarvester2
             // if you add more, remember to update said array size
     }
     public enum VoicelinePriority : byte

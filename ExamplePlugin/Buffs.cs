@@ -12,8 +12,6 @@ namespace HedgehogUtils
 
         public static BuffDef suppressDeathBuff;
 
-        public static BuffDef chaosSnapRandomIdentifierBuff;
-
         internal static void RegisterBuffs()
         {
             superFormBuff = AddNewBuff("bdHedgehogSuperForm",
@@ -31,13 +29,7 @@ namespace HedgehogUtils
             suppressDeathBuff = AddNewBuff("bdHedgehogSuppressDeath",
                 LegacyResourcesAPI.Load<BuffDef>("BuffDefs/Weak").iconSprite,
                 new Color(1f, 1f, 1f),
-                false,
-                false,
-                true);
-            chaosSnapRandomIdentifierBuff = AddNewBuff("bdHedgehogChaosSnap",
-                LegacyResourcesAPI.Load<BuffDef>("BuffDefs/Weak").iconSprite,
-                new Color(1f, 1f, 1f),
-                false,
+                true,
                 false,
                 true);
         }

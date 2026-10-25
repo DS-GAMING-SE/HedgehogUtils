@@ -16,7 +16,6 @@ namespace HedgehogUtils.Miscellaneous
         public SpriteRenderer nibBottom;
         public SpriteRenderer nibRight;
         public ObjectScaleCurve[] scaleCurves;
-        public Indicator indicator;
 
         public Color color
         {
@@ -51,11 +50,6 @@ namespace HedgehogUtils.Miscellaneous
             }
         }
         private Color _secondaryColor = Color.white;
-
-        private void Awake()
-        {
-            indicator = GetComponent<Indicator>();
-        }
         public void UpdateTarget()
         {
             foreach (var item in scaleCurves)

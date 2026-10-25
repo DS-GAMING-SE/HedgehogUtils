@@ -199,14 +199,14 @@ namespace HedgehogUtils.Launch
                 {
                     body.RemoveBuff(Buffs.launchedBuff);
 
-                    if (body.healthComponent && !body.healthComponent.alive)
+                    /*if (body.healthComponent && !body.healthComponent.alive)
                     {
                         CharacterDeathBehavior death = body.gameObject.GetComponent<CharacterDeathBehavior>();
                         if (death)
                         {
                             death.OnDeath();
                         }
-                    }
+                    }*/
                 }
             }
             if (attacker && Util.HasEffectiveAuthority(attacker.gameObject))
