@@ -1,11 +1,15 @@
 ﻿using EntityStates.JunkCube;
+using HarmonyLib;
 using HedgehogUtils.Boost;
 using HedgehogUtils.Forms;
 using HedgehogUtils.Forms.SuperForm;
 using HedgehogUtils.Launch;
 using HedgehogUtils.Miscellaneous;
+using HedgehogUtils.Voicelines;
 using LookingGlass.ItemStatsNameSpace;
 using LookingGlass.LookingGlassLanguage;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 using R2API;
 using RoR2;
 using System;
@@ -13,8 +17,6 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
-using HarmonyLib;
-using HedgehogUtils.Voicelines;
 
 namespace HedgehogUtils
 {
@@ -23,8 +25,9 @@ namespace HedgehogUtils
         public static void Initialize()
         {
             On.RoR2.HealthComponent.StartDeath += DontDieWhileLaunched;
-            On.RoR2.HealthComponent.TakeDamageForce_DamageInfo_bool_bool += DontDoNormalKnockbackWhenLaunched;
-            On.RoR2.HealthComponent.TakeDamage += TakeDamageHook;
+            On.RoR2.HealthComponent.IsImmuneToPhysicsForces += DontDoNormalKnockbackWhenLaunched;
+            On.RoR2.HealthComponent.TakeDamageProcess += TakeDamageHook;
+            IL.RoR2.HealthComponent.TakeDamageProcess += TakeDamageILHook;
 
             On.RoR2.Util.GetBestBodyName += SuperNamePrefix;
 
@@ -53,13 +56,12 @@ namespace HedgehogUtils
             orig(self);
         }
 
-        private static void DontDoNormalKnockbackWhenLaunched(On.RoR2.HealthComponent.orig_TakeDamageForce_DamageInfo_bool_bool orig, HealthComponent self, DamageInfo damageInfo, bool alwaysApply, bool disableAirControlUntilCollision)
+        private static bool DontDoNormalKnockbackWhenLaunched(On.RoR2.HealthComponent.orig_IsImmuneToPhysicsForces orig, HealthComponent self)
         {
-            if (damageInfo.damageType.HasModdedDamageType(Launch.DamageTypes.launch) || damageInfo.damageType.HasModdedDamageType(Launch.DamageTypes.launchOnKill)) { return; }
-            orig(self, damageInfo, alwaysApply, disableAirControlUntilCollision);
+            return orig(self) || self.body.HasBuff(Buffs.launchedBuff);
         }
 
-        private static void TakeDamageHook(On.RoR2.HealthComponent.orig_TakeDamage orig, HealthComponent self, DamageInfo damageInfo)
+        private static void TakeDamageHook(On.RoR2.HealthComponent.orig_TakeDamageProcess orig, HealthComponent self, DamageInfo damageInfo)
         {
             #region Form Invincibility
             if (NetworkServer.active && self)
@@ -121,6 +123,47 @@ namespace HedgehogUtils
                 }
             }
             #endregion
+        }
+        private static void TakeDamageILHook(ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
+            Instruction takeDamageForce = null;
+            int compilerGeneratedClassIndex = -1;
+            if (/*c.TryGotoNext(x => x.MatchCallOrCallvirt(AccessTools.Method(typeof(HealthComponent),
+                nameof(HealthComponent.TakeDamageForce), [typeof(DamageInfo), typeof(bool), typeof(bool)]))*/
+                c.TryGotoNext(x => x.MatchLdloca(out compilerGeneratedClassIndex),
+                x => x.MatchLdarg(1), 
+                x => x.MatchStfld(out var field) && field.Name.Equals("damageInfo"))
+                &&
+                c.TryGotoNext(x => x.MatchCallOrCallvirt<HealthComponent>(nameof(HealthComponent.TakeDamageForce)))
+                && 
+                c.TryGotoPrev(x => x.MatchLdloc(compilerGeneratedClassIndex), 
+                x => x.MatchLdfld(out var field) && field.Name.Equals("damageInfo"), // compiler generated classes........
+                x => x.MatchLdfld(typeof(DamageInfo), nameof(DamageInfo.canRejectForce)),
+                x => x.MatchBrtrue(out _)))
+            {
+                // turn if (!damageInfo.canRejectForce) { TakeDamageForce(); }
+                // into if ((!alive && body.HasBuff(suppressDeathBuff)) || !damageInfo.canRejectForce) { TakeDamageForce(); }
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit<HealthComponent>(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(HealthComponent), nameof(HealthComponent.alive)).Name);
+                c.Emit(OpCodes.Brtrue, c.Next);
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit<HealthComponent>(OpCodes.Ldfld, nameof(HealthComponent.body));
+                c.Emit(OpCodes.Ldsfld, typeof(HedgehogUtils.Buffs).GetField("suppressDeathBuff"));
+                c.Emit<BuffDef>(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(BuffDef), nameof(BuffDef.buffIndex)).Name);
+                c.Emit<CharacterBody>(OpCodes.Callvirt, nameof(CharacterBody.HasBuff));
+
+                c.Index += 4;
+                takeDamageForce = c.Next;
+                c.Index -= 4;
+                c.Emit(OpCodes.Brtrue, takeDamageForce);
+            }
+            else
+            {
+                Log.Error($"{il.Method.Name} IL FAILED");
+            }
         }
 
         public static void LookingGlassSetup()

@@ -11,8 +11,6 @@ namespace HedgehogUtils.Launch
     public class Launched : EntityState
     {
         private SetStateOnHurt idleStateMachineProvider;
-
-        public bool endLaunchASAP;
         
         public override void OnEnter()
         {

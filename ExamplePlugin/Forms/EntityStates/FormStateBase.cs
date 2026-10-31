@@ -119,7 +119,7 @@ namespace HedgehogUtils.Forms.EntityStates
         {
             if (characterModel)
             {
-                Flash(duration, Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Huntress.matHuntressFlashBright_mat).WaitForCompletion());
+                Flash(duration, Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_Huntress.matHuntressFlashBright_mat).WaitForCompletion());
             }
         }
 

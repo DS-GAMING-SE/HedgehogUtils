@@ -56,6 +56,14 @@ namespace HedgehogUtils.Forms
             form.handlerComponent = handlerComponent;
             form.allowedBodyList = allowedBodyList;
             if (defaultKeyBind != KeyCode.None) form.keyBind = RebindAPI.RegisterModKeybind(new ModKeybind(form.cachedName, defaultKeyBind, 10));
+            
+            form.handlerPrefab = PrefabAPI.CreateEmptyPrefab(form.cachedName + " " + form.handlerComponent.Name);
+            FormHandler handlerObjectComponent = (FormHandler)form.handlerPrefab.AddComponent(form.handlerComponent);
+            handlerObjectComponent.form = form;
+            if (form.requiresItems)
+            {
+                form.handlerPrefab.AddComponent(form.shareRequirements ? typeof(SyncedItemTracker) : typeof(UnsyncedItemTracker));
+            }
 
             Log.Message("FormDef "+form.cachedName+" created.");
 
@@ -228,6 +236,8 @@ namespace HedgehogUtils.Forms
 
         [Tooltip("The component that will track information about your form, such as whether all necessary items have been collected. This component will be put on a gameObject that will be created at the beginning of every stage and will stay for the duration of the stage.\nIf you're unsure what to put here, use typeof(FormHandler).\nYou can create a subclass of FormHandler and put it here if you want to add code, such as an extra requirement for transforming.")]
         public Type handlerComponent;
+
+        public GameObject handlerPrefab;
 
         [Tooltip("Contains information on what characters are allowed to transform.\nIf whitelist, any body name listed under bodyNames will be allowed. If not whitelist, any body name not listed under bodyNames will be allowed.\nBody name refers to the name that survivors and enemies use internally. If you're unsure about what body name means, look into RoR2 BodyCatalog related stuff.\nBodyList can be null.")]
         public AllowedBodyList allowedBodyList;

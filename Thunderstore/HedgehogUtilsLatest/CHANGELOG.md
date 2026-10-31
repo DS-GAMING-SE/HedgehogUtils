@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.0.3
+ - (Bug Fix) Fixed transformations not activating for clients in multiplayer
+ - (Bug Fix) Various small improvements to Launching attacks overriding enemy deaths
+ 
+ - (Internal) Improvements to Chaos Snap manager allowing values (such as targetPosition) to be changed mid-teleport
+ - (Internal) Added Anima Harvester support to Final Boss Voicelines (Considered internal since no mod currently uses the voicelines system)
+ - (Internal) Removed RoR2.Indicator reference from LockOnIndicator because I'm stupid and forgot how Indicators work
+ - (Internal) Attacks now deal knockback against dead targets kept alive by suppressDeathBuff
+ 
+### Known Issues
+ - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
+
+
 ## v2.0.2
  - (- Nerf) Collecting all Chaos Emeralds now increases Karma. This can be disabled in the config
  
@@ -46,10 +59,6 @@ Fixed for Hallowed Concepts
  - (Internal) Removed unnecessary On.RoR2.SceneDirector.Start hook used for spawning technical objects at the start of the stage. This is now done via the Stage.onServerStageBegin event
  - (Internal) Removed unnecessary On.RoR2.GenericPickupController.Start hook used for playing the sound for the Chaos Emerald item landing on the ground. This is now handled by the new droplet vfx
  </details>
- 
-### Known Issues
- - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
- - Some enemies become invisible in their death animations after being killed by a launch
 
 <details>
 <summary>v1.1.6</summary>

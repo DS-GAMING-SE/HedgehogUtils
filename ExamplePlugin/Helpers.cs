@@ -182,11 +182,11 @@ namespace HedgehogUtils
         }
         public static Material MetalFresnel(this Material mat, Texture mask = null, float power = 1f, float boost = 1f)
         {
-            return FresnelEmission(mat, AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_DLC3_Drone_Tech.texDroneTechRamp_png)).WaitForCompletion(), mask, power, boost);
+            return FresnelEmission(mat, AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_DLC3_Drone_Tech.texDroneTechRamp_png)).WaitForCompletion(), mask, power, boost);
         }
         public static Material GoldFresnel(this Material mat, Texture mask = null, float power = 1f, float boost = 1f)
         {
-            return FresnelEmission(mat, AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampDroneFire_png)).WaitForCompletion(), mask, power, boost);
+            return FresnelEmission(mat, AssetAsyncReferenceManager<Texture>.LoadAsset(new AssetReferenceT<Texture>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_Common_ColorRamps.texRampDroneFire_png)).WaitForCompletion(), mask, power, boost);
         }
         public static Material FresnelEmission(this Material mat, Texture ramp, Texture mask, float power = 1f, float boost = 1f)
         {
@@ -204,11 +204,11 @@ namespace HedgehogUtils
         }
         public static Material CreateGlassMaterial()
         {
-            Material glass = new Material(Addressables.LoadAssetAsync<Shader>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Shaders.HGCloudRemap_shader).WaitForCompletion());
+            Material glass = new Material(Addressables.LoadAssetAsync<Shader>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_Shaders.HGCloudRemap_shader).WaitForCompletion());
             glass.name = "matHedgehogUtilsGlass";
             glass.SetFloat("_InvFade", 0f);
             glass.SetInt("_Cull", 2);
-            glass.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPaths.Version_1_39_0.RoR2_Base_Common_ColorRamps.texRampDefault_png).WaitForCompletion());
+            glass.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_Common_ColorRamps.texRampDefault_png).WaitForCompletion());
             glass.EnableKeyword("FRESNEL");
             glass.SetFloat("_FresnelPower", 0.5f);
             glass.SetFloat("_SrcBlend", 1f);

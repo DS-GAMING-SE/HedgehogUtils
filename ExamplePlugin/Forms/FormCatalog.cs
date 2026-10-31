@@ -58,16 +58,7 @@ namespace HedgehogUtils.Forms
             Forms.formHandlerPrefabs = new GameObject[formsCatalog.Length];
             for (int i = 0;i < formsCatalog.Length;i++)
             {
-                // Creating handler prefab
-                GameObject handlerPrefab = PrefabAPI.CreateEmptyPrefab(formsCatalog[i].cachedName + " " + formsCatalog[i].handlerComponent.Name);
-                FormHandler handlerObjectComponent = (FormHandler)handlerPrefab.AddComponent(formsCatalog[i].handlerComponent);
-                handlerObjectComponent.form = formsCatalog[i];
-                if (formsCatalog[i].requiresItems)
-                {
-                    handlerPrefab.AddComponent(formsCatalog[i].shareRequirements ? typeof(SyncedItemTracker) : typeof(UnsyncedItemTracker));
-                }
-                //PrefabAPI.RegisterNetworkPrefab(handlerPrefab);
-                Forms.formHandlerPrefabs[i] = handlerPrefab;
+                Forms.formHandlerPrefabs[i] = formsCatalog[i].handlerPrefab;
             }
         }
     }
