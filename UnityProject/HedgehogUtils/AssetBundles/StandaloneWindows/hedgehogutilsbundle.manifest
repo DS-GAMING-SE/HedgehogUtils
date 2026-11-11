@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 3939518414
+CRC: 2321510221
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: c46aef92bbe3b2c57795ee1986d06ee2
+    Hash: 6aeb0beb371a1f7600e986d8da068b6a
   TypeTreeHash:
     serializedVersion: 2
     Hash: cdb44da392f208a66ac279b4a33f04ce
@@ -145,6 +145,7 @@ Assets:
 - Assets/AssetBundle/VFX/Textures/texCloudTriangles.png
 - Assets/AssetBundle/VFX/Meshes/RollMesh.fbx
 - Assets/AssetBundle/VFX/Materials/Super Form/matSwingShadow.mat
+- Assets/AssetBundle/VFX/Textures/texChromaImpacts.png
 - Assets/AssetBundle/Icons/texBallBuffIcon.png
 - Assets/AssetBundle/VFX/Materials/matChromaFlare.mat
 - Assets/AssetBundle/Emeralds/Emerald.fbx

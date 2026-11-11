@@ -41,7 +41,7 @@ namespace HedgehogUtils
         public const string PluginGUID = "com.ds_gaming.HedgehogUtils";
         public const string PluginAuthor = "ds_gaming";
         public const string PluginName = "HedgehogUtils";
-        public const string PluginVersion = "2.0.3";
+        public const string PluginVersion = "2.0.4";
 
         public const string Prefix = "DS_GAMING_HEDGEHOG_UTILS_";
 
@@ -76,8 +76,6 @@ namespace HedgehogUtils
             Miscellaneous.DamageTypes.Initialize();
             Forms.SuperForm.ChaosEmeraldInteractable.Initialize();
 
-            Forms.SuperForm.Stats.Initialize();
-
             Forms.SuperForm.Artifact.Initialize();
             #endregion Forms
 
@@ -89,8 +87,6 @@ namespace HedgehogUtils
 
             #region Misc
             ChaosSnapManager.Initialize();
-
-            MomentumStats.Initialize();
             #endregion
 
             #region Voicelines

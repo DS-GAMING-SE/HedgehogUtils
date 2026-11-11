@@ -20,8 +20,8 @@ namespace HedgehogUtils.Voicelines
         public static VoicelineManager instance;
         public static GameObject prefab;
 
-        private bool[] finalBossStartSaid = new bool[19];
-        private bool[] finalBossDefeatSaid = new bool[19];
+        private bool[] finalBossStartSaid = new bool[23];
+        private bool[] finalBossDefeatSaid = new bool[23];
 
         public delegate void StageEventHandler(Stage stage, List<NetworkedVoiceline> networkedVoicelines);
         public delegate void BossEventHandler(BodyIndex boss, List<NetworkedVoiceline> networkedVoicelines);
@@ -36,6 +36,7 @@ namespace HedgehogUtils.Voicelines
         [Tooltip("Normally, if multiple voiceline characters are responding to the same event, their responses will happen one after another. If they are this far away or greater, they won't be.")]
         public const float nearbyMaxDistance = 60f;
 
+        #region Final Boss Body Indices
         public static BodyIndex mithrix1BodyIndex;
         public static BodyIndex mithrix4BodyIndex;
         public static BodyIndex voidlingBigBodyIndex;
@@ -53,6 +54,12 @@ namespace HedgehogUtils.Voicelines
         public static BodyIndex arraign2EnemiesReturnsBodyIndex;
         public static BodyIndex animaHarvester1BodyIndex;
         public static BodyIndex animaHarvester2BodyIndex;
+        public static BodyIndex providence1BodyIndex;
+        public static BodyIndex corrodedWurmLaserBodyIndex;
+        public static BodyIndex corrodedWurmOrbBodyIndex;
+        public static BodyIndex providence3BodyIndex;
+        public static BodyIndex providence4BodyIndex;
+        #endregion
 
         public static void Initialize()
         {
@@ -79,6 +86,7 @@ namespace HedgehogUtils.Voicelines
         {
             StartCoroutine(StageStartVoicelines());
         }
+        #region Global Voiceline Events
         private IEnumerator StageStartVoicelines()
         {
             yield return new WaitForSeconds(3.5f);
@@ -116,11 +124,11 @@ namespace HedgehogUtils.Voicelines
 
             if (finalBoss == FinalBoss.None)
             {
-                SendBossStartEvent(bodyIndex);
+                SendBossStartEvent(bodyIndex, boss.barrageOnBossDelayOverride - 2f);
             }
             else
             {
-                SendFinalBossStartEvent(finalBoss);
+                SendFinalBossStartEvent(finalBoss, boss.barrageOnBossDelayOverride - 2f);
             }
         }
         private void SolusHeartStartVoicelines(SolusWebMissionController solus)
@@ -136,7 +144,7 @@ namespace HedgehogUtils.Voicelines
                 SendFinalBossStartEvent(FinalBoss.LunarScavenger);
             }
         }
-        public void SendBossStartEvent(BodyIndex bodyIndex)
+        public void SendBossStartEvent(BodyIndex bodyIndex, float startDelayOverride = -1f)
         {
             List<NetworkedVoiceline> voicelinesToSend = new List<NetworkedVoiceline>();
             if (OnBossStart != null)
@@ -154,9 +162,9 @@ namespace HedgehogUtils.Voicelines
                     }
                 }
             }
-            StartCoroutine(StaggerVoicelines(voicelinesToSend, 2.5f));
+            StartCoroutine(StaggerVoicelines(voicelinesToSend, startDelayOverride > 0 ? startDelayOverride :2.5f));
         }
-        public void SendFinalBossStartEvent(FinalBoss finalBoss)
+        public void SendFinalBossStartEvent(FinalBoss finalBoss, float startDelayOverride = -1f)
         {
             if (finalBossStartSaid[(byte)finalBoss-1]) return;
             finalBossStartSaid[(byte)finalBoss-1] = true;
@@ -199,6 +207,9 @@ namespace HedgehogUtils.Voicelines
                     break;
                 case FinalBoss.Arraign1:
                     startDelay = 3.5f;
+                    break;
+                default:
+                    if (startDelayOverride > 0) startDelay = startDelayOverride;
                     break;
             }
             StartCoroutine(StaggerVoicelines(voicelinesToSend, startDelay));
@@ -264,6 +275,7 @@ namespace HedgehogUtils.Voicelines
             }
             StartCoroutine(StaggerVoicelines(voicelinesToSend, 1.6f));
         }
+        #endregion
         public IEnumerator RefreshNearby()
         {
             List<VoicelineComponent> voices = InstanceTracker.GetInstancesList<VoicelineComponent>();
@@ -315,7 +327,7 @@ namespace HedgehogUtils.Voicelines
                     }
 
                     Log.Message("HedgehogUtils Staggered Voiceline sent", Config.Logs.All);
-                    new NetworkVoiceline(voicelines[i]).Send(NetworkDestination.Clients);
+                    if (voicelineComponent.alive) new NetworkVoiceline(voicelines[i]).Send(NetworkDestination.Clients);
                 }
                 if (skippedVoices.Count > 0) StartCoroutine(StaggerVoicelineChunk(skippedVoices, voicelineComponent));
                 voicelines.RemoveAt(i);
@@ -352,11 +364,16 @@ namespace HedgehogUtils.Voicelines
                 BodyCatalog.FindBodyIndex("ScavLunar2Body"),
                 BodyCatalog.FindBodyIndex("ScavLunar3Body"),
                 BodyCatalog.FindBodyIndex("ScavLunar4Body")];
-            arraign1EnemiesReturnsBodyIndex = BodyCatalog.FindBodyIndex("ArraignP1Body");
-            arraign2EnemiesReturnsBodyIndex = BodyCatalog.FindBodyIndex("ArraignP2Body");
+            arraign1EnemiesReturnsBodyIndex = BodyCatalog.FindBodyIndex("ER_ArraignP1Body");
+            arraign2EnemiesReturnsBodyIndex = BodyCatalog.FindBodyIndex("ER_ArraignP2Body");
             animaHarvester1BodyIndex = BodyCatalog.FindBodyIndex("ReaperBossBody");
             animaHarvester2BodyIndex = BodyCatalog.FindBodyIndex("ReaperBossMalachiteBody");
-            //BodyCatalog.FindBodyIndex("ProvidenceP1Body")};
+            providence1BodyIndex = BodyCatalog.FindBodyIndex("ProvBody");
+            corrodedWurmLaserBodyIndex = BodyCatalog.FindBodyIndex("GildedWurmLaserBody");
+            corrodedWurmOrbBodyIndex = BodyCatalog.FindBodyIndex("GildedWurmOrbBody");
+            providence3BodyIndex = BodyCatalog.FindBodyIndex("ProvDesperationBody");
+            providence4BodyIndex = BodyCatalog.FindBodyIndex("ProvFinalBody");
+            //BodyCatalog.FindBodyIndex("ER_ProvidenceP1Body")};
         }
         public static BodyIndex GetBossBodyIndex(BossGroup boss)
         {
@@ -445,6 +462,10 @@ namespace HedgehogUtils.Voicelines
             if (index == arraign2EnemiesReturnsBodyIndex) { return FinalBoss.Arraign2; }
             if (index == animaHarvester1BodyIndex) { return FinalBoss.AnimaHarvester1; }
             if (index == animaHarvester2BodyIndex) { return FinalBoss.AnimaHarvester2; }
+            if (index == providence1BodyIndex) { return FinalBoss.Providence1; }
+            if (index == corrodedWurmLaserBodyIndex || index == corrodedWurmOrbBodyIndex) { return FinalBoss.CorrodedWurms; }
+            if (index == providence3BodyIndex) { return FinalBoss.Providence3; }
+            if (index == providence4BodyIndex) { return FinalBoss.Providence4; }
             return FinalBoss.None;
         }
     }
@@ -469,7 +490,11 @@ namespace HedgehogUtils.Voicelines
         Arraign1,
         Arraign2,
         AnimaHarvester1,
-        AnimaHarvester2
+        AnimaHarvester2,
+        Providence1,
+        CorrodedWurms,
+        Providence3,
+        Providence4
             // if you add more, remember to update said array size
     }
     public enum VoicelinePriority : byte

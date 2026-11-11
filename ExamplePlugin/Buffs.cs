@@ -12,6 +12,8 @@ namespace HedgehogUtils
 
         public static BuffDef suppressDeathBuff;
 
+        public static BuffDef hiddenRootBuff;
+
         internal static void RegisterBuffs()
         {
             superFormBuff = AddNewBuff("bdHedgehogSuperForm",
@@ -27,6 +29,12 @@ namespace HedgehogUtils
                 false,
                 true);
             suppressDeathBuff = AddNewBuff("bdHedgehogSuppressDeath",
+                LegacyResourcesAPI.Load<BuffDef>("BuffDefs/Weak").iconSprite,
+                new Color(1f, 1f, 1f),
+                true,
+                false,
+                true);
+            hiddenRootBuff = AddNewBuff("bdHedgehogHiddenRoot",
                 LegacyResourcesAPI.Load<BuffDef>("BuffDefs/Weak").iconSprite,
                 new Color(1f, 1f, 1f),
                 true,

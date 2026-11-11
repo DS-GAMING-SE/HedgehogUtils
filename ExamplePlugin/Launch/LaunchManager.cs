@@ -22,7 +22,15 @@ namespace HedgehogUtils.Launch
 
         public static Action<CharacterBody, CharacterBody, Vector3, float, float, float, bool, float, float, LaunchProjectileController> onLaunchServer;
 
-        public static string[] bodyBlacklist = { "BrotherBody", "BrotherGlassBody", "BrotherHurtBody", "FalseSonBossBody", "FalseSonBossBodyBrokenLunarShard", "FalseSonBossBodyLunarShard", "MagmaWormBody", "ElectricWormBody", "ShopkeeperBody", "MiniVoidRaidCrabBodyBase", "MiniVoidRaidCrabBodyPhase1", "MiniVoidRaidCrabBodyPhase2", "MiniVoidRaidCrabBodyPhase3", "ScorchlingBody", "GravekeeperTrackingFireball", "SolusVendorBody" };
+        public static readonly string[] bodyBlacklist = { "BrotherBody", "BrotherGlassBody", "BrotherHurtBody", 
+            "FalseSonBossBody", "FalseSonBossBodyBrokenLunarShard", "FalseSonBossBodyLunarShard", 
+            "MagmaWormBody", "ElectricWormBody", "ShopkeeperBody", 
+            "MiniVoidRaidCrabBodyBase", "MiniVoidRaidCrabBodyPhase1", "MiniVoidRaidCrabBodyPhase2", "MiniVoidRaidCrabBodyPhase3", 
+            "ScorchlingBody", "GravekeeperTrackingFireball", "SolusVendorBody",
+            "ER_ArraignP1Body", "ER_ArraignP2Body",
+            "ReaperBossBody", "ReaperBossMalachiteBody", 
+            "ProvBody", "ProvidenceShadowCloneBody", "GildedWurmLaserBody", "GildedWurmOrbBody", "ProvDesperationBody", "ProvidenceShadowCloneLasorBody", "ProvFinalBody" };
+        public static readonly HashSet<BodyIndex> bodyBlacklistIndices = new HashSet<BodyIndex>();
 
         public const float launchSpeed = 55f;
 
@@ -96,7 +104,7 @@ namespace HedgehogUtils.Launch
         public static bool TargetCanBeLaunched(CharacterBody target, out LaunchProjectileController currentLaunchController)
         {
             currentLaunchController = null;
-            if ((Config.LaunchBodyBlacklist().Value && bodyBlacklist.Contains(BodyCatalog.GetBodyName(target.bodyIndex))) || (target.bodyFlags & (CharacterBody.BodyFlags.IgnoreKnockup | CharacterBody.BodyFlags.Unmovable)) > CharacterBody.BodyFlags.None)
+            if ((Config.LaunchBodyBlacklist().Value && bodyBlacklistIndices.Contains(target.bodyIndex)) || (target.bodyFlags & (CharacterBody.BodyFlags.IgnoreKnockup | CharacterBody.BodyFlags.Unmovable)) > CharacterBody.BodyFlags.None)
             {
                 return false;
             }
@@ -174,6 +182,15 @@ namespace HedgehogUtils.Launch
             launchProjectilePrefab.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.Extrapolate;
 
             PrefabAPI.RegisterNetworkPrefab(launchProjectilePrefab);
+        }
+        [SystemInitializer(typeof(BodyCatalog))]
+        private static void CacheBlacklistBodyIndices()
+        {
+            for (int i = 0; i < bodyBlacklist.Length; i++)
+            {
+                BodyIndex bodyIndex = BodyCatalog.FindBodyIndex(bodyBlacklist[i]);
+                if (bodyIndex != BodyIndex.None) bodyBlacklistIndices.Add(bodyIndex);
+            }
         }
     }
 }

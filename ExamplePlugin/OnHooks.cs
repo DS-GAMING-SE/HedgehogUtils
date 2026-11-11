@@ -29,6 +29,9 @@ namespace HedgehogUtils
             On.RoR2.HealthComponent.TakeDamageProcess += TakeDamageHook;
             IL.RoR2.HealthComponent.TakeDamageProcess += TakeDamageILHook;
 
+            RecalculateStatsAPI.GetStatCoefficients += RecalculateStats;
+            On.RoR2.CharacterBody.RecalculateStats += RecalcStatAPIDoesntHaveAcceleration;
+
             On.RoR2.Util.GetBestBodyName += SuperNamePrefix;
 
             Stage.onServerStageBegin += StageBegin;
@@ -166,6 +169,49 @@ namespace HedgehogUtils
             }
         }
 
+        private static void RecalculateStats(CharacterBody self, RecalculateStatsAPI.StatHookEventArgs stats)
+        {
+            #region Super Form
+            if (self.HasBuff(Buffs.superFormBuff))
+            {
+                stats.baseMoveSpeedAdd += StaticValues.superSonicMovementSpeed * self.baseMoveSpeed;
+                stats.attackSpeedMultAdd += StaticValues.superSonicAttackSpeed;
+                stats.damageMultAdd += StaticValues.superSonicBaseDamage;
+                stats.jumpPowerMultAdd += StaticValues.superSonicJumpHeight;
+                stats.armorAdd += StaticValues.superSonicArmor;
+            }
+            #endregion
+
+            if (self.HasBuff(Buffs.hiddenRootBuff))
+            {
+                stats.moveSpeedRootCount++;
+            }
+
+            #region Momentum
+            MomentumPassive momentum = self.GetComponent<MomentumPassive>();
+            if (momentum)
+            {
+                if (momentum.momentum >= 0)
+                {
+                    stats.moveSpeedMultAdd += (momentum.momentum * momentum.maxSpeedMultiplier);
+                }
+                else
+                {
+                    stats.moveSpeedReductionMultAdd += Mathf.Abs(momentum.momentum) * momentum.minSpeedMultiplier;
+                }
+            }
+            #endregion
+        }
+        private static void RecalcStatAPIDoesntHaveAcceleration(On.RoR2.CharacterBody.orig_RecalculateStats orig, CharacterBody self)
+        {
+            orig(self);
+
+            if (self.HasBuff(Buffs.superFormBuff))
+            {
+                self.acceleration *= 5;
+            }
+        }
+
         public static void LookingGlassSetup()
         {
             if (RoR2.Language.languagesByName.TryGetValue("en", out RoR2.Language language))
@@ -181,12 +227,9 @@ namespace HedgehogUtils
             emeraldStats.calculateValuesNew = (luck, stackCount, procChance) =>
             {
                 var list = new List<float>();
-                if (Forms.Forms.GetFormHandlerObject(SuperFormDef.superFormDef.formIndex))
+                if (SuperFormDef.superFormDef.GetFormHandler())
                 {
-                    if (Forms.Forms.GetFormHandlerObject(SuperFormDef.superFormDef.formIndex).TryGetComponent(out SuperSonicHandler emeraldSpawner))
-                    {
-                        list.Add(7 - ((SyncedItemTracker)emeraldSpawner.itemTracker).missingItems.Count);
-                    }
+                    list.Add(7 - ((SyncedItemTracker)SuperFormDef.superFormDef.GetFormHandler().itemTracker).missingItems.Count);
                 }
                 else
                 {

@@ -1,5 +1,22 @@
 # Changelog
 
+## v2.0.4
+ - (Visuals) Minor visual tweaks to the Super transformation effect
+
+ - (Bug Fix) Blacklisted the Hallowed Concepts Final Bosses from being Launched
+ 
+ - (Optimization) Improved the performance of checking the Launch body blacklist when Launching an enemy
+
+ - (Internal) Fixed global event voicelines playing while the speaker is dead
+ - (Internal) Added Hallowed Concepts Secret Boss to Final Boss Voicelines
+ - (Internal) Moved all RecalculateStats stuff into a single method so I don't have to sub to the event multiple times
+ - (Internal) BoostLogic now caches the utility skill slot on start, so replacing the utility with a whole other GenericSkill shouldn't break things. Probably. Just an idea I had
+ - (Internal) Added a new vfx mat, an impact with drawn-in chromatic abberation called chromaImpact
+ - (Internal) Added a new generic hidden debuff for setting movement speed to 0
+
+### Known Issues
+ - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
+
 ## v2.0.3
  - (Bug Fix) Fixed transformations not activating for clients in multiplayer
  - (Bug Fix) Various small improvements to Launching attacks overriding enemy deaths
@@ -8,10 +25,6 @@
  - (Internal) Added Anima Harvester support to Final Boss Voicelines (Considered internal since no mod currently uses the voicelines system)
  - (Internal) Removed RoR2.Indicator reference from LockOnIndicator because I'm stupid and forgot how Indicators work
  - (Internal) Attacks now deal knockback against dead targets kept alive by suppressDeathBuff
- 
-### Known Issues
- - Launch projectiles' values aren't properly networked and don't update after the projectile is spawned. Things like the unique vfx of a crit launch projectile won't update to clients if the values are updated during the launch, such as if you launch a launch projectile
-
 
 ## v2.0.2
  - (- Nerf) Collecting all Chaos Emeralds now increases Karma. This can be disabled in the config

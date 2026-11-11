@@ -16,6 +16,7 @@ namespace HedgehogUtils.Boost
         // I've been putting this SyncVar stuff all around because that's what I've seen other people do but apparently it doesn't do anything without some extra thing I don't have
         public CharacterBody body;
         public SkillDefs.IBoostSkill boostSkillDef;
+        public GenericSkill boostSkillSlot;
 
         [SyncVar(hook = nameof(OnBoostMeterChanged))]
         public float boostMeter;
@@ -52,7 +53,8 @@ namespace HedgehogUtils.Boost
         public void Start()
         {
             body.characterMotor.onHitGroundAuthority += ResetAirBoost;
-            body.skillLocator.utility.onSkillChanged += OnSkillChanged;
+            boostSkillSlot = body.skillLocator.utility;
+            boostSkillSlot.onSkillChanged += OnSkillChanged;
             BoostExists();
             CalculateBoostVariables(body);
             body.onRecalculateStats += CalculateBoostVariables;
@@ -84,12 +86,12 @@ namespace HedgehogUtils.Boost
         {
             if (body && boostExists)
             {
-                this.boostRegen = baseBoostRegen / body.skillLocator.utility.cooldownScale;
-                this.maxBoostMeter = Mathf.Round((baseMaxBoostMeter + (boostMeterPerFlatReduction * Mathf.Max(body.skillLocator.utility.flatCooldownReduction, -2))) / 10) * 10;
+                this.boostRegen = baseBoostRegen / boostSkillSlot.cooldownScale;
+                this.maxBoostMeter = Mathf.Round((baseMaxBoostMeter + (boostMeterPerFlatReduction * Mathf.Max(boostSkillSlot.flatCooldownReduction, -2))) / 10) * 10;
                 this.NetworkmaxBoostMeter = maxBoostMeter;
-                if ((body.characterMotor.isGrounded || body.characterMotor.isFlying) && body.skillLocator.utility.stock != body.skillLocator.utility.maxStock && boostAvailable)
+                if ((body.characterMotor.isGrounded || body.characterMotor.isFlying) && boostSkillSlot.stock != boostSkillSlot.maxStock && boostAvailable)
                 {
-                    body.skillLocator.utility.stock = body.skillLocator.utility.maxStock;
+                    boostSkillSlot.stock = boostSkillSlot.maxStock;
                 }
             }
         }
@@ -102,9 +104,9 @@ namespace HedgehogUtils.Boost
         private void BoostExists()
         {
             bool prevBoostExists = boostExists;
-            if (typeof(SkillDefs.IBoostSkill).IsAssignableFrom(body.skillLocator.utility.skillDef.GetType()))
+            if (typeof(SkillDefs.IBoostSkill).IsAssignableFrom(boostSkillSlot.skillDef.GetType()))
             {
-                boostSkillDef = body.skillLocator.utility.skillDef as SkillDefs.IBoostSkill;
+                boostSkillDef = boostSkillSlot.skillDef as SkillDefs.IBoostSkill;
                 boostExists = true;
             }
             else
@@ -145,7 +147,7 @@ namespace HedgehogUtils.Boost
             overlayController.onInstanceAdded -= PrepareBoostHUD;
             HudOverlayManager.RemoveOverlay(overlayController);
             body.characterMotor.onHitGroundAuthority -= ResetAirBoost;
-            body.skillLocator.utility.onSkillChanged -= OnSkillChanged;
+            boostSkillSlot.onSkillChanged -= OnSkillChanged;
             body.onRecalculateStats -= CalculateBoostVariables;
         }
 
@@ -206,7 +208,7 @@ namespace HedgehogUtils.Boost
         {
             if (boostExists && boostAvailable)
             {
-                body.skillLocator.utility.stock = body.skillLocator.utility.maxStock;
+                boostSkillSlot.stock = boostSkillSlot.maxStock;
             }
         }
 

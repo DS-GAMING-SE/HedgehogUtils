@@ -89,6 +89,7 @@ namespace HedgehogUtils.Voicelines
         public GenericSkill voicelinesSkill;
         public string voicelinesSkillName = "Voicelines";
         public SkillDef voicelinesEnableSkillDef;
+        public bool alive { get; private set; }
 
         public List<VoicelineComponent> nearbyVoices = new List<VoicelineComponent>();
         public virtual void SubscribeEvents()
@@ -108,6 +109,7 @@ namespace HedgehogUtils.Voicelines
         }
         public virtual void OnDeathStart()
         {
+            alive = false;
             StopCurrentVoiceline();
             UnsubscribeEvents();
         }
@@ -130,6 +132,7 @@ namespace HedgehogUtils.Voicelines
             InstanceTracker.Add<VoicelineComponent>(this);
             LoadSoundBank();
             SubscribeEvents();
+            alive = true;
         }
         private void Start()
         {

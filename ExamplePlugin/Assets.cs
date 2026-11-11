@@ -28,7 +28,7 @@ namespace HedgehogUtils
         private const string assetbundleName = "hedgehogutilsbundle";
         private const string dllName = "HedgehogUtils.dll";
 
-        internal static AssetBundle mainAssetBundle;
+        public static AssetBundle mainAssetBundle;
 
         public static void Initialize()
         {
@@ -425,6 +425,7 @@ namespace HedgehogUtils
         public static Material rainbowGlowMaterial;
         public static Material rainbowGlowSubtleMaterial;
         public static Material darkSparkle;
+        public static Material chromaImpact;
         public static GameObject superFormTransformationEffect;
         public static GameObject transformationEmeraldSwirl;
         public static GameObject superFormAura;
@@ -440,16 +441,24 @@ namespace HedgehogUtils
             superFormTransformationEffect.GetComponent<VFXAttributes>().vfxIntensity = VFXIntensity.Medium;
             superFormTransformationEffect.GetComponent<EffectComponent>().applyScale = true;
             darkSparkle = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_DLC3_Parry.matParryFlash_mat).WaitForCompletion());
+            darkSparkle.name = "matHedgehogDarkSparkle";
             darkSparkle.SetFloat("_DstBlend", 10);
             darkSparkle.EnableKeyword("VERTEXCOLOR");
             darkSparkle.SetTexture("_RemapTex", Addressables.LoadAssetAsync<Texture>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_Common_ColorRamps.texRampTritone_png).WaitForCompletion());
             darkSparkle.SetFloat("_AlphaBoost", 1.5f);
             darkSparkle.SetFloat("_DepthOffset", -10f);
             darkSparkle.SetInt("_ZTest", 8);
+            chromaImpact = new Material(Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_Common_VFX.matTracerBrightTransparent_mat).WaitForCompletion());
+            chromaImpact.name = "matHedgehogChromaImpact";
+            chromaImpact.SetTexture("_MainTex", mainAssetBundle.LoadAsset<Texture>("texChromaImpacts"));
+            chromaImpact.EnableKeyword("DISABLEREMAP");
+            chromaImpact.SetInt("_DstBlend", 1);
+            chromaImpact.SetFloat("_Boost", 2f);
+            chromaImpact.SetFloat("_AlphaBoost", 1f);
             superFormTransformationEffect.transform.GetChild(0).GetComponent<ParticleSystemRenderer>().sharedMaterial = darkSparkle;
             superFormTransformationEffect.transform.GetChild(1).GetComponent<ParticleSystemRenderer>().sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_Huntress.matHuntressFlash_mat).WaitForCompletion();
             var superTransformRingRenderer = superFormTransformationEffect.transform.GetChild(2).GetComponent<ParticleSystemRenderer>();
-            superTransformRingRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_DLC2_Seeker_SojournVehicle.matSojournTrail_mat).WaitForCompletion();
+            superTransformRingRenderer.sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_Grandparent.matGrandParentSunChannelStartBeam_mat).WaitForCompletion();
             superTransformRingRenderer.mesh = Addressables.LoadAssetAsync<Mesh>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_Common_VFX.mdlVFXDonut2_fbx_donut2Mesh_).WaitForCompletion();
 
             superFormTransformationEffect.transform.GetChild(4).GetComponent<ParticleSystemRenderer>().sharedMaterial = Addressables.LoadAssetAsync<Material>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_Base_TeamWarCry.matTeamWarCryDistortion_mat).WaitForCompletion();
@@ -459,6 +468,8 @@ namespace HedgehogUtils
             var superTransformLightCurve = superFormTransformationEffect.transform.GetChild(7).gameObject.AddComponent<LightIntensityCurve>();
             superTransformLightCurve.timeMax = 1f;
             superTransformLightCurve.curve = AnimationCurve.EaseInOut(0f, 0.8f, 1f, 0f);
+
+            superFormTransformationEffect.transform.GetChild(8).GetComponent<ParticleSystemRenderer>().sharedMaterial = chromaImpact;
 
             var superTransformPP = superFormTransformationEffect.transform.GetChild(12).GetComponent<PostProcessVolume>();
             superTransformPP.sharedProfile = Addressables.LoadAssetAsync<PostProcessProfile>(RoR2BepInExPack.GameAssetPathsBetter.RoR2_GlobalContent.ppLocalBrotherImpact_asset).WaitForCompletion();

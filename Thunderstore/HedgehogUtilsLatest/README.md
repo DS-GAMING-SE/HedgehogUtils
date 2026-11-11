@@ -1,4 +1,4 @@
-# <img src="https://github.com/DS-GAMING-SE/Sonic/blob/master/SonicUnityProject/Assets/SonicAssets/Icons/texBallBuffIcon.png?raw=true" width="64">  HedgehogUtils
+# <img src="https://github.com/DS-GAMING-SE/HedgehogUtils/blob/master/UnityProject/HedgehogUtils/Assets/AssetBundle/Icons/texBallBuffIcon.png?raw=true" width="64">  HedgehogUtils
 
 This mod contains a lot of skills, mechanics, and other helpful things that were originally made for the Sonic The Hedgehog mod but I felt could be useful for more things. I encourage anyone to use this mod with their own project, whether it's Sonic related or not, if they can find any use in it.
 

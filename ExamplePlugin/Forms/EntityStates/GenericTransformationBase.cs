@@ -55,6 +55,7 @@ namespace HedgehogUtils.Forms.EntityStates
             {
                 CharacterGravityParameters gravityParams = gravity.gravityParameters;
                 gravityParams.channeledAntiGravityGranterCount += 1;
+                gravity.gravityParameters = gravityParams;
             }
         }
 
@@ -85,6 +86,7 @@ namespace HedgehogUtils.Forms.EntityStates
             {
                 CharacterGravityParameters gravityParams = gravity.gravityParameters;
                 gravityParams.channeledAntiGravityGranterCount -= 1;
+                gravity.gravityParameters = gravityParams;
             }
             base.OnExit();
         }
